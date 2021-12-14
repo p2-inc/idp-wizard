@@ -9,18 +9,15 @@ import {
   Button,
 } from "@patternfly/react-core";
 import { useKeycloak } from "@react-keycloak/web";
-import { AzureStepOne } from "./Steps/AzureStepOne";
-import { AzureStepOneA } from "./Steps/AzureStepOneA";
-import { AzureStepTwo } from "./Steps/AzureStepTwo";
-import { AzureStepThree } from "./Steps/AzureStepThree";
-import { AzureStepFour } from "./Steps/AzureStepFour";
-import azureLogo from "@app/images/azure/azure-logo.png";
+import { Auth0StepOne } from "./Steps/Auth0StepOne";
+import { Auth0StepTwo } from "./Steps/Auth0StepTwo";
+import { Auth0StepThree } from "./Steps/Auth0StepThree";
+import authoLogo from "@app/images/provider-logos/auth0_logo.png";
 import { WizardConfirmation } from "../FinalStepConfirmation";
 import { useHistory } from "react-router";
+import { auth0StepTwoValidation } from "@app/services/Auth0Validation";
 
-import { azureStepOneAValidation } from "@app/services/AzureValidation";
-
-export const AzureWizard: FC = () => {
+export const Auth0Wizard: FC = () => {
   const [stepIdReached, setStepIdReached] = useState(1);
   const [results, setResults] = useState("");
   const [error, setError] = useState(false);
@@ -41,11 +38,11 @@ export const AzureWizard: FC = () => {
     setIsFormValid(value);
   };
 
-  const validateAzureWizard = async () => {
+  const validateAuth0Wizard = async () => {
     setIsValidating(true);
     setResults("Final Validation Running...");
-    const metadataURL = sessionStorage.getItem("azure_metadata_url");
-    const results = await azureStepOneAValidation(metadataURL!, true);
+    const domain = sessionStorage.getItem("auth0_domain");
+    const results = await auth0StepTwoValidation(domain!, true);
     setError(results.status == "error");
     setResults("Results: " + results.message);
     setIsValidating(false);
@@ -55,53 +52,40 @@ export const AzureWizard: FC = () => {
   const steps = [
     {
       id: 1,
-      name: "Create Enterprise Application",
-      component: <AzureStepOne />,
+      name: "Create An Application",
+      component: <Auth0StepOne />,
       hideCancelButton: true,
     },
     {
       id: 2,
-      name: "Configure Attribute Statements",
-      component: <AzureStepTwo />,
+      name: "Provide Domain And Credentials",
+      component: <Auth0StepTwo  onChange={onFormChange} />,
       hideCancelButton: true,
       canJumpTo: stepIdReached >= 1,
-    },
-    {
-      id: 3,
-      name: "Upload Azure SAML Metadata file",
-      component: <AzureStepOneA onChange={onFormChange} />,
-      hideCancelButton: true,
-      canJumpTo: stepIdReached >= 2,
       enableNext: isFormValid,
     },
     {
-      id: 4,
-      name: "User Attributes & Claims",
-      component: <AzureStepThree />,
+      id: 3,
+      name: "Configure Redirect URI",
+      component: <Auth0StepThree/>,
       hideCancelButton: true,
-      canJumpTo: stepIdReached >= 4,
-    },
-    {
-      id: 5,
-      name: "Assign People & Groups",
-      component: <AzureStepFour />,
-      hideCancelButton: true,
-      canJumpTo: stepIdReached >= 5,
+      canJumpTo: stepIdReached >= 2,
+      
     },
     {
       name: "Confirmation",
       component: (
         <WizardConfirmation
           title="SSO Configuration Complete"
-          message="Your users can now sign-in with Azure AD."
-          buttonText="Create SAML IdP in Keycloak"
+          message="Your users can now sign-in with Auth0."
+          buttonText="Create OpenID IdP in Keycloak"
           resultsText={results}
           error={error}
           isValidating={isValidating}
-          validationFunction={validateAzureWizard}
+          validationFunction={validateAuth0Wizard}
         />
       ),
-      canJumpTo: stepIdReached >= 4,
+      canJumpTo: stepIdReached >= 3,
     },
   ];
 
@@ -117,7 +101,7 @@ export const AzureWizard: FC = () => {
       <PageSection variant={PageSectionVariants.light}>
         <Flex>
           <FlexItem>
-            <img className="step-header-image" src={azureLogo} alt="Azure" />
+            <img className="step-header-image" src={authoLogo} alt="Auth0" />
           </FlexItem>
 
           <FlexItem align={{ default: "alignRight" }}>
