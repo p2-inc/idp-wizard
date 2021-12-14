@@ -20,9 +20,14 @@ const settings = {
     const kcAdminClient = new KcAdminClient(settings);
     //TODO: Do not create a new token for each request. 
     const setKcAdminClientAccessToken = async () => {
-        await SetAccessToken();
+      console.log("setting keycloak token")
+      await SetAccessToken();
+      console.log("set")
 
         async function SetAccessToken() {
+          console.log(credentials.grantType)
+          console.log(credentials.clientId)
+          console.log(credentials.clientSecret)
           await kcAdminClient.auth(credentials);
         }
     }

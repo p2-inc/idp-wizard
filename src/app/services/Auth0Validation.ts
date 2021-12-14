@@ -3,7 +3,10 @@ import { useKeycloakAdminApi } from '../hooks/useKeycloakAdminApi';
 
 export const auth0StepTwoValidation = async (domain: string, createIdP: boolean, clientID? : string, clientSecret? : string ) => {
     const [kcAdminClient, setKcAdminClientAccessToken] = useKeycloakAdminApi();
+    
+    console.log("setting accessToken");
     await setKcAdminClientAccessToken();
+    console.log(kcAdminClient.accessToken);
 
     const response = await kcAdminClient.identityProviders.importFromUrl({fromUrl: domain, providerId: 'oidc', realm: process.env.REALM || "wizard"})
         .then((res) => 

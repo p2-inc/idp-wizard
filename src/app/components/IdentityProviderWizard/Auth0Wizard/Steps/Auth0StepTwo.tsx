@@ -32,7 +32,7 @@ export const Auth0StepTwo: FC<Props> = (props) => {
   const [domain, setDomain] = useSessionStorage("auth0_domain", "");
   const [clientId, setClientID] = useSessionStorage("auth0_clientID", "");
   const [clientSecret, setClientSecret] = useSessionStorage("auth0_clientSecret", "");
-
+  
   const handleDomainChange = (value: string) => {
     setDomain(value);
     //Store the data to session storage
@@ -52,6 +52,7 @@ export const Auth0StepTwo: FC<Props> = (props) => {
 
   const validateStep = async () => {
     setIsValidating(true);
+    console.log("testing auth0 validation")
     await auth0StepTwoValidation(`${domain}`, false)
       .then((res) => {
         setAlertText(res.message);
@@ -103,7 +104,7 @@ export const Auth0StepTwo: FC<Props> = (props) => {
                   id="domain-text"
                   name="Domain"
                   aria-describedby="Domain"
-                  value={domain}
+                  value = {domain}
                   onChange={handleDomainChange}
                 />
               </FormGroup>
