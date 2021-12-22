@@ -2,17 +2,17 @@ import IdentityProviderRepresentation from '@keycloak/keycloak-admin-client/lib/
 import { useKeycloakAdminApi } from '../hooks/useKeycloakAdminApi';
 
 export const auth0StepTwoValidation = async (domain: string, createIdP: boolean, clientID? : string, clientSecret? : string ) => {
+    var trustedDomain = `https://${domain}/.well-known/openid-configuration`;
+    
     const [kcAdminClient, setKcAdminClientAccessToken] = useKeycloakAdminApi();
     
-    console.log("setting accessToken");
     await setKcAdminClientAccessToken();
-    console.log(kcAdminClient.accessToken);
-
-    const response = await kcAdminClient.identityProviders.importFromUrl({fromUrl: domain, providerId: 'oidc', realm: process.env.REALM || "wizard"})
+    console.log(trustedDomain)
+    const response = await kcAdminClient.identityProviders.importFromUrl({fromUrl: trustedDomain, providerId: 'oidc', realm: process.env.REALM || "wizard"})
         .then((res) => 
         {
-            console.log("success result", res)
-            sessionStorage.setItem('auth0_domain', domain)
+           // console.log("success result", res)
+            sessionStorage.setItem('auth0_domain', trustedDomain)
             if(clientID){
                 sessionStorage.setItem('auth0_clientID', clientID)
             }
@@ -29,7 +29,7 @@ export const auth0StepTwoValidation = async (domain: string, createIdP: boolean,
             }
         })
         .catch((err) => {
-            console.log("import error", err)
+           // console.log("import error", err)
             return {
                 status: 'error',
                 message: `Error validating config from Auth0. ${err}`
@@ -59,7 +59,7 @@ function createIdPInKeycloak(res: any, kcAdminClient) {
 
         })
         .catch((err) => {
-            console.log("import error", err);
+            //console.log("import error", err);
             return {
                 status: 'error',
                 message: `Errored importing config from Auth0. ${err}`

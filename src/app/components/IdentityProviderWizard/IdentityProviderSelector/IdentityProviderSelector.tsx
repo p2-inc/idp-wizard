@@ -27,7 +27,7 @@ export const IdentityProviderSelector: FC = () => {
             <FlexItem align={{ default: "alignRight" }}>
               <Link to="/">
                 <Button variant="link" isInline>
-                  My Dashboard
+                  Dashboard
                 </Button>
               </Link>
             </FlexItem>
@@ -41,28 +41,28 @@ export const IdentityProviderSelector: FC = () => {
         <StackItem isFilled>
           <div className="container">
             <div className="vertical-center">
-              <h1>Choose your Identity Provider</h1>
+              <h1>Select your Identity Provider</h1>
               <h2>This is how users will sign in to demo.phasetwo.io</h2>
               <div className="selection-container">
-                {IdentityProviders.map(
-                  ({ name, imageSrc, active, id, protocols }) => {
-                    const linkTo = active
-                      ? `/idp/${id}/${
-                          protocols.length === 1 ? protocols[0] : "protocol"
-                        }`
-                      : "#";
-                    return (
-                      <Link to={linkTo} key={id}>
-                        <IdPButton
-                          key={name}
-                          text={name}
-                          image={imageSrc}
-                          active={active}
-                        />
-                      </Link>
-                    );
-                  }
-                )}
+                {IdentityProviders.sort((a, b) =>
+                  a.active === b.active ? 0 : a.active ? -1 : 1
+                ).map(({ name, imageSrc, active, id, protocols }) => {
+                  const linkTo = active
+                    ? `/idp/${id}/${
+                        protocols.length === 1 ? protocols[0] : "protocol"
+                      }`
+                    : "#";
+                  return (
+                    <Link to={linkTo} key={id}>
+                      <IdPButton
+                        key={name}
+                        text={name}
+                        image={imageSrc}
+                        active={active}
+                      />
+                    </Link>
+                  );
+                })}
               </div>
               <h2
                 style={{

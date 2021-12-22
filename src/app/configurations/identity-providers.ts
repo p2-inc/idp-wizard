@@ -30,7 +30,6 @@ export enum Providers {
   SAML = "saml",
   VMWARE = "vmware",
 }
-
 export interface IIDPType {
   name: string;
   id: string;
@@ -52,7 +51,14 @@ export const IdentityProviders: IIDPType[] = [
     imageSrc: oktaLogo,
     active: true,
     id: Providers.OKTA,
-    protocols: [Protocols.LDAP],
+    protocols: [Protocols.LDAP, Protocols.SAML],
+  },
+  {
+    name: "Google SAML",
+    imageSrc: googleLogo,
+    active: true,
+    id: Providers.GOOGLE_SAML,
+    protocols: [Protocols.SAML],
   },
   {
     name: "ADFS",
@@ -73,13 +79,6 @@ export const IdentityProviders: IIDPType[] = [
     imageSrc: cyberarkLogo,
     active: false,
     id: Providers.CYBERARK,
-    protocols: [],
-  },
-  {
-    name: "Google SAML",
-    imageSrc: googleLogo,
-    active: false,
-    id: Providers.GOOGLE_SAML,
     protocols: [],
   },
   {
