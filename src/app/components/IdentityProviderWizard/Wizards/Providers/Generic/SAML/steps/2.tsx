@@ -6,7 +6,8 @@ import {
   API_STATUS,
   METADATA_CONFIG,
 } from "@app/configurations/api-status";
-import { MetadataUrlForm, MetadataFile, MetadataConfig } from "./forms";
+import { MetadataUrlForm, MetadataConfig } from "./forms";
+import {  MetadataFile } from "@wizardComponents";
 
 interface Props {
   validateMetadataUrl: ({
