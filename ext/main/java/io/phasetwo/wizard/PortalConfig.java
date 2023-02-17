@@ -59,9 +59,15 @@ import org.keycloak.authentication.requiredactions.DeleteAccount;
 public class PortalConfig {
 
   public static String CONFIG_KEY(String property) {
-    return String.format("_providerConfig.wizard.%s", property);
+    return String.format("_providerConfig.portal.%s", property);
   }
 
+  public static boolean CONFIG_ENABLED(RealmModel realm, String property, boolean defaultValue) {
+    String v = realm.getAttribute(CONFIG_KEY(property));
+    if (v == null) return defaultValue;
+    return ("true".equals(v));
+  }
+  
   public static PortalConfig createFromAttributes(KeycloakSession session) {
     RealmModel realm = session.getContext().getRealm();
     Auth auth = null;
@@ -94,19 +100,19 @@ public class PortalConfig {
     //faviconUrl
     Optional.ofNullable(realm.getAttribute(String.format("_providerConfig.assets.favicon.url"))).ifPresent(a -> config.faviconUrl(a));
     //profileEnabled
-    config.profileEnabled(true);//todo
+    config.profileEnabled(CONFIG_ENABLED(realm, "profile.enabled", true));
     //registrationEmailAsUsername
     config.registrationEmailAsUsername(realm.isRegistrationEmailAsUsername());
     //passwordUpdateAllowed
-    config.passwordUpdateAllowed(true);//todo
+    config.passwordUpdateAllowed(CONFIG_ENABLED(realm, "profile.password.enabled", true));
     //twoFactorUpdateAllowed
-    config.twoFactorUpdateAllowed(true);//todo
+    config.twoFactorUpdateAllowed(CONFIG_ENABLED(realm, "profile.twofactor.enabled", true));
     //totpConfigured
     config.totpConfigured(isTotpConfigured);
     //passwordlessUpdateAllowed
-    config.passwordlessUpdateAllowed(true);//todo
+    config.passwordlessUpdateAllowed(CONFIG_ENABLED(realm, "profile.passwordless.enabled", true));
     //deviceActivityEnabled
-    config.deviceActivityEnabled(true);//todo
+    config.deviceActivityEnabled(CONFIG_ENABLED(realm, "profile.activity.enabled", true));
     //linkedAccountsEnabled
     config.linkedAccountsEnabled(realm.isIdentityFederationEnabled());
     //eventsEnabled
@@ -128,19 +134,19 @@ public class PortalConfig {
     RequiredActionProviderModel updateEmailActionProvider = realm.getRequiredActionProviderByAlias(UserModel.RequiredAction.UPDATE_EMAIL.name());
     config.updateEmailActionEnabled(updateEmailActionProvider != null && updateEmailActionProvider.isEnabled());
     //organizationsEnabled
-    config.organizationsEnabled(true);//todo
+    config.organizationsEnabled(CONFIG_ENABLED(realm, "org.enabled", true));
     //orgDetailsEnabled
-    config.orgDetailsEnabled(true);//todo
+    config.orgDetailsEnabled(CONFIG_ENABLED(realm, "org.details.enabled", true));
     //orgMembersEnabled
-    config.orgMembersEnabled(true);//todo
+    config.orgMembersEnabled(CONFIG_ENABLED(realm, "org.members.enabled", true));
     //orgInvitationsEnabled
-    config.orgInvitationsEnabled(true);//todo
+    config.orgInvitationsEnabled(CONFIG_ENABLED(realm, "org.invitations.enabled", true));
     //orgDomainsEnabled
-    config.orgDomainsEnabled(true);//todo
+    config.orgDomainsEnabled(CONFIG_ENABLED(realm, "org.domains.enabled", true));
     //orgSsoEnabled
-    config.orgSsoEnabled(true);//todo
+    config.orgSsoEnabled(CONFIG_ENABLED(realm, "org.sso.enabled", true));
     //orgEventsEnabled
-    config.orgEventsEnabled(true);//todo
+    config.orgEventsEnabled(CONFIG_ENABLED(realm, "org.events.enabled", true));
 
     return config;
   }

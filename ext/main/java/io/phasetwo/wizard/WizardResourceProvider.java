@@ -179,6 +179,14 @@ public class WizardResourceProvider implements RealmResourceProvider {
     return WizardConfig.createFromAttributes(session);
   }
 
+  @GET
+  @Path("/portal.json")
+  @Produces(MediaType.APPLICATION_JSON)
+  public PortalConfig portalJson() {
+    setupCors();
+    return PortalConfig.createFromAttributes(session);
+  }
+
   private static String getBaseUrl(UriInfo uriInfo) {
     String u = uriInfo.getBaseUri().toString();
     if (u != null && u.endsWith("/")) u = u.substring(0, u.length() - 1);
