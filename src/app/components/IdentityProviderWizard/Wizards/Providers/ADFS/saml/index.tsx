@@ -15,7 +15,11 @@ import {
   METADATA_CONFIG,
 } from "@app/configurations/api-status";
 import IdentityProviderRepresentation from "@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation";
-import { Axios, CreateIdp, SamlAttributeMapper } from "@app/components/IdentityProviderWizard/Wizards/services";
+import {
+  Axios,
+  CreateIdp,
+  SamlAttributeMapper,
+} from "@app/components/IdentityProviderWizard/Wizards/services";
 import { useNavigateToBasePath } from "@app/routes";
 import { getAlias, clearAlias } from "@wizardServices";
 import { Providers, Protocols, SamlIDPDefaults } from "@app/configurations";
@@ -136,7 +140,7 @@ export const ADFSWizard: FC = () => {
       };
       // create the idp with the start config
 
-      await CreateIdp({createIdPUrl, payload, featureFlags});
+      await CreateIdp({ createIdPUrl, payload, featureFlags });
 
       const urlPayload = {
         fromUrl: url,
@@ -177,6 +181,7 @@ export const ADFSWizard: FC = () => {
       config: {
         ...idpStartConfig.config,
         ...metadata!,
+        enabled: true,
       },
     };
 
@@ -187,11 +192,27 @@ export const ADFSWizard: FC = () => {
       await SamlAttributeMapper({
         alias,
         createIdPUrl,
-        usernameAttribute: { attributeName: "http://schemas.microsoft.com/2012/12/certificatecontext/field/subjectname", friendlyName: "" },
-        emailAttribute: { attributeName: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", friendlyName: "" },
-        firstNameAttribute: { attributeName: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname", friendlyName: "" },
-        lastNameAttribute: { attributeName: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname", friendlyName: "" },
-	featureFlags,
+        usernameAttribute: {
+          attributeName:
+            "http://schemas.microsoft.com/2012/12/certificatecontext/field/subjectname",
+          friendlyName: "",
+        },
+        emailAttribute: {
+          attributeName:
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+          friendlyName: "",
+        },
+        firstNameAttribute: {
+          attributeName:
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+          friendlyName: "",
+        },
+        lastNameAttribute: {
+          attributeName:
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+          friendlyName: "",
+        },
+        featureFlags,
       });
 
       setResults(`${idpCommonName} created successfully. Click finish.`);
@@ -212,17 +233,17 @@ export const ADFSWizard: FC = () => {
     {
       id: 1,
       name: "Setup Relying Party Trust",
-      component: (
-        <Step1 federationMetadataAddress={federationMetadataAddressUrl} />
-      ),
+      component: <Step1 url={issuerUrl} handleFormSubmit={handleFormSubmit} />,
       hideCancelButton: true,
-      enableNext: true,
+      enableNext: isFormValid,
       canJumpTo: stepIdReached >= 1,
     },
     {
       id: 2,
       name: "Assign People and Groups",
-      component: <Step2 />,
+      component: (
+        <Step2 federationMetadataAddress={federationMetadataAddressUrl} />
+      ),
       hideCancelButton: true,
       enableNext: true,
       canJumpTo: stepIdReached >= 2,
@@ -238,9 +259,8 @@ export const ADFSWizard: FC = () => {
     {
       id: 4,
       name: `Import ADFS Metadata`,
-      component: <Step4 url={issuerUrl} handleFormSubmit={handleFormSubmit} />,
+      component: <Step4 />,
       hideCancelButton: true,
-      enableNext: isFormValid,
       canJumpTo: stepIdReached >= 4,
     },
     {
