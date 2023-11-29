@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  DoubleItemClipboardCopy,
+  TripleItemClipboardCopy,
   InstructionProps,
   Step,
   StepImage,
@@ -9,49 +9,73 @@ import * as Images from "@app/images/msft_entra_id/saml";
 
 interface IClaims {
   name: string;
+  namespace: string;
   value: string;
 }
 
 export function EntraIdStepFour() {
   const claimNames: IClaims[] = [
     {
-      name: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+      name: "emailaddress",
+      namespace:
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
       value: "user.mail",
     },
     {
-      name: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+      name: "givenname",
+      namespace:
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
       value: "user.givenname",
     },
     {
-      name: "http://schemas.microsoft.com/identity/claims/name",
+      name: "name",
+      namespace: "http://schemas.microsoft.com/identity/claims/name",
       value: "user.userprincipalname",
     },
     {
-      name: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+      name: "surname",
+      namespace:
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
       value: "user.surname",
     },
   ];
 
   const instructionList: InstructionProps[] = [
     {
-      text: "Click the Edit icon in the top right of the second step.",
-      component: <StepImage src={Images.AzureSaml7} alt="Step 2.1" />,
+      text: "Click the Edit icon in the top right of the second section.",
+      component: <StepImage src={Images.AzureSaml7} alt="Step 4.1" />,
     },
     {
-      text: "Copy the following Claim names and Values",
+      text: "If the claims are as shown in the image, you can accept these default and move on to the next step. If not, click each Claim name in the Additional claims section to open an edit page.",
+      component: <StepImage src={Images.AzureSaml8} alt="Step 4.2" />,
+    },
+    {
+      text: (
+        <div>
+          In the edit page for each claim, paste the following values in the
+          <i>Name</i>, <i>Namespace</i> and <i>Source Attribute</i>.
+        </div>
+      ),
+      component: <StepImage src={Images.EntraId1} alt="Step 4.4" />,
+    },
+    {
+      text: "Copy the following Name, Namespace and Source Attribute values.",
       component: claimNames.map(
-        ({ name: leftValue, value: rightValue }, index) => (
-          <DoubleItemClipboardCopy
-            leftValue={leftValue}
-            rightValue={rightValue}
+        (
+          { name: firstValue, namespace: secondValue, value: thirdValue },
+          index
+        ) => (
+          <TripleItemClipboardCopy
+            firstLabel="Name"
+            secondLabel="Namespace"
+            thirdLabel="Source Attribute"
+            firstValue={firstValue}
+            secondValue={secondValue}
+            thirdValue={thirdValue}
             key={index}
           />
         )
       ),
-    },
-    {
-      text: 'Fill in the following Attribute Statements and select "Next".',
-      component: <StepImage src={Images.AzureSaml8} alt="Step 2.1" />,
     },
   ];
 
