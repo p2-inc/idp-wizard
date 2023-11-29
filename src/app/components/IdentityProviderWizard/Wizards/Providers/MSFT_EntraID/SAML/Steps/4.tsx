@@ -5,14 +5,14 @@ import {
   Step,
   StepImage,
 } from "@wizardComponents";
-import * as Images from "@app/images/azure/saml";
+import * as Images from "@app/images/msft_entra_id/saml";
 
 interface IClaims {
   name: string;
   value: string;
 }
 
-export function AzureStepFour() {
+export function EntraIdStepFour() {
   const claimNames: IClaims[] = [
     {
       name: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
