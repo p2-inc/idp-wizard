@@ -6,7 +6,7 @@ Phase Two SSO and Directory Sync setup wizards for on-prem onboarding and enterp
 
 In addition to providing support for Identity Providers using OIDC and SAML, the wizards also supports Directory Synchronization protocols (aka "User Federation" in Keycloak) such as LDAP.
 
-TODO demo gif
+![youtube-video-gif](https://github.com/p2-inc/idp-wizard/assets/244253/e9b421c0-b487-4c07-9eed-87ea89fc574b)
 
 ## Quick start
 
