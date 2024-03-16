@@ -64,7 +64,9 @@ Wizards are currently available for the following vendors.
 ## Contributing
 
 > :moneybag: :dollar: A $250US bounty will be paid for each complete and accepted vendor wizard that has been labeled with [bounty](https://github.com/p2-inc/idp-wizard/labels/bounty). Please file a PR with your implementation and reference the issue to be considered for the bounty. Acceptance of PRs is at the sole discretion of Phase Two, Inc.
- 
+
+Note: By submitting any code, documentation, or other materials submitted to this repository by pull request, you are immediately granting Phase Two, Inc. the copyright and an exclusive, perpetual, unlimited license to use it in this and any derivative works.
+
 ### Working with the code
 
 Run the latest version of the Phase Two enhanced Keycloak distribution:
@@ -99,6 +101,6 @@ We’ve changed the license of our core extensions from the AGPL v3 to the [Elas
 
 -----
 
-All other ocumentation, source code and other files in this repository are Copyright 2024 Phase Two, Inc.
+All other documentation, source code and other files in this repository are Copyright 2024 Phase Two, Inc.
 
 
