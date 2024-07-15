@@ -49,9 +49,11 @@ export function useRoleAccess() {
   const [hasOrgAccess, setHasOrgAccess] = useState<null | boolean>(null);
 
   function navigateToAccessDenied() {
+    if (window.location.pathname.endsWith("access-denied")) return;
+
     window.location.assign(
       generatePath(PATHS.accessDenied, {
-        realm,
+        realm: realm || window.location.pathname.split("/")[3],
       })
     );
   }
