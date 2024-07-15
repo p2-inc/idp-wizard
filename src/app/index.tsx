@@ -50,6 +50,7 @@ const App: React.FC = () => {
     // No org available but has Realm admin role
     if (orgsArr.length === 0 && hasRealmRoles()) {
       dispatch(setOrganization("global"));
+      return;
     }
 
     // Organizations array is only 1
