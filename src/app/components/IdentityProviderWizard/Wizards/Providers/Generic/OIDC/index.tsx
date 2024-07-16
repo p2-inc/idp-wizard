@@ -270,6 +270,7 @@ export const GenericOIDC: FC = () => {
       setError(false);
       setDisableButton(true);
     } catch (e) {
+      console.log("🚀 ~ createIdP ~ e:", e);
       setResults(`Error creating ${idpCommonName}.`);
       setError(true);
     } finally {
