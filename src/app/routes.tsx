@@ -22,8 +22,8 @@ export interface RouterParams {
 }
 
 export const routes = [];
-const RELATIVE_PATH = "/auth";
-export const BASE_PATH = `${RELATIVE_PATH}/realms/:realm/wizard`;
+export const RELATIVE_PATH = "auth";
+export const BASE_PATH = `/${RELATIVE_PATH}/realms/:realm/wizard`;
 
 export enum ROUTE_PATHS {
   DASHBOARD = "dashboard",
