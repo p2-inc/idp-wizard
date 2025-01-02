@@ -14,6 +14,7 @@ import samlLogo from "@app/images/provider-logos/saml_logo.svg";
 import vmwareLogo from "@app/images/provider-logos/vmware_logo.svg";
 import ldapLogo from "@app/images/provider-logos/ldap_logo.svg";
 import duoLogo from "@app/images/duo/duo.svg";
+import cloudflareLogo from "@app/images/cloudflare/cloudflare.svg";
 import { Protocols } from ".";
 
 export enum Providers {
@@ -21,6 +22,7 @@ export enum Providers {
   ADFS = "adfs",
   AUTH0 = "auth0",
   ENTRAID = "entraid",
+  CLOUDFLARE = "cloudflare",
   CYBERARK = "cyberark",
   DUO = "duo",
   GOOGLE_SAML = "googlesaml",
@@ -132,6 +134,13 @@ export const IdentityProviders: IIDPType[] = [
     imageSrc: duoLogo,
     active: true,
     id: Providers.DUO,
+    protocols: [Protocols.SAML],
+  },
+  {
+    name: "Cloudflare",
+    imageSrc: cloudflareLogo,
+    active: true,
+    id: Providers.CLOUDFLARE,
     protocols: [Protocols.SAML],
   },
 ];
