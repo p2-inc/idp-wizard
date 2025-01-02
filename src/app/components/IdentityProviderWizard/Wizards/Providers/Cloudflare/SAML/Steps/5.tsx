@@ -12,7 +12,7 @@ export function CloudflareStepFive() {
           Set a name for the access policy, then add any groups or rules defining who can access the application.
         </div>
       ),
-      component: <StepImage src={Images.CloudflareSaml7} alt="Step 5.1" />,
+      component: <StepImage src={Images.CloudflareSaml6} alt="Step 5.1" />,
     },
     {
       text: (
@@ -20,7 +20,7 @@ export function CloudflareStepFive() {
           Click <b>Done</b> to finish creating the access policy.
         </div>
       ),
-      component: <StepImage src={Images.CloudflareSaml8} alt="Step 5.2" />,
+      component: <StepImage src={Images.CloudflareSaml7} alt="Step 5.2" />,
     }
   ];
 

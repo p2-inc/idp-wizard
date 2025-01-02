@@ -17,7 +17,7 @@ export function CloudflareStepFour() {
           <b>Name Format</b> for each attribute to <b>Basic</b>. Copy the following
         </div>
       ),
-      component: <StepImage src={Images.CloudflareSaml6} alt="Step 4.1" />,
+      component: <StepImage src={Images.CloudflareSaml5} alt="Step 4.1" />,
     },
     {
       component: (
