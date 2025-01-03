@@ -21,6 +21,7 @@ import {
   GenericSAML,
   GoogleWizard,
   JumpCloudWizard,
+  LastPassWizard,
   OktaWizardLDAP,
   OktaWizardSaml,
   OneLoginWizard,
@@ -67,6 +68,8 @@ const Provider = () => {
       return <ADFSWizard />;
     case Providers.DUO:
       return <DuoWizard />;
+    case Providers.LAST_PASS:
+      return <LastPassWizard />;
 
     default:
       return <div>No provider found</div>;
