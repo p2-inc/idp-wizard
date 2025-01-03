@@ -8,9 +8,9 @@ export function SalesforceStepOne() {
       text: (
         <div>
           In the Salesforce Console, open the <b>Setup</b> menu and select{" "}
-          <b>Identity Provider</b> under <b>Settings</b>{" "}
-          and <b>Identity</b>. Verify that your Salesforce identity provider has been enabled,{" "}
-          or click <b>Enable Identity Provider</b> to enable it.
+          <b>Identity Provider</b> under <b>Identity</b>. Verify that your{" "}
+          Salesforce identity provider has been enabled, or click <b>Enable{" "}
+          Identity Provider</b> to enable it.
         </div>
       ),
       component: <StepImage src={SalesforceSamlStep0Image} alt="Step 2.1" />,

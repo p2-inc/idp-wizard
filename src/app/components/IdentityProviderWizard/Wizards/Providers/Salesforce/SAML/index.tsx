@@ -9,7 +9,7 @@ import { API_STATUS, METADATA_CONFIG, API_RETURN } from "@app/configurations/api
 import { Axios, clearAlias } from "@wizardServices";
 import * as Steps from "./Steps";
 import * as SharedSteps from "../shared/Steps";
-import salesforceLogo from "@app/images/salesforce/salesforce-logo.svg";
+import salesforceLogo from "@app/images/salesforce/salesforce-logo.png";
 import { WizardConfirmation, Header } from "@wizardComponents";
 import { useKeycloakAdminApi } from "@app/hooks/useKeycloakAdminApi";
 import IdentityProviderRepresentation from "@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation";

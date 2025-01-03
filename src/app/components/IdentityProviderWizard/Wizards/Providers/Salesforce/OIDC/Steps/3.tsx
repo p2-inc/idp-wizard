@@ -1,41 +1,74 @@
-import React from "react";
-import SalesforceCommonStep3Image from "@app/images/salesforce/COMMON/salesforce-3.png";
-import SalesforceCommonStep4Image from "@app/images/salesforce/COMMON/salesforce-4.png";
-import SalesforceCommonStep5Image from "@app/images/salesforce/COMMON/salesforce-5.png";
+import { Card, CardBody } from "@patternfly/react-core";
+import React, { FC } from "react";
+import SalesforceOidcStep2Image from "@app/images/salesforce/oidc/salesforce_oidc_2.png";
+import SalesforceOidcStep3Image from "@app/images/salesforce/oidc/salesforce_oidc_3.png";
+import SalesforceOidcStep4Image from "@app/images/salesforce/oidc/salesforce_oidc_4.png";
 import { InstructionProps, Step, StepImage } from "@wizardComponents";
+import { API_RETURN_PROMISE } from "@app/configurations/api-status";
+import { ClientCredentials } from "../forms";
 
-export function SalesforceStepThree() {
+interface Props {
+  onFormSubmission: ({
+    domain,
+    clientId,
+    clientSecret,
+  }: {
+    domain: string;
+    clientId: string;
+    clientSecret: string;
+  }) => API_RETURN_PROMISE;
+  values: {
+    domain: string;
+    clientId: string;
+    clientSecret: string;
+  };
+}
+
+export const SalesforceStepThree: FC<Props> = ({ onFormSubmission, values }) => {
   const instructions: InstructionProps[] = [
     {
       text: (
         <div>
-          On the next page, click the <b>Manage</b> button to view your app's OIDC configuration.
+          On the next page, press the <b>Manage Consumer Details</b> button under the <b>API (Enable OAuth Settings)</b> section to view your app's credentials.
         </div>
       ),
-      component: <StepImage src={SalesforceCommonStep3Image} alt="Step 3.1" />,
+      component: <StepImage src={SalesforceOidcStep2Image} alt="Step 3.2" />,
     },
     {
       text: (
         <div>
-          Under the <b>Profiles</b> section, click <b>Manage Profiles</b> to assign the connected app to the appropriate profiles.
+          Copy the <b>Consumer Key</b> and <b>Consumer Secret</b> and paste them into the fields below.
         </div>
       ),
-      component: <StepImage src={SalesforceCommonStep4Image} alt={`Step 3.1`} />,
+      component: <StepImage src={SalesforceOidcStep3Image} alt="Step 3.3" />,
     },
     {
       text: (
         <div>
-          Select the desired profiles then click <b>Save</b> at the bottom of the page.
+          In the sidebar menu, click <b>My Domain</b> under <b>Company Settings</b> to view your domain.{" "}
+          Copy the domain listed under <b>Current My Domain URL</b> and paste it into the domain field below.
         </div>
       ),
-      component: <StepImage src={SalesforceCommonStep5Image} alt={`Step 3.2`} />,
-    }
+      component: <StepImage src={SalesforceOidcStep4Image} alt="Step 3.4" />,
+    },
+    {
+      component: (
+        <Card className="card-shadow">
+          <CardBody>
+            <ClientCredentials
+              credentials={values}
+              handleFormSubmit={onFormSubmission}
+            />
+          </CardBody>
+        </Card>
+      ),
+    },
   ];
 
   return (
     <Step
-      title={`Step 3: Assign Profiles`}
+      title="Step 3: Provide Credentials and Domain"
       instructionList={instructions}
     />
   );
-}
+};

@@ -7,7 +7,7 @@ import {
 } from "@patternfly/react-core";
 import * as Steps from "./Steps";
 import * as SharedSteps from "../shared/Steps";
-import salesforceLogo from "@app/images/salesforce/salesforce-logo.svg";
+import salesforceLogo from "@app/images/salesforce/salesforce-logo.png";
 import { WizardConfirmation, Header } from "@wizardComponents";
 import { useKeycloakAdminApi } from "@app/hooks/useKeycloakAdminApi";
 import { API_STATUS } from "@app/configurations/api-status";
@@ -58,7 +58,7 @@ export const SalesforceWizardOIDC: FC = () => {
     setAlias(genAlias);
   }, []);
 
-  const finishStep = 6;
+  const finishStep = 5;
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
@@ -173,27 +173,19 @@ export const SalesforceWizardOIDC: FC = () => {
     },
     {
       id: 3,
-      name: "Assign Profiles",
-      component: <Steps.SalesforceStepThree />,
-      hideCancelButton: true,
-      enabledNext: true,
-      canJumpTo: stepIdReached >= 3,
-    },
-    {
-      id: 4,
       name: "Provide Credentials and Domain",
       component: (
-        <Steps.SalesforceStepFour
+        <Steps.SalesforceStepThree
           onFormSubmission={handleFormSubmission}
           values={config}
         />
       ),
       hideCancelButton: true,
-      canJumpTo: stepIdReached >= 4,
+      canJumpTo: stepIdReached >= 3,
       enableNext: isFormValid,
     },
     {
-      id: 5,
+      id: 4,
       name: "Confirmation",
       component: (
         <WizardConfirmation
@@ -212,7 +204,7 @@ export const SalesforceWizardOIDC: FC = () => {
       nextButtonText: "Finish",
       hideCancelButton: true,
       enableNext: stepIdReached === finishStep,
-      canJumpTo: stepIdReached >= 5,
+      canJumpTo: stepIdReached >= 4,
     },
   ];
 
