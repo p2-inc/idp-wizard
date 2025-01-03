@@ -9,3 +9,4 @@ export * from "./JumpCloud";
 export * from "./Okta";
 export * from "./OneLogin";
 export * from "./PingOne";
+export * from "./Salesforce";

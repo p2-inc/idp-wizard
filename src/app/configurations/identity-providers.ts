@@ -14,6 +14,7 @@ import samlLogo from "@app/images/provider-logos/saml_logo.svg";
 import vmwareLogo from "@app/images/provider-logos/vmware_logo.svg";
 import ldapLogo from "@app/images/provider-logos/ldap_logo.svg";
 import duoLogo from "@app/images/duo/duo.svg";
+import salesforceLogo from "@app/images/salesforce/salesforce-logo.svg";
 import { Protocols } from ".";
 
 export enum Providers {
@@ -31,6 +32,7 @@ export enum Providers {
   OPEN_ID = "openid",
   PING_FEDERATE = "pingfederate",
   PING_ONE = "pingone",
+  SALESFORCE = "salesforce",
   SAML = "saml",
   VMWARE = "vmware",
 }
@@ -133,6 +135,13 @@ export const IdentityProviders: IIDPType[] = [
     active: true,
     id: Providers.DUO,
     protocols: [Protocols.SAML],
+  },
+  {
+    name: "Salesforce",
+    imageSrc: salesforceLogo,
+    active: true,
+    id: Providers.SALESFORCE,
+    protocols: [Protocols.SAML, Protocols.OPEN_ID],
   },
 ];
 
