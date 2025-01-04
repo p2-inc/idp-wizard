@@ -14,6 +14,7 @@ import {
   Auth0WizardOIDC,
   Auth0WizardSAML,
   AWSSamlWizard,
+  CyberArkWizard,
   EntraIdWizard,
   DuoWizard,
   GenericLDAP,
@@ -67,6 +68,8 @@ const Provider = () => {
       return <ADFSWizard />;
     case Providers.DUO:
       return <DuoWizard />;
+    case Providers.CYBERARK:
+      return <CyberArkWizard />;
 
     default:
       return <div>No provider found</div>;
