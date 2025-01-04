@@ -40,7 +40,7 @@ export const SalesforceStepTwo: React.FC<Props> = ({ loginRedirectURL }) => {
           Uncheck the <b>Require Proof Key for Code Exchange (PKCE) Extension for Supported Authorization Flows</b> checkbox.
         </div>
       ),
-      component: <StepImage src={SalesforceOidcStep1Image} alt="Step 2.1" />,
+      component: <StepImage src={SalesforceOidcStep1Image} alt="Step 2.2" />,
     },
     {
       component: (

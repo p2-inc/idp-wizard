@@ -32,7 +32,7 @@ export const SalesforceStepThree: FC<Props> = ({ onFormSubmission, values }) => 
           On the next page, press the <b>Manage Consumer Details</b> button under the <b>API (Enable OAuth Settings)</b> section to view your app's credentials.
         </div>
       ),
-      component: <StepImage src={SalesforceOidcStep2Image} alt="Step 3.2" />,
+      component: <StepImage src={SalesforceOidcStep2Image} alt="Step 3.1" />,
     },
     {
       text: (
@@ -40,7 +40,7 @@ export const SalesforceStepThree: FC<Props> = ({ onFormSubmission, values }) => 
           Copy the <b>Consumer Key</b> and <b>Consumer Secret</b> and paste them into the fields below.
         </div>
       ),
-      component: <StepImage src={SalesforceOidcStep3Image} alt="Step 3.3" />,
+      component: <StepImage src={SalesforceOidcStep3Image} alt="Step 3.2" />,
     },
     {
       text: (
@@ -49,7 +49,7 @@ export const SalesforceStepThree: FC<Props> = ({ onFormSubmission, values }) => 
           Copy the domain listed under <b>Current My Domain URL</b> and paste it into the domain field below.
         </div>
       ),
-      component: <StepImage src={SalesforceOidcStep4Image} alt="Step 3.4" />,
+      component: <StepImage src={SalesforceOidcStep4Image} alt="Step 3.3" />,
     },
     {
       component: (

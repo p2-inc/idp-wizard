@@ -16,7 +16,7 @@ export const SalesforceStepThree: FC<Props> = ({ acsUrl, entityId }) => {
           paste the <b>Entity Id</b> and <b>ACS URL</b> into the appropriate fields.
         </div>
       ),
-      component: <StepImage src={SalesforceSamlStep1Image} alt="Step 2.1" />,
+      component: <StepImage src={SalesforceSamlStep1Image} alt="Step 3.1" />,
     },
     {
       component: (

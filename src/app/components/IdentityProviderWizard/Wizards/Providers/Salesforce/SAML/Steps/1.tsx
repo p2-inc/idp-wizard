@@ -13,7 +13,7 @@ export function SalesforceStepOne() {
           Identity Provider</b> to enable it.
         </div>
       ),
-      component: <StepImage src={SalesforceSamlStep0Image} alt="Step 2.1" />,
+      component: <StepImage src={SalesforceSamlStep0Image} alt="Step 1.1" />,
     },
   ];
 

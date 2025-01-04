@@ -23,7 +23,7 @@ export const SalesforceStepFour: FC<Props> = ({ url, handleFormSubmit }) => {
           On the next page, click the <b>Manage</b> button to view your app's SAML settings.
         </div>
       ),
-      component: <StepImage src={SalesforceCommonStep3Image} alt="Step 3.1" />,
+      component: <StepImage src={SalesforceCommonStep3Image} alt="Step 4.1" />,
     },
     {
       text: (
@@ -32,7 +32,7 @@ export const SalesforceStepFour: FC<Props> = ({ url, handleFormSubmit }) => {
           and paste it into the field below.
         </div>
       ),
-      component: <StepImage src={SalesforceSamlStep2Image} alt="Step 3.1" />,
+      component: <StepImage src={SalesforceSamlStep2Image} alt="Step 4.2" />,
     },
     {
       component: (
