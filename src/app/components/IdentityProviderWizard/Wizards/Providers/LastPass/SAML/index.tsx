@@ -10,10 +10,7 @@ import lastPassLogo from "@app/images/lastpass/lastpass-logo.svg";
 import { WizardConfirmation, Header } from "@wizardComponents";
 import IdentityProviderRepresentation from "@keycloak/keycloak-admin-client/lib/defs/identityProviderRepresentation";
 import { useNavigateToBasePath } from "@app/routes";
-import {
-  API_STATUS,
-  METADATA_CONFIG,
-} from "@app/configurations/api-status";
+import { API_STATUS, METADATA_CONFIG } from "@app/configurations/api-status";
 import { Protocols, Providers, SamlIDPDefaults } from "@app/configurations";
 import {
   getAlias,
@@ -168,24 +165,26 @@ export const LastPassWizard: FC = () => {
     {
       id: 3,
       name: "Enter Service Provider Details",
-      component: <Steps.LastPassStepThree acsUrl={acsUrl} entityId={entityId} />,
+      component: (
+        <Steps.LastPassStepThree acsUrl={acsUrl} entityId={entityId} />
+      ),
       hideCancelButton: true,
       canJumpTo: stepIdReached >= 3,
     },
     {
       id: 4,
       name: "Upload SAML Metadata",
-      component: <Steps.LastPassStepFour uploadMetadataFile={uploadMetadataFile} />,
+      component: (
+        <Steps.LastPassStepFour uploadMetadataFile={uploadMetadataFile} />
+      ),
       hideCancelButton: true,
       canJumpTo: stepIdReached >= 4,
       enableNext: isFormValid,
     },
     {
       id: 5,
-      name: "Conigure Attribute Mapping",
-      component: (
-        <Steps.LastPassStepFive />
-      ),
+      name: "Configure Attribute Mapping",
+      component: <Steps.LastPassStepFive />,
       hideCancelButton: true,
       canJumpTo: stepIdReached >= 5,
     },
