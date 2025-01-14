@@ -15,6 +15,8 @@ import vmwareLogo from "@app/images/provider-logos/vmware_logo.svg";
 import ldapLogo from "@app/images/provider-logos/ldap_logo.svg";
 import duoLogo from "@app/images/duo/duo.svg";
 import lastpassLogo from "@app/images/lastpass/lastpass-logo.svg";
+import cloudflareLogo from "@app/images/cloudflare/cloudflare.svg";
+import oracleLogo from "@app/images/oracle/oracle-logo.png";
 import { Protocols } from ".";
 
 export enum Providers {
@@ -22,6 +24,7 @@ export enum Providers {
   ADFS = "adfs",
   AUTH0 = "auth0",
   ENTRAID = "entraid",
+  CLOUDFLARE = "cloudflare",
   CYBERARK = "cyberark",
   DUO = "duo",
   GOOGLE_SAML = "googlesaml",
@@ -31,6 +34,7 @@ export enum Providers {
   OKTA = "okta",
   ONE_LOGIN = "onelogin",
   OPEN_ID = "openid",
+  ORACLE = "oracle",
   PING_FEDERATE = "pingfederate",
   PING_ONE = "pingone",
   SAML = "saml",
@@ -109,6 +113,13 @@ export const IdentityProviders: IIDPType[] = [
     protocols: [Protocols.SAML],
   },
   {
+    name: "Oracle",
+    imageSrc: oracleLogo,
+    active: true,
+    id: Providers.ORACLE,
+    protocols: [Protocols.SAML],
+  },
+  {
     name: "Ping Federate",
     imageSrc: pingFedLogo,
     active: false,
@@ -142,7 +153,14 @@ export const IdentityProviders: IIDPType[] = [
     active: true,
     id: Providers.LAST_PASS,
     protocols: [Protocols.SAML],
-  }
+  },
+  {
+    name: "Cloudflare",
+    imageSrc: cloudflareLogo,
+    active: true,
+    id: Providers.CLOUDFLARE,
+    protocols: [Protocols.SAML],
+  },
 ];
 
 export const GenericIdentityProviders: IIDPType[] = [

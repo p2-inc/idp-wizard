@@ -1,6 +1,7 @@
 export * from "./ADFS";
 export * from "./Auth0";
 export * from "./AWS";
+export * from "./Cloudflare";
 export * from "./MSFT_EntraID";
 export * from "./Duo";
 export * from "./Generic";
@@ -9,4 +10,5 @@ export * from "./JumpCloud";
 export * from "./LastPass";
 export * from "./Okta";
 export * from "./OneLogin";
+export * from "./Oracle";
 export * from "./PingOne";

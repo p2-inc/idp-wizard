@@ -14,6 +14,7 @@ import {
   Auth0WizardOIDC,
   Auth0WizardSAML,
   AWSSamlWizard,
+  CloudflareWizard,
   EntraIdWizard,
   DuoWizard,
   GenericLDAP,
@@ -25,6 +26,7 @@ import {
   OktaWizardLDAP,
   OktaWizardSaml,
   OneLoginWizard,
+  OracleWizard,
   PingOneWizard,
 } from "./Wizards";
 import { useRoleAccess } from "@app/hooks";
@@ -70,7 +72,10 @@ const Provider = () => {
       return <DuoWizard />;
     case Providers.LAST_PASS:
       return <LastPassWizard />;
-
+    case Providers.CLOUDFLARE:
+      return <CloudflareWizard />;
+    case Providers.ORACLE:
+      return <OracleWizard />;
     default:
       return <div>No provider found</div>;
   }
