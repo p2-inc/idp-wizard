@@ -14,6 +14,7 @@ import {
   Auth0WizardOIDC,
   Auth0WizardSAML,
   AWSSamlWizard,
+  CloudflareWizard,
   EntraIdWizard,
   DuoWizard,
   GenericLDAP,
@@ -21,9 +22,11 @@ import {
   GenericSAML,
   GoogleWizard,
   JumpCloudWizard,
+  LastPassWizard,
   OktaWizardLDAP,
   OktaWizardSaml,
   OneLoginWizard,
+  OracleWizard,
   PingOneWizard,
   SalesforceWizardOIDC,
   SalesforceWizardSAML,
@@ -72,7 +75,12 @@ const Provider = () => {
     case Providers.SALESFORCE:
       if (protocol === Protocols.SAML) return <SalesforceWizardSAML />;
       if (protocol === Protocols.OPEN_ID) return <SalesforceWizardOIDC />;
-
+    case Providers.LAST_PASS:
+      return <LastPassWizard />;
+    case Providers.CLOUDFLARE:
+      return <CloudflareWizard />;
+    case Providers.ORACLE:
+      return <OracleWizard />;
     default:
       return <div>No provider found</div>;
   }
