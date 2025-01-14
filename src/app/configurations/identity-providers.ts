@@ -15,6 +15,7 @@ import vmwareLogo from "@app/images/provider-logos/vmware_logo.svg";
 import ldapLogo from "@app/images/provider-logos/ldap_logo.svg";
 import duoLogo from "@app/images/duo/duo.svg";
 import cloudflareLogo from "@app/images/cloudflare/cloudflare.svg";
+import oracleLogo from "@app/images/oracle/oracle-logo.png";
 import { Protocols } from ".";
 
 export enum Providers {
@@ -31,6 +32,7 @@ export enum Providers {
   OKTA = "okta",
   ONE_LOGIN = "onelogin",
   OPEN_ID = "openid",
+  ORACLE = "oracle",
   PING_FEDERATE = "pingfederate",
   PING_ONE = "pingone",
   SAML = "saml",
@@ -106,6 +108,13 @@ export const IdentityProviders: IIDPType[] = [
     imageSrc: oneloginLogo,
     active: true,
     id: Providers.ONE_LOGIN,
+    protocols: [Protocols.SAML],
+  },
+  {
+    name: "Oracle",
+    imageSrc: oracleLogo,
+    active: true,
+    id: Providers.ORACLE,
     protocols: [Protocols.SAML],
   },
   {
