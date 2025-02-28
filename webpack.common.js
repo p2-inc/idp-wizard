@@ -5,6 +5,7 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const Dotenv = require("dotenv-webpack");
 const BG_IMAGES_DIRNAME = "bgimages";
 const ASSET_PATH = process.env.ASSET_PATH || "/";
+
 module.exports = (env) => {
   return {
     module: {
@@ -158,7 +159,12 @@ module.exports = (env) => {
       }),
       new Dotenv({
         systemvars: true,
-        silent: true,
+        // silent: true,
+      }),
+      new webpack.DefinePlugin({
+        "process.env.REACT_APP_RELATIVE_PATH": JSON.stringify(
+          process.env.REACT_APP_RELATIVE_PATH || "/auth"
+        ),
       }),
       new CopyPlugin({
         patterns: [
