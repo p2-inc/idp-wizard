@@ -161,11 +161,6 @@ module.exports = (env) => {
         systemvars: true,
         // silent: true,
       }),
-      new webpack.DefinePlugin({
-        "process.env.REACT_APP_RELATIVE_PATH": JSON.stringify(
-          process.env.REACT_APP_RELATIVE_PATH || "/auth"
-        ),
-      }),
       new CopyPlugin({
         patterns: [
           {
