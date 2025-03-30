@@ -48,7 +48,7 @@ export function getBasePath() {
   return "/auth/realms/:realm/wizard"; // Default fallback
 }
 
-function getRealmFromPath() {
+export function getRealmFromPath() {
   const match = window.location.pathname.match(/\/realms\/([^/]+)\/wizard/);
   if (match) {
     return match[1];
