@@ -112,7 +112,9 @@ export const useApi = () => {
 
   let adminLinkSaml = `${baseServerUrl}/${authRealm}/console/#/${realm}/identity-providers/saml/${alias}/settings`;
   let adminLinkOidc = `${baseServerUrl}/${authRealm}/console/#/${realm}/identity-providers/oidc/${alias}/settings`;
+  let idpInstanceUrl = `${baseServerUrl}/admin/realms/${realm}/identity-provider/instances/${alias}`;
 
+  let idpsListUrl = `${baseServerRealmsUrl}/${endpoints?.getIdPs.endpoint}`;
   let identifierURL = `${baseServerRealmsUrl}/${endpoints?.importConfig.endpoint}`;
   let createIdPUrl = `${baseServerRealmsUrl}/${endpoints?.createIdP.endpoint!}`;
   let updateIdPUrl = `${baseServerRealmsUrl}/${endpoints?.updateIdP.endpoint!}`;
@@ -122,17 +124,19 @@ export const useApi = () => {
   let federationMetadataAddressUrl = `${loginRedirectURL}/descriptor`;
 
   return {
-    alias,
-    setAlias,
-    endpoints,
-    baseServerRealmsUrl,
-    adminLinkSaml,
     adminLinkOidc,
-    identifierURL,
+    adminLinkSaml,
+    alias,
+    baseServerRealmsUrl,
     createIdPUrl,
-    updateIdPUrl,
-    loginRedirectURL,
-    federationMetadataAddressUrl,
+    endpoints,
     entityId,
+    federationMetadataAddressUrl,
+    identifierURL,
+    idpInstanceUrl,
+    idpsListUrl,
+    loginRedirectURL,
+    setAlias,
+    updateIdPUrl,
   };
 };

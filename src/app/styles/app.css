@@ -181,3 +181,10 @@ body,
   padding: var(--pf-global--spacer--md);
   margin-bottom: var(--pf-global--spacer--sm);
 }
+
+.customExpansion {
+  border: 1px solid lightgray;
+  border-radius: 5px;
+  padding: var(--pf-global--spacer--sm);
+  margin-top: var(--pf-global--spacer--sm);
+}

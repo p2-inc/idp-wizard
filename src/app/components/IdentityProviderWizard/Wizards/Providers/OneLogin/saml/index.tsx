@@ -71,7 +71,7 @@ export const OneLoginWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -168,7 +168,7 @@ export const OneLoginWizard: FC = () => {
       });
     } catch (e) {
       setResults(
-        `Error creating ${idpCommonName}. Please confirm there is no ${idpCommonName} configured already.`
+        `Error creating ${idpCommonName}. Please confirm there is no ${idpCommonName} configured already.`,
       );
       setError(true);
     } finally {

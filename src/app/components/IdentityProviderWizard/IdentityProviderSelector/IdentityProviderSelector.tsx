@@ -4,7 +4,12 @@ import {
   IdentityProviders,
   Providers,
 } from "@app/configurations";
-import { useOrganization } from "@app/hooks";
+import {
+  useApi,
+  useKeycloakAdminApi,
+  useOrganization,
+  useRoleAccess,
+} from "@app/hooks";
 import { PATHS } from "@app/routes";
 import { useGetFeatureFlagsQuery } from "@app/services";
 import { usePageTitle } from "@app/hooks/useTitle";
@@ -13,25 +18,137 @@ import {
   PageSectionVariants,
   Stack,
   StackItem,
+  ExpandableSection,
+  Switch,
+  Button,
 } from "@patternfly/react-core";
-import React, { FC } from "react";
+import React, { FC, useState, useEffect } from "react";
 import { generatePath, Link, useParams } from "react-router-dom";
 import { IdPButton } from "./components/IdPButton";
+import { Axios } from "../Wizards/services";
+import { Table, Tbody, Th, Thead, Tr } from "@patternfly/react-table";
+import { TrashAltIcon, TrashIcon } from "@patternfly/react-icons";
 
 export const IdentityProviderSelector: FC = () => {
   usePageTitle("Select Your Identity Provider");
+  const [currentIdps, setCurrentIdps] = useState(null);
+  const { idpsListUrl, idpInstanceUrl } = useApi();
+  const { kcAdminClient, getRealm } = useKeycloakAdminApi();
 
   let { realm } = useParams();
-  const { getCurrentOrgName } = useOrganization();
+  const { getCurrentOrgName, currentOrg } = useOrganization();
   const currentOrgName = getCurrentOrgName();
-
   const { data: featureFlags } = useGetFeatureFlagsQuery();
+  const { hasOrganizationRole } = useRoleAccess();
+
+  // org? has right roles? show IDP list
+  const showAdditionalIdps =
+    hasOrganizationRole("view-organization", currentOrg) &&
+    hasOrganizationRole("view-identity-providers", currentOrg);
+  // Technically this case doesn't show since manage
+  const hasManageIdpsRole = hasOrganizationRole(
+    "manage-identity-providers",
+    currentOrg,
+  );
+
+  const fetchIdps = async () => {
+    try {
+      if (showAdditionalIdps) {
+        const resp = await Axios.get(idpsListUrl);
+        if (resp.status !== 200) {
+          throw new Error(
+            `Error fetching identity providers: ${resp.statusText}`,
+          );
+        }
+        setCurrentIdps(resp.data);
+      }
+    } catch (e) {
+      console.error("Error fetching identity providers:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchIdps();
+  }, [showAdditionalIdps, currentOrg]);
+
+  async function handleIdpEnable(
+    checked: boolean,
+    idp: any,
+    _event: React.FormEvent<HTMLInputElement>,
+  ) {
+    try {
+      await kcAdminClient.identityProviders.update(
+        {
+          alias: idp.alias,
+          realm,
+        },
+        {
+          ...idp,
+          enabled: checked,
+        },
+      );
+    } catch (e) {
+      console.error("Error updating identity provider:", e);
+    } finally {
+      fetchIdps();
+    }
+  }
 
   return (
     <PageSection variant={PageSectionVariants.light}>
       <Stack hasGutter>
         <StackItem>
           <MainNav />
+          {showAdditionalIdps && currentIdps?.length > 0 && (
+            <ExpandableSection
+              toggleText="Existing IdP Configurations"
+              className="customExpansion"
+            >
+              <Table variant="compact">
+                <Thead>
+                  <Tr>
+                    <Th>Name</Th>
+                    <Th>Auth Url</Th>
+                    {hasManageIdpsRole && <Th></Th>}
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {currentIdps.map((idp) => (
+                    <Tr key={idp.alias}>
+                      <Th>{idp.displayName || idp.alias}</Th>
+                      <Th>{idp.config?.authorizationUrl || "--"}</Th>
+                      {hasManageIdpsRole && (
+                        <Th>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "1rem",
+                              alignItems: "center",
+                              justifyContent: "flex-end",
+                            }}
+                          >
+                            <Switch
+                              label={idp.enabled ? "Enabled" : "Disabled"}
+                              isChecked={idp.enabled}
+                              onChange={(checked, evt) =>
+                                handleIdpEnable(checked, idp, evt)
+                              }
+                            />
+                            <Button
+                              variant="link"
+                              isDanger
+                              icon={<TrashAltIcon />}
+                            />
+                          </div>
+                        </Th>
+                      )}
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+              {}
+            </ExpandableSection>
+          )}
         </StackItem>
         <StackItem isFilled>
           <div className="container">
@@ -43,10 +160,11 @@ export const IdentityProviderSelector: FC = () => {
                   {currentOrgName === "Global" ? "realms" : currentOrgName}
                 </span>
               </h2>
+
               <div className="selection-container">
                 {IdentityProviders.filter((idp) => idp.active)
                   .sort((a, b) =>
-                    a.active === b.active ? 0 : a.active ? -1 : 1
+                    a.active === b.active ? 0 : a.active ? -1 : 1,
                   )
                   .map(
                     ({ name, imageSrc, active, id: provider, protocols }) => {
@@ -68,7 +186,7 @@ export const IdentityProviderSelector: FC = () => {
                           />
                         </Link>
                       );
-                    }
+                    },
                   )}
               </div>
               <h2
@@ -83,7 +201,7 @@ export const IdentityProviderSelector: FC = () => {
               </h2>
               <div className="selection-container">
                 {GenericIdentityProviders.filter((idp) =>
-                  idp.id === Providers.LDAP ? featureFlags?.enableLdap : true
+                  idp.id === Providers.LDAP ? featureFlags?.enableLdap : true,
                 ).map(({ name, imageSrc, active, id, protocols }) => {
                   const pth = generatePath(PATHS.idpProvider, {
                     realm,
