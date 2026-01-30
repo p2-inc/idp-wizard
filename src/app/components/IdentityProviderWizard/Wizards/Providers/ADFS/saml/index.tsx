@@ -28,7 +28,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const ADFSWizard: FC = () => {
-  const idpCommonName = "ADFS IdP";
+  const idpCommonName = "ADFS Identity Provider";
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const navigateToBasePath = useNavigateToBasePath();
   const title = "ADFS wizard";
@@ -46,7 +46,7 @@ export const ADFSWizard: FC = () => {
   const { generateIdpDisplayName } = useGenerateIdpDisplayName();
 
   const [issuerUrl, setIssuerUrl] = useState(
-    "https://HOSTNAME/federationmetadata/2007-06/federationmetadata.xml"
+    "https://HOSTNAME/federationmetadata/2007-06/federationmetadata.xml",
   );
   const [metadata, setMetadata] = useState<METADATA_CONFIG>();
   const [isFormValid, setIsFormValid] = useState(false);
@@ -73,7 +73,7 @@ export const ADFSWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -204,7 +204,7 @@ export const ADFSWizard: FC = () => {
       });
     } catch (e) {
       setResults(
-        `Error creating ${idpCommonName}. Please confirm there is no ${idpCommonName} configured already.`
+        `Error creating ${idpCommonName}. Please confirm there is no ${idpCommonName} configured already.`,
       );
       setError(true);
     } finally {

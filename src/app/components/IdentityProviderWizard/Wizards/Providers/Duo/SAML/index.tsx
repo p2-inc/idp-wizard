@@ -29,7 +29,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const DuoWizard: FC = () => {
-  const idpCommonName = "Duo SAML IdP";
+  const idpCommonName = "Duo SAML Identity Provider";
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const navigateToBasePath = useNavigateToBasePath();
   const [stepIdReached, setStepIdReached] = useState(1);
@@ -67,7 +67,7 @@ export const DuoWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -175,7 +175,7 @@ export const DuoWizard: FC = () => {
       });
     } catch (e) {
       setResults(
-        `Error creating ${idpCommonName}. Please confirm there is no Duo SAML configured already.`
+        `Error creating ${idpCommonName}. Please confirm there is no Duo SAML configured already.`,
       );
       setError(true);
     } finally {

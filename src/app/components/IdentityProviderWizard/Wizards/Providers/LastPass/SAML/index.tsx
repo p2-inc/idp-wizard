@@ -24,7 +24,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const LastPassWizard: FC = () => {
-  const idpCommonName = "LastPass SAML IdP";
+  const idpCommonName = "LastPass SAML Identity Provider";
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const navigateToBasePath = useNavigateToBasePath();
   const [stepIdReached, setStepIdReached] = useState(1);
@@ -60,7 +60,7 @@ export const LastPassWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -143,7 +143,7 @@ export const LastPassWizard: FC = () => {
       });
     } catch (e) {
       setResults(
-        `Error creating ${idpCommonName}. Please confirm there is no LastPass SAML configured already.`
+        `Error creating ${idpCommonName}. Please confirm there is no LastPass SAML configured already.`,
       );
       setError(true);
     } finally {

@@ -28,7 +28,7 @@ const forms = {
 export type ApplicationConfigType = "urlOrFile" | "manual";
 
 export const GenericOIDC: FC = () => {
-  const idpCommonName = "OIDC IdP";
+  const idpCommonName = "OIDC Identity Provider";
   const title = "OIDC wizard";
   const navigateToBasePath = useNavigateToBasePath();
 
@@ -87,7 +87,7 @@ export const GenericOIDC: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -239,7 +239,9 @@ export const GenericOIDC: FC = () => {
         protocol: Protocols.OPEN_ID,
       });
     } catch (e) {
-      setResults(`Error creating ${idpCommonName}. Check for an existing IDP.`);
+      setResults(
+        `Error creating ${idpCommonName}. Check for an existing identity provider.`,
+      );
       setError(true);
     } finally {
       setIsValidating(false);

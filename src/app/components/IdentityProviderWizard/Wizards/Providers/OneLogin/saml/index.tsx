@@ -29,7 +29,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const OneLoginWizard: FC = () => {
-  const idpCommonName = "OneLogin IdP";
+  const idpCommonName = "OneLogin Identity Provider";
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const navigateToBasePath = useNavigateToBasePath();
   const title = "OneLogin wizard";

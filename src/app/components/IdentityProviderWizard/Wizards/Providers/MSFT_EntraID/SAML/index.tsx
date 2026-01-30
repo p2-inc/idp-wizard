@@ -29,7 +29,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const EntraIdWizard: FC = () => {
-  const idpCommonName = "EntraId SAML IdP";
+  const idpCommonName = "EntraId SAML Identity Provider";
 
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const navigateToBasePath = useNavigateToBasePath();
@@ -67,7 +67,7 @@ export const EntraIdWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -180,7 +180,7 @@ export const EntraIdWizard: FC = () => {
     } catch (e) {
       console.error(e);
       setResults(
-        `Error creating ${idpCommonName}. Please confirm there is no EntraId SAML configured already.`
+        `Error creating ${idpCommonName}. Please confirm there is no EntraId SAML configured already.`,
       );
       setError(true);
     } finally {

@@ -20,7 +20,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const SalesforceWizardOIDC: FC = () => {
-  const idpCommonName = "Salesforce OIDC IdP";
+  const idpCommonName = "Salesforce OIDC Identity Provider";
 
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const navigateToBasePath = useNavigateToBasePath();
@@ -64,7 +64,7 @@ export const SalesforceWizardOIDC: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {

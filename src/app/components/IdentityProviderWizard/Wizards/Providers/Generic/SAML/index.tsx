@@ -24,7 +24,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const GenericSAML: FC = () => {
-  const idpCommonName = "Saml IdP";
+  const idpCommonName = "Saml Identity Provider";
   const title = "Generic SAML wizard";
   const navigateToBasePath = useNavigateToBasePath();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
@@ -67,7 +67,7 @@ export const GenericSAML: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -131,7 +131,7 @@ export const GenericSAML: FC = () => {
       });
     } catch (e) {
       setResults(
-        `Error creating ${idpCommonName}. Please confirm there is no SAML configured already.`
+        `Error creating ${idpCommonName}. Please confirm there is no SAML configured already.`,
       );
       setError(true);
     } finally {

@@ -24,7 +24,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const GoogleWizard: FC = () => {
-  const idpCommonName = "Google SAML IdP";
+  const idpCommonName = "Google SAML Identity Provider";
   const title = "Google wizard";
   const navigateToBasePath = useNavigateToBasePath();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
@@ -63,7 +63,7 @@ export const GoogleWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {

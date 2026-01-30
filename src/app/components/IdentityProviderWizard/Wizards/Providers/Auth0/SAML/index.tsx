@@ -23,7 +23,7 @@ import * as SharedSteps from "../shared/Steps";
 import * as Steps from "./Steps";
 
 export const Auth0WizardSAML: FC = () => {
-  const idpCommonName = "Auth0 SAML IdP";
+  const idpCommonName = "Auth0 SAML Identity Provider";
 
   const navigateToBasePath = useNavigateToBasePath();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
@@ -59,7 +59,7 @@ export const Auth0WizardSAML: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {

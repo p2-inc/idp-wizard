@@ -24,7 +24,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const PingOneWizard: FC = () => {
-  const idpCommonName = "PingOne IdP";
+  const idpCommonName = "PingOne Identity Provider";
 
   const navigateToBasePath = useNavigateToBasePath();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
@@ -63,7 +63,7 @@ export const PingOneWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -161,7 +161,7 @@ export const PingOneWizard: FC = () => {
       });
     } catch (e) {
       setResults(
-        `Error creating ${idpCommonName}. Please confirm there is no ${idpCommonName} configured already.`
+        `Error creating ${idpCommonName}. Please confirm there is no ${idpCommonName} configured already.`,
       );
       setError(true);
     } finally {

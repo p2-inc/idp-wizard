@@ -86,7 +86,7 @@ export const TemplateWizardProtocol: FC = () => {
         <WizardConfirmation
           title="SSO Configuration Complete"
           message="Your users can now sign-in with {{Provider}}."
-          buttonText="Create {{Provider}} IdP in Keycloak"
+          buttonText="Create {{Provider}} Identity Provider"
           disableButton={disableButton}
           resultsText={results}
           error={error}

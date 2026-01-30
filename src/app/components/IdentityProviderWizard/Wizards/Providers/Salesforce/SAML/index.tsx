@@ -29,7 +29,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const SalesforceWizardSAML: FC = () => {
-  const idpCommonName = "Salesforce SAML IdP";
+  const idpCommonName = "Salesforce SAML Identity Provider";
 
   const navigateToBasePath = useNavigateToBasePath();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
@@ -68,7 +68,7 @@ export const SalesforceWizardSAML: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {

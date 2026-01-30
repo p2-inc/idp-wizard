@@ -29,7 +29,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const CloudflareWizard: FC = () => {
-  const idpCommonName = "Cloudflare SAML IdP";
+  const idpCommonName = "Cloudflare SAML Identity Provider";
   const { generateIdpDisplayName } = useGenerateIdpDisplayName();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const navigateToBasePath = useNavigateToBasePath();
@@ -67,7 +67,7 @@ export const CloudflareWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -159,7 +159,7 @@ export const CloudflareWizard: FC = () => {
       });
     } catch (e) {
       setResults(
-        `Error creating ${idpCommonName}. Please confirm there is no Cloudflare SAML configured already.`
+        `Error creating ${idpCommonName}. Please confirm there is no Cloudflare SAML configured already.`,
       );
       setError(true);
     } finally {

@@ -29,7 +29,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const CyberArkWizard: FC = () => {
-  const idpCommonName = "CyberArk SAML IdP";
+  const idpCommonName = "CyberArk SAML Identity Provider";
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const navigateToBasePath = useNavigateToBasePath();
   const [stepIdReached, setStepIdReached] = useState(1);
@@ -66,7 +66,7 @@ export const CyberArkWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -158,7 +158,7 @@ export const CyberArkWizard: FC = () => {
       });
     } catch (e) {
       setResults(
-        `Error creating ${idpCommonName}. Please confirm there is no CyberArk SAML configured already.`
+        `Error creating ${idpCommonName}. Please confirm there is no CyberArk SAML configured already.`,
       );
       setError(true);
     } finally {

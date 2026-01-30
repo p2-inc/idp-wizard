@@ -29,7 +29,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const AWSSamlWizard: FC = () => {
-  const idpCommonName = "AWS SSO IdP";
+  const idpCommonName = "AWS SSO Identity Provider";
 
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const navigateToBasePath = useNavigateToBasePath();
@@ -71,7 +71,7 @@ export const AWSSamlWizard: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
@@ -171,7 +171,7 @@ export const AWSSamlWizard: FC = () => {
     } catch (e) {
       console.error(e);
       setResults(
-        "Error creating AWS SAML IdP. Please check values or confirm there is no SAML configured already."
+        "Error creating AWS SAML IdP. Please check values or confirm there is no SAML configured already.",
       );
       setError(true);
     } finally {

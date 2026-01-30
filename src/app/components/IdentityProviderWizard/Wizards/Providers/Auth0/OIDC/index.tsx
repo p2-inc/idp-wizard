@@ -20,7 +20,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const Auth0WizardOIDC: FC = () => {
-  const idpCommonName = "Auth0 OIDC IdP";
+  const idpCommonName = "Auth0 OIDC Identity Provider";
   const { generateIdpDisplayName } = useGenerateIdpDisplayName();
 
   const { data: featureFlags } = useGetFeatureFlagsQuery();
@@ -64,7 +64,7 @@ export const Auth0WizardOIDC: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {

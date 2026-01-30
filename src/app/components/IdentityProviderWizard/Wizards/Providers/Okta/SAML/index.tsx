@@ -19,7 +19,7 @@ import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
 
 export const OktaWizardSaml: FC = () => {
-  const idpCommonName = "Okta SAML IdP";
+  const idpCommonName = "Okta SAML Identity Provider";
   const title = "Okta wizard";
   const navigateToBasePath = useNavigateToBasePath();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
@@ -56,7 +56,7 @@ export const OktaWizardSaml: FC = () => {
 
   usePrompt(
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
-    stepIdReached < finishStep
+    stepIdReached < finishStep,
   );
 
   const onNext = (newStep) => {
