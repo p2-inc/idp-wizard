@@ -50,10 +50,6 @@ export const GoogleWizard: FC = () => {
   const [error, setError] = useState<null | boolean>(null);
   const [disableButton, setDisableButton] = useState(false);
 
-  const { isValidationPendingForAlias } = useCreateTestIdpLink();
-
-  const [idpTestLink, setIdpTestLink] = useState<string>("");
-
   useEffect(() => {
     const genAlias = getAlias({
       provider: Providers.GOOGLE_SAML,
@@ -69,6 +65,15 @@ export const GoogleWizard: FC = () => {
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
     stepIdReached < finishStep,
   );
+
+  const { isValidationPendingForAlias } = useCreateTestIdpLink();
+  const [idpTestLink, setIdpTestLink] = useState<string>("");
+  const checkPendingValidationStatus = async () => {
+    const pendingLink = await isValidationPendingForAlias(alias);
+    if (pendingLink) {
+      setIdpTestLink(pendingLink);
+    }
+  };
 
   const onNext = (newStep) => {
     if (stepIdReached === finishStep) {
@@ -117,13 +122,6 @@ export const GoogleWizard: FC = () => {
       status: API_STATUS.ERROR,
       message: `Configuration validation failed with ${idpCommonName}. Check file and try again.`,
     };
-  };
-
-  const checkPendingValidationStatus = async () => {
-    const pendingLink = await isValidationPendingForAlias(alias);
-    if (pendingLink) {
-      setIdpTestLink(pendingLink);
-    }
   };
 
   const createIdP = async () => {
