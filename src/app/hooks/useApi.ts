@@ -123,6 +123,7 @@ export const useApi = () => {
   let adminLinkOidc = `${baseServerUrl}/${authRealm}/console/#/${realm}/identity-providers/oidc/${alias}/settings`;
 
   let idpsListUrl = `${baseServerRealmsUrl}/${endpoints?.getIdPs.endpoint}`;
+  let idpDetailUrl = `${baseServerRealmsUrl}/${endpoints?.getIdP.endpoint}`;
   let identifierURL = `${baseServerRealmsUrl}/${endpoints?.importConfig.endpoint}`;
   let createIdPUrl = `${baseServerRealmsUrl}/${endpoints?.createIdP.endpoint!}`;
   let updateIdPUrl = `${baseServerRealmsUrl}/${endpoints?.updateIdP.endpoint!}`;
@@ -142,10 +143,11 @@ export const useApi = () => {
     entityId,
     federationMetadataAddressUrl,
     identifierURL,
+    idpDetailUrl,
     idpsListUrl,
     loginRedirectURL,
+    orgsConfigUrl,
     setAlias,
     updateIdPUrl,
-    orgsConfigUrl,
   };
 };
