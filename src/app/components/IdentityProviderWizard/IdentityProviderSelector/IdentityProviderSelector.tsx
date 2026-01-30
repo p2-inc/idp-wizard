@@ -26,14 +26,15 @@ import React, { FC, useState, useEffect } from "react";
 import { generatePath, Link, useParams } from "react-router-dom";
 import { IdPButton } from "./components/IdPButton";
 import { Axios } from "../Wizards/services";
-import { Table, Tbody, Th, Thead, Tr } from "@patternfly/react-table";
-import { TrashAltIcon, TrashIcon } from "@patternfly/react-icons";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
+import { TrashAltIcon, WarningTriangleIcon } from "@patternfly/react-icons";
 
 export const IdentityProviderSelector: FC = () => {
   usePageTitle("Select Your Identity Provider");
   const [currentIdps, setCurrentIdps] = useState(null);
-  const { idpsListUrl, idpInstanceUrl } = useApi();
-  const { kcAdminClient, getRealm } = useKeycloakAdminApi();
+  const [orgsConfig, setOrgsConfig] = useState(null);
+  const { idpsListUrl, orgsConfigUrl } = useApi();
+  const { kcAdminClient } = useKeycloakAdminApi();
 
   let { realm } = useParams();
   const { getCurrentOrgName, currentOrg } = useOrganization();
@@ -67,8 +68,25 @@ export const IdentityProviderSelector: FC = () => {
     }
   };
 
+  const fetchOrgsConfig = async () => {
+    try {
+      if (showAdditionalIdps) {
+        const resp = await Axios.get(orgsConfigUrl);
+        if (resp.status !== 200) {
+          throw new Error(
+            `Error fetching organizations config: ${resp.statusText}`,
+          );
+        }
+        setOrgsConfig(resp.data);
+      }
+    } catch (e) {
+      console.error("Error fetching organizations config:", e);
+    }
+  };
+
   useEffect(() => {
     fetchIdps();
+    fetchOrgsConfig();
   }, [showAdditionalIdps, currentOrg]);
 
   async function handleIdpEnable(
@@ -91,6 +109,7 @@ export const IdentityProviderSelector: FC = () => {
       console.error("Error updating identity provider:", e);
     } finally {
       fetchIdps();
+      fetchOrgsConfig();
     }
   }
 
@@ -101,24 +120,35 @@ export const IdentityProviderSelector: FC = () => {
           <MainNav />
           {showAdditionalIdps && currentIdps?.length > 0 && (
             <ExpandableSection
-              toggleText="Existing IdP Configurations"
+              toggleText="Existing Identity Provider Configurations"
               className="customExpansion"
             >
-              <Table variant="compact">
+              {orgsConfig?.multipleIdpsEnabled === false && (
+                <div className="infoBox">
+                  <WarningTriangleIcon className="infoBoxWarning" />
+                  <p className="infoText">
+                    Multiple identity provider support is currently disabled.
+                    Any change to an <b>enabled</b> state for an existing
+                    identity provider will automatically disable all other
+                    identity providers.
+                  </p>
+                </div>
+              )}
+              <Table variant="compact" className="existingIdpsTable">
                 <Thead>
                   <Tr>
-                    <Th>Name</Th>
-                    <Th>Auth Url</Th>
+                    <Th>Alias</Th>
+                    <Th>Auth URL</Th>
                     {hasManageIdpsRole && <Th></Th>}
                   </Tr>
                 </Thead>
                 <Tbody>
                   {currentIdps.map((idp) => (
                     <Tr key={idp.alias}>
-                      <Th>{idp.displayName || idp.alias}</Th>
-                      <Th>{idp.config?.authorizationUrl || "--"}</Th>
+                      <Td>{idp.displayName || idp.alias}</Td>
+                      <Td>{idp.config?.authorizationUrl || "--"}</Td>
                       {hasManageIdpsRole && (
-                        <Th>
+                        <Td>
                           <div
                             style={{
                               display: "flex",
@@ -140,7 +170,7 @@ export const IdentityProviderSelector: FC = () => {
                               icon={<TrashAltIcon />}
                             />
                           </div>
-                        </Th>
+                        </Td>
                       )}
                     </Tr>
                   ))}

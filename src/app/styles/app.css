@@ -188,3 +188,22 @@ body,
   padding: var(--pf-global--spacer--sm);
   margin-top: var(--pf-global--spacer--sm);
 }
+
+.infoBox {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--pf-global--spacer--sm);
+  padding-left: var(--pf-global--spacer--md);
+}
+.infoText {
+  color: var(--pf-global--palette--black-700);
+  font-size: var(--pf-global--FontSize--sm);
+}
+.infoBoxWarning {
+  color: var(--pf-global--palette--gold-400);
+}
+
+.existingIdpsTable.pf-c-table tbody > tr > * {
+  vertical-align: middle;
+}
