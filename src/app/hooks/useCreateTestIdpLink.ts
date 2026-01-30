@@ -21,21 +21,22 @@ export function useCreateTestIdpLink() {
     }
   };
 
-  const isValidationPendingForAlias = async (
-    alias: string,
-    protocol: Protocols,
-  ) => {
+  const generateValidationUrl = (alias: string) => {
+    return `${baseServerRealmsUrl}/${realm}/protocol/openid-connect/auth?client_id=idp-tester&redirect_uri=${window.location.href}&response_type=code&scope=openid&kc_idp_hint=${alias}`;
+  };
+
+  const isValidationPendingForAlias = async (alias: string) => {
     const idpDetails = await fetchIdpDetails(alias);
 
-    if (idpDetails && idpDetails.config.validationPending === "true") {
-      const tryIdpLink = `${baseServerRealmsUrl}/${realm}/protocol/${protocol.toLowerCase()}/auth?client_id=idp-tester&redirect_uri=${
-        window.location.href
-      }&response_type=code&scope=openid&kc_idp_hint=${alias}`;
-      return tryIdpLink;
+    if (
+      idpDetails &&
+      idpDetails.config["home.idp.discovery.validationPending"] === "true"
+    ) {
+      return generateValidationUrl(alias);
     }
 
     return null;
   };
 
-  return { isValidationPendingForAlias };
+  return { isValidationPendingForAlias, generateValidationUrl };
 }

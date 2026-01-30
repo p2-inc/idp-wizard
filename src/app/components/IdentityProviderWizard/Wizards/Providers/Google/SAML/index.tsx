@@ -22,6 +22,7 @@ import { Protocols, Providers, SamlIDPDefaults } from "@app/configurations";
 import { useApi, usePrompt } from "@app/hooks";
 import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
+import { useCreateTestIdpLink } from "@app/hooks/useCreateTestIdpLink";
 
 export const GoogleWizard: FC = () => {
   const idpCommonName = "Google SAML Identity Provider";
@@ -39,7 +40,6 @@ export const GoogleWizard: FC = () => {
     adminLinkSaml: adminLink,
     identifierURL,
     createIdPUrl,
-    baseServerRealmsUrl,
   } = useApi();
 
   const [metadata, setMetadata] = useState<METADATA_CONFIG | null>(null);
@@ -49,6 +49,10 @@ export const GoogleWizard: FC = () => {
   const [results, setResults] = useState("");
   const [error, setError] = useState<null | boolean>(null);
   const [disableButton, setDisableButton] = useState(false);
+
+  const { isValidationPendingForAlias } = useCreateTestIdpLink();
+
+  const [idpTestLink, setIdpTestLink] = useState<string>("");
 
   useEffect(() => {
     const genAlias = getAlias({
@@ -115,6 +119,13 @@ export const GoogleWizard: FC = () => {
     };
   };
 
+  const checkPendingValidationStatus = async () => {
+    const pendingLink = await isValidationPendingForAlias(alias);
+    if (pendingLink) {
+      setIdpTestLink(pendingLink);
+    }
+  };
+
   const createIdP = async () => {
     setIsValidating(true);
     setResults("Creating SAML IdP...");
@@ -144,6 +155,8 @@ export const GoogleWizard: FC = () => {
       setStepIdReached(finishStep);
       setError(false);
       setDisableButton(true);
+
+      checkPendingValidationStatus();
 
       clearAlias({
         provider: Providers.GOOGLE_SAML,
@@ -215,6 +228,7 @@ export const GoogleWizard: FC = () => {
           validationFunction={createIdP}
           adminLink={adminLink}
           adminButtonText={`Manage ${idpCommonName} in Keycloak`}
+          idpTestLink={idpTestLink}
         />
       ),
       nextButtonText: "Finish",

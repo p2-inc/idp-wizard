@@ -82,10 +82,10 @@ export const WizardConfirmation: FC<SuccessProps> = ({
               style={{ textAlign: "left" }}
             >
               <Text style={{ marginBottom: ".8rem" }}>
-                Test signing in with {title} to verify that the single sign-on
-                connection was configured correctly. Copy the link below and
-                open in another browser or an incognito window to avoid being
-                logged out of the wizard.
+                Test signing in with SSO configuration to verify that the single
+                sign-on connection was configured correctly. Copy the link below
+                and open in another browser or an incognito window to avoid
+                being logged out of the wizard.
               </Text>
               <ClipboardCopy
                 hoverTip="Copy and open in another browser or incognito window, or you will be logged out of the wizard."

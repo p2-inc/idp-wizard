@@ -187,6 +187,7 @@ body,
   border-radius: 5px;
   padding: var(--pf-global--spacer--sm);
   margin-top: var(--pf-global--spacer--sm);
+  margin-bottom: var(--pf-global--spacer--xl);
 }
 
 .infoBox {
@@ -202,6 +203,9 @@ body,
 }
 .infoBoxWarning {
   color: var(--pf-global--palette--gold-400);
+}
+.icon-success {
+  color: var(--pf-global--palette--green-400);
 }
 
 .existingIdpsTable.pf-c-table tbody > tr > * {

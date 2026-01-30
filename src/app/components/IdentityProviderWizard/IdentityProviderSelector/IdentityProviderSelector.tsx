@@ -21,13 +21,20 @@ import {
   ExpandableSection,
   Switch,
   Button,
+  Tooltip,
+  ClipboardCopy,
 } from "@patternfly/react-core";
 import React, { FC, useState, useEffect } from "react";
 import { generatePath, Link, useParams } from "react-router-dom";
 import { IdPButton } from "./components/IdPButton";
 import { Axios } from "../Wizards/services";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
-import { TrashAltIcon, WarningTriangleIcon } from "@patternfly/react-icons";
+import {
+  CheckCircleIcon,
+  TrashAltIcon,
+  WarningTriangleIcon,
+} from "@patternfly/react-icons";
+import { useCreateTestIdpLink } from "@app/hooks/useCreateTestIdpLink";
 
 export const IdentityProviderSelector: FC = () => {
   usePageTitle("Select Your Identity Provider");
@@ -41,6 +48,8 @@ export const IdentityProviderSelector: FC = () => {
   const currentOrgName = getCurrentOrgName();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const { hasOrganizationRole } = useRoleAccess();
+
+  const { generateValidationUrl } = useCreateTestIdpLink();
 
   // org? has right roles? show IDP list
   const showAdditionalIdps =
@@ -113,6 +122,20 @@ export const IdentityProviderSelector: FC = () => {
     }
   }
 
+  async function handleIdpDelete(idp: any) {
+    try {
+      await kcAdminClient.identityProviders.del({
+        alias: idp.alias,
+        realm,
+      });
+    } catch (e) {
+      console.error("Error deleting identity provider:", e);
+    } finally {
+      fetchIdps();
+      fetchOrgsConfig();
+    }
+  }
+
   return (
     <PageSection variant={PageSectionVariants.light}>
       <Stack hasGutter>
@@ -137,16 +160,76 @@ export const IdentityProviderSelector: FC = () => {
               <Table variant="compact" className="existingIdpsTable">
                 <Thead>
                   <Tr>
-                    <Th>Alias</Th>
-                    <Th>Auth URL</Th>
+                    <Th></Th>
                     {hasManageIdpsRole && <Th></Th>}
                   </Tr>
                 </Thead>
                 <Tbody>
                   {currentIdps.map((idp) => (
                     <Tr key={idp.alias}>
-                      <Td>{idp.displayName || idp.alias}</Td>
-                      <Td>{idp.config?.authorizationUrl || "--"}</Td>
+                      <Td>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: ".5rem",
+                            flexDirection: "column",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: ".5rem",
+                            }}
+                          >
+                            <span>
+                              {idp.config[
+                                "home.idp.discovery.validationPending"
+                              ] === "true" && (
+                                <Tooltip content="Validation Pending. Use the link below to complete validation.">
+                                  <WarningTriangleIcon
+                                    className="infoBoxWarning"
+                                    title="Validation Pending"
+                                  />
+                                </Tooltip>
+                              )}
+                              {idp.config[
+                                "home.idp.discovery.validationPending"
+                              ] === "false" && (
+                                <Tooltip content="Validation complete.">
+                                  <CheckCircleIcon
+                                    title="Validated"
+                                    className="icon-success"
+                                  />
+                                </Tooltip>
+                              )}
+                            </span>
+                            <span style={{ fontWeight: "bold" }}>
+                              {idp.displayName || idp.alias}
+                            </span>
+                          </div>
+                          {idp.config[
+                            "home.idp.discovery.validationPending"
+                          ] === "true" && (
+                            <>
+                              <p>
+                                This SSO configuration has not been validated
+                                yet. Use the link below to open and validate the
+                                identity provider. Open the link in a new
+                                browser or incognito window to avoid being
+                                signed out of the wizard.
+                              </p>
+                              <ClipboardCopy
+                                hoverTip="Copy and open in another browser or incognito window, or you will be logged out of the wizard."
+                                clickTip="Copied. Open in another browser or incognito window, or you will be logged out of the wizard."
+                                className="clipboard-copy"
+                              >
+                                {generateValidationUrl(idp.alias)}
+                              </ClipboardCopy>
+                            </>
+                          )}
+                        </div>
+                      </Td>
                       {hasManageIdpsRole && (
                         <Td>
                           <div
@@ -163,11 +246,18 @@ export const IdentityProviderSelector: FC = () => {
                               onChange={(checked, evt) =>
                                 handleIdpEnable(checked, idp, evt)
                               }
+                              isDisabled={
+                                idp.config[
+                                  "home.idp.discovery.validationPending"
+                                ] === "true"
+                              }
                             />
                             <Button
                               variant="link"
                               isDanger
                               icon={<TrashAltIcon />}
+                              onClick={() => handleIdpDelete(idp)}
+                              title="Delete identity provider"
                             />
                           </div>
                         </Td>
