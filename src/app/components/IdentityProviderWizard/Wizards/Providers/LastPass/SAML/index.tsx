@@ -22,6 +22,7 @@ import {
 import { useApi, usePrompt } from "@app/hooks";
 import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
+import { useCreateTestIdpLink } from "@app/hooks/useCreateTestIdpLink";
 
 export const LastPassWizard: FC = () => {
   const idpCommonName = "LastPass SAML Identity Provider";
@@ -62,6 +63,15 @@ export const LastPassWizard: FC = () => {
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
     stepIdReached < finishStep,
   );
+
+  const { isValidationPendingForAlias } = useCreateTestIdpLink();
+  const [idpTestLink, setIdpTestLink] = useState<string>("");
+  const checkPendingValidationStatus = async () => {
+    const pendingLink = await isValidationPendingForAlias(alias);
+    if (pendingLink) {
+      setIdpTestLink(pendingLink);
+    }
+  };
 
   const onNext = (newStep) => {
     if (stepIdReached === finishStep) {
@@ -137,6 +147,7 @@ export const LastPassWizard: FC = () => {
       setStepIdReached(finishStep);
       setError(false);
       setDisableButton(true);
+      await checkPendingValidationStatus();
       clearAlias({
         provider: Providers.LAST_PASS,
         protocol: Protocols.SAML,
@@ -198,14 +209,15 @@ export const LastPassWizard: FC = () => {
         <WizardConfirmation
           title="SSO Configuration Complete"
           message="Your users can now sign-in with LastPass."
-          buttonText={`Create ${idpCommonName} in Keycloak`}
+          buttonText={`Create ${idpCommonName}`}
           resultsText={results}
           error={error}
           isValidating={isValidating}
           validationFunction={createLastPassSamlIdP}
           disableButton={disableButton}
           adminLink={adminLink}
-          adminButtonText={`Manage ${idpCommonName} in Keycloak`}
+          adminButtonText={`Manage ${idpCommonName}`}
+          idpTestLink={idpTestLink}
         />
       ),
       nextButtonText: "Finish",

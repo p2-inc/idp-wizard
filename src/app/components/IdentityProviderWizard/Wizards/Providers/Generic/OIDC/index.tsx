@@ -18,6 +18,7 @@ import { OidcDefaults, Protocols, Providers } from "@app/configurations";
 import { useApi, usePrompt } from "@app/hooks";
 import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
+import { useCreateTestIdpLink } from "@app/hooks/useCreateTestIdpLink";
 
 const forms = {
   URL: true,
@@ -89,6 +90,15 @@ export const GenericOIDC: FC = () => {
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
     stepIdReached < finishStep,
   );
+
+  const { isValidationPendingForAlias } = useCreateTestIdpLink();
+  const [idpTestLink, setIdpTestLink] = useState<string>("");
+  const checkPendingValidationStatus = async () => {
+    const pendingLink = await isValidationPendingForAlias(alias);
+    if (pendingLink) {
+      setIdpTestLink(pendingLink);
+    }
+  };
 
   const onNext = (newStep) => {
     if (stepIdReached === finishStep) {
@@ -234,6 +244,7 @@ export const GenericOIDC: FC = () => {
       setStepIdReached(finishStep);
       setError(false);
       setDisableButton(true);
+      await checkPendingValidationStatus();
       clearAlias({
         provider: Providers.OPEN_ID,
         protocol: Protocols.OPEN_ID,
@@ -296,14 +307,15 @@ export const GenericOIDC: FC = () => {
         <WizardConfirmation
           title="SSO Configuration Complete"
           message="Your users can now sign-in with OIDC."
-          buttonText={`Create ${idpCommonName} in Keycloak`}
+          buttonText={`Create ${idpCommonName}`}
           disableButton={disableButton}
           resultsText={results}
           error={error}
           isValidating={isValidating}
           validationFunction={createIdP}
           adminLink={adminLink}
-          adminButtonText={`Manage ${idpCommonName} in Keycloak`}
+          adminButtonText={`Manage ${idpCommonName}`}
+          idpTestLink={idpTestLink}
         />
       ),
       nextButtonText: "Finish",

@@ -27,6 +27,7 @@ import {
 import { useApi, usePrompt } from "@app/hooks";
 import { useGetFeatureFlagsQuery } from "@app/services";
 import { useGenerateIdpDisplayName } from "@app/hooks/useGenerateIdpDisplayName";
+import { useCreateTestIdpLink } from "@app/hooks/useCreateTestIdpLink";
 
 export const EntraIdWizard: FC = () => {
   const idpCommonName = "EntraId SAML Identity Provider";
@@ -69,6 +70,15 @@ export const EntraIdWizard: FC = () => {
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
     stepIdReached < finishStep,
   );
+
+  const { isValidationPendingForAlias } = useCreateTestIdpLink();
+  const [idpTestLink, setIdpTestLink] = useState<string>("");
+  const checkPendingValidationStatus = async () => {
+    const pendingLink = await isValidationPendingForAlias(alias);
+    if (pendingLink) {
+      setIdpTestLink(pendingLink);
+    }
+  };
 
   const onNext = (newStep) => {
     if (stepIdReached === finishStep) {
@@ -137,7 +147,6 @@ export const EntraIdWizard: FC = () => {
       providerId: "saml",
       config: metadata!,
     };
-    console.log("foo");
 
     try {
       await CreateIdp({ createIdPUrl, payload, featureFlags });
@@ -172,6 +181,7 @@ export const EntraIdWizard: FC = () => {
       setStepIdReached(finishStep);
       setError(false);
       setDisableButton(true);
+      await checkPendingValidationStatus();
 
       clearAlias({
         provider: Providers.ENTRAID,
@@ -235,14 +245,15 @@ export const EntraIdWizard: FC = () => {
         <WizardConfirmation
           title="SSO Configuration Complete"
           message="Your users can now sign-in with EntraId AD."
-          buttonText={`Create ${idpCommonName} in Keycloak`}
+          buttonText={`Create ${idpCommonName}`}
           resultsText={results}
           error={error}
           isValidating={isValidating}
           validationFunction={createIdP}
           disableButton={disableButton}
           adminLink={adminLink}
-          adminButtonText={`Manage ${idpCommonName} in Keycloak`}
+          adminButtonText={`Manage ${idpCommonName}`}
+          idpTestLink={idpTestLink}
         />
       ),
       nextButtonText: "Finish",

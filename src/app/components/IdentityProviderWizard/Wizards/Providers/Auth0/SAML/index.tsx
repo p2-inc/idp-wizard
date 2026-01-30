@@ -21,6 +21,7 @@ import { Axios, clearAlias, getAlias } from "@wizardServices";
 import React, { FC, useEffect, useState } from "react";
 import * as SharedSteps from "../shared/Steps";
 import * as Steps from "./Steps";
+import { useCreateTestIdpLink } from "@app/hooks/useCreateTestIdpLink";
 
 export const Auth0WizardSAML: FC = () => {
   const idpCommonName = "Auth0 SAML Identity Provider";
@@ -61,6 +62,15 @@ export const Auth0WizardSAML: FC = () => {
     "The wizard is incomplete. Leaving will lose any saved progress. Are you sure?",
     stepIdReached < finishStep,
   );
+
+  const { isValidationPendingForAlias } = useCreateTestIdpLink();
+  const [idpTestLink, setIdpTestLink] = useState<string>("");
+  const checkPendingValidationStatus = async () => {
+    const pendingLink = await isValidationPendingForAlias(alias);
+    if (pendingLink) {
+      setIdpTestLink(pendingLink);
+    }
+  };
 
   const onNext = (newStep) => {
     if (stepIdReached === finishStep) {
@@ -149,6 +159,7 @@ export const Auth0WizardSAML: FC = () => {
       setStepIdReached(finishStep);
       setError(false);
       setDisableButton(true);
+      await checkPendingValidationStatus();
       clearAlias({
         provider: Providers.AUTH0,
         protocol: Protocols.SAML,
@@ -201,14 +212,15 @@ export const Auth0WizardSAML: FC = () => {
         <WizardConfirmation
           title="SSO Configuration Complete"
           message="Your users can now sign-in with Auth0."
-          buttonText={`Create ${idpCommonName} in Keycloak`}
+          buttonText={`Create ${idpCommonName}`}
           resultsText={results}
           error={error}
           isValidating={isValidating}
           validationFunction={createIdP}
           disableButton={disableButton}
           adminLink={adminLink}
-          adminButtonText={`Manage ${idpCommonName} in Keycloak`}
+          adminButtonText={`Manage ${idpCommonName}`}
+          idpTestLink={idpTestLink}
         />
       ),
       nextButtonText: "Finish",
