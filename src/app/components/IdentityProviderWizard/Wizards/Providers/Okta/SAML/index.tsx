@@ -173,14 +173,14 @@ export const OktaWizardSaml: FC = () => {
     },
     {
       id: 3,
-      name: "Configure Attribute Mapping",
+      name: "Complete Feedback Section",
       component: <Step3 />,
       hideCancelButton: true,
       canJumpTo: stepIdReached >= 3,
     },
     {
       id: 4,
-      name: "Complete Feedback Section",
+      name: "Configure Attribute Mapping",
       component: <Step4 />,
       hideCancelButton: true,
       canJumpTo: stepIdReached >= 4,
