@@ -10,38 +10,41 @@ import {
   useOrganization,
   useRoleAccess,
 } from "@app/hooks";
+import { useCreateTestIdpLink } from "@app/hooks/useCreateTestIdpLink";
+import { usePageTitle } from "@app/hooks/useTitle";
 import { PATHS } from "@app/routes";
 import { useGetFeatureFlagsQuery } from "@app/services";
-import { usePageTitle } from "@app/hooks/useTitle";
 import {
+  Button,
+  ClipboardCopy,
+  ExpandableSection,
   PageSection,
   PageSectionVariants,
   Stack,
   StackItem,
-  ExpandableSection,
   Switch,
-  Button,
   Tooltip,
-  ClipboardCopy,
 } from "@patternfly/react-core";
-import React, { FC, useState, useEffect } from "react";
-import { generatePath, Link, useParams } from "react-router-dom";
-import { IdPButton } from "./components/IdPButton";
-import { Axios } from "../Wizards/services";
-import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
 import {
   CheckCircleIcon,
   TrashAltIcon,
   WarningTriangleIcon,
 } from "@patternfly/react-icons";
-import { useCreateTestIdpLink } from "@app/hooks/useCreateTestIdpLink";
+import { Table, Tbody, Td, Th, Thead, Tr } from "@patternfly/react-table";
+import React, { FC, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { generatePath, Link, useParams } from "react-router-dom";
+import { Axios } from "../Wizards/services";
+import { IdPButton } from "./components/IdPButton";
 
 export const IdentityProviderSelector: FC = () => {
   usePageTitle("Select Your Identity Provider");
+  const { hasRealmRoles } = useRoleAccess();
+  const { kcAdminClient } = useKeycloakAdminApi();
+
   const [currentIdps, setCurrentIdps] = useState(null);
   const [orgsConfig, setOrgsConfig] = useState(null);
-  const { idpsListUrl, orgsConfigUrl } = useApi();
-  const { kcAdminClient } = useKeycloakAdminApi();
+  const { idpsListUrl, orgsConfigUrl, fullBaseUrl } = useApi();
 
   let { realm } = useParams();
   const { getCurrentOrgName, currentOrg } = useOrganization();
@@ -104,18 +107,33 @@ export const IdentityProviderSelector: FC = () => {
     _event: React.FormEvent<HTMLInputElement>,
   ) {
     try {
-      await kcAdminClient.identityProviders.update(
-        {
-          alias: idp.alias,
-          realm,
-        },
-        {
+      if (hasRealmRoles()) {
+        await kcAdminClient.identityProviders.update(
+          {
+            alias: idp.alias,
+            realm,
+          },
+          {
+            ...idp,
+            enabled: checked,
+          },
+        );
+      } else {
+        await Axios.put(`${fullBaseUrl}/${idp.alias}`, {
           ...idp,
           enabled: checked,
-        },
+        });
+      }
+      toast.success(
+        `Identity provider ${idp.displayName || idp.alias} ${
+          checked ? "enabled" : "disabled"
+        }`,
       );
     } catch (e) {
       console.error("Error updating identity provider:", e);
+      toast.error(
+        `Error updating identity provider ${idp.displayName || idp.alias}`,
+      );
     } finally {
       fetchIdps();
       fetchOrgsConfig();
@@ -124,12 +142,22 @@ export const IdentityProviderSelector: FC = () => {
 
   async function handleIdpDelete(idp: any) {
     try {
-      await kcAdminClient.identityProviders.del({
-        alias: idp.alias,
-        realm,
-      });
+      if (hasRealmRoles()) {
+        await kcAdminClient.identityProviders.del({
+          alias: idp.alias,
+          realm,
+        });
+      } else {
+        await Axios.delete(`${fullBaseUrl}/${idp.alias}`);
+      }
+      toast.success(
+        `Identity provider ${idp.displayName || idp.alias} deleted`,
+      );
     } catch (e) {
       console.error("Error deleting identity provider:", e);
+      toast.error(
+        `Error deleting identity provider ${idp.displayName || idp.alias}`,
+      );
     } finally {
       fetchIdps();
       fetchOrgsConfig();

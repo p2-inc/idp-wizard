@@ -118,6 +118,9 @@ export const useApi = () => {
 
   let baseServerUrl = `${serverUrl}${serverUrlSuffix}`;
   let baseServerRealmsUrl = `${baseServerUrl}/realms`;
+  let fullBaseUrl = `${baseServerRealmsUrl}/${
+    apiMode === "onprem" ? baseOPUrl : baseCloudUrl
+  }`;
 
   let adminLinkSaml = `${baseServerUrl}/${authRealm}/console/#/${realm}/identity-providers/saml/${alias}/settings`;
   let adminLinkOidc = `${baseServerUrl}/${authRealm}/console/#/${realm}/identity-providers/oidc/${alias}/settings`;
@@ -138,6 +141,7 @@ export const useApi = () => {
     adminLinkSaml,
     alias,
     baseServerRealmsUrl,
+    fullBaseUrl,
     createIdPUrl,
     endpoints,
     entityId,
