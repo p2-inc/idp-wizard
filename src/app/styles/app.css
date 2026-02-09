@@ -217,3 +217,7 @@ body,
 .existingIdpsTable.pf-c-table tbody > tr > * {
   vertical-align: middle;
 }
+
+.justify-items-center {
+  justify-items: center;
+}

@@ -33,23 +33,23 @@ export const IdPProtocolSelector: FC = ({}) => {
   } = currentProvider;
 
   let activeProtocols = providerProtocols.filter((pr) =>
-    pr === Protocols.LDAP ? featureFlags?.enableLdap : true
+    pr === Protocols.LDAP ? featureFlags?.enableLdap : true,
   );
 
   useEffect(() => {
-    if (providerProtocols.length === 1) {
+    if (activeProtocols.length === 1) {
       const pth = generatePath(PATHS.idpProvider, {
         realm,
         provider,
-        protocol: providerProtocols[0],
+        protocol: activeProtocols[0],
       });
       navigate(pth);
     }
-  }, []);
+  }, [activeProtocols]);
 
   return (
     <Stack id="protocol-selector" className="container">
-      <StackItem isFilled>
+      <StackItem isFilled className="justify-items-center">
         <StackItem>
           <Link to={generatePath(PATHS.idpSelector, { realm })}>
             <Button
@@ -62,7 +62,7 @@ export const IdPProtocolSelector: FC = ({}) => {
             </Button>
           </Link>
         </StackItem>
-        <StackItem className="selection-container">
+        <StackItem>
           <IdPButton
             text={providerName}
             image={providerLogo}
@@ -85,7 +85,7 @@ export const IdPProtocolSelector: FC = ({}) => {
         </StackItem>
         <StackItem className="selection-container">
           {IdentityProtocols.filter(({ id: protocolId }) =>
-            activeProtocols.includes(protocolId)
+            activeProtocols.includes(protocolId),
           ).map(({ name, imageSrc, id: protocolId }, i) => {
             const pth = generatePath(PATHS.idpProvider, {
               realm,
