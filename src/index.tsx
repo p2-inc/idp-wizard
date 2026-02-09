@@ -9,6 +9,7 @@ import Loading from "@app/utils/Loading";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
 let persistor = persistStore(store);
+import { Toaster } from "react-hot-toast";
 
 if (process.env.NODE_ENV !== "production") {
   const config = {
@@ -37,8 +38,9 @@ ReactDOM.render(
     <ReduxProvider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <App />
+        <Toaster />
       </PersistGate>
     </ReduxProvider>
   </ReactKeycloakProvider>,
-  document.getElementById("root") as HTMLElement
+  document.getElementById("root") as HTMLElement,
 );
