@@ -6,6 +6,7 @@ import CloudflareSaml4 from "./cloudflare_saml_4.png";
 import CloudflareSaml5 from "./cloudflare_saml_5.png";
 import CloudflareSaml6 from "./cloudflare_saml_6.png";
 import CloudflareSaml7 from "./cloudflare_saml_7.png";
+import CloudflareSaml8 from "./cloudflare_saml_8.png";
 
 export {
   CloudflareSaml0,
@@ -16,4 +17,5 @@ export {
   CloudflareSaml5,
   CloudflareSaml6,
   CloudflareSaml7,
+  CloudflareSaml8,
 };
