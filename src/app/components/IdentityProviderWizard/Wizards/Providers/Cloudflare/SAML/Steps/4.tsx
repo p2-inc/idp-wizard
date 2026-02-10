@@ -15,7 +15,9 @@ export function CloudflareStepFour() {
           In the <b>SAML attribute statements</b> section, provide the following
           attribute statements by clicking <b>+ Add Statement</b> for each
           attribute. Set the <b>Name Format</b> for each attribute to{" "}
-          <b>Basic</b>. Copy the following
+          <b>Unspecified</b>. In order to set the format to Basic, you would be
+          required to have an identity provider configured so that it could map
+          attributes. See the note below. Copy the following
         </div>
       ),
       component: <StepImage src={Images.CloudflareSaml5} alt="Step 4.1" />,
@@ -28,7 +30,9 @@ export function CloudflareStepFour() {
           Ensure that your identity provider is configured to provide these
           attributes to Cloudflare or adjust the attribute mapping as needed.{" "}
           The built-in OTP identity provider does not provide <b>firstName</b>{" "}
-          or <b>lastName</b> attributes.
+          or <b>lastName</b> attributes. Set up identity providers for
+          Cloudflare to use by going to Integrations {">"} Identity Providers
+          and adding a provider. Do this is out of scope of the current wizard.
         </div>
       ),
     },
