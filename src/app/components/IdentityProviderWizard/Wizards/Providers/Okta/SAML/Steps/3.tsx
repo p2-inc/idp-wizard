@@ -1,59 +1,20 @@
 import React, { FC } from "react";
-import {
-  DoubleItemClipboardCopy,
-  InstructionProps,
-  Step,
-  StepImage,
-} from "@wizardComponents";
+import { InstructionProps, Step, StepImage } from "@wizardComponents";
 import * as Images from "@app/images/okta/saml";
 
-export const Step3: FC = () => {
+interface Props {}
+
+export const Step3: FC<Props> = () => {
   const instructions: InstructionProps[] = [
     {
-      component: (
-        <div>
-          In the "Parameters" section, provide the following attribute mappings
-          and select "Save". Note you may need to click "Add Another" to
-          configure each of the mappings.
-        </div>
-      ),
-    },
-    {
-      component: (
-        <div>
-          Note that if "user.login" is not present in your Okta account, try
-          "user.id" or do not add this mapping.
-        </div>
-      ),
-    },
-    {
-      component: (
-        <>
-          <DoubleItemClipboardCopy leftValue="email" rightValue="user.email" />
-          <DoubleItemClipboardCopy
-            leftValue="firstName"
-            rightValue="user.firstName"
-          />
-          <DoubleItemClipboardCopy
-            leftValue="lastName"
-            rightValue="user.lastName"
-          />
-          <DoubleItemClipboardCopy leftValue="id" rightValue="user.login" />
-          <div>
-            Note that if "user.login" is not present in your Okta account, try
-            "user.id" or do not add this mapping.
-          </div>
-        </>
-      ),
-    },
-    {
-      component: <StepImage src={Images.OktaSaml5} alt="Step 3.2" />,
+      text: 'Okta requires customer feedback. Select the option "I’m an Okta customer adding an internal app", click "Finish" and then leave the additional form blank.',
+      component: <StepImage src={Images.OktaSaml6} alt="Step 4.1" />,
     },
   ];
 
   return (
     <Step
-      title="Step 3: Configure Attribute Mapping"
+      title="Step 3: Complete Feedback Section"
       instructionList={instructions}
     />
   );
