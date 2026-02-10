@@ -17,7 +17,8 @@ type apiEndpointNames =
   | "updateIdP"
   | "importConfig"
   | "addMapperToIdP"
-  | "getOrgsConfig";
+  | "getOrgsConfig"
+  | "getOrgs";
 
 type endpoint = {
   method: HTTP_METHODS;
@@ -72,6 +73,10 @@ export const useApi = () => {
       method: HTTP_METHODS.GET,
       endpoint: `${baseOPUrl}/orgs/config`,
     },
+    getOrgs: {
+      method: HTTP_METHODS.GET,
+      endpoint: `${baseOPUrl}/orgs`,
+    },
   };
 
   // cloud endpoints
@@ -104,6 +109,10 @@ export const useApi = () => {
       method: HTTP_METHODS.GET,
       endpoint: `${realm}/orgs/config`,
     },
+    getOrgs: {
+      method: HTTP_METHODS.GET,
+      endpoint: `${realm}/orgs`,
+    },
   };
 
   let endpoints: Record<apiEndpointNames, endpoint> | undefined;
@@ -131,6 +140,7 @@ export const useApi = () => {
   let createIdPUrl = `${baseServerRealmsUrl}/${endpoints?.createIdP.endpoint!}`;
   let updateIdPUrl = `${baseServerRealmsUrl}/${endpoints?.updateIdP.endpoint!}`;
   let orgsConfigUrl = `${baseServerRealmsUrl}/${endpoints?.getOrgsConfig.endpoint}`;
+  let orgsUrl = `${baseServerRealmsUrl}/${endpoints?.getOrgs.endpoint}`;
 
   let entityId = `${serverUrl}/realms/${realm}`;
   let loginRedirectURL = `${entityId}/broker/${alias}/endpoint`;
@@ -153,5 +163,6 @@ export const useApi = () => {
     orgsConfigUrl,
     setAlias,
     updateIdPUrl,
+    orgsUrl,
   };
 };

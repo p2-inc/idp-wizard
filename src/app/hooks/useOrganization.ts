@@ -16,5 +16,9 @@ export function useOrganization() {
     return orgs[currentOrg!]?.name;
   }
 
-  return { currentOrg, getCurrentOrg, getCurrentOrgName };
+  return {
+    currentOrg,
+    getCurrentOrg,
+    getCurrentOrgName,
+  };
 }

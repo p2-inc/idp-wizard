@@ -44,11 +44,16 @@ export const IdentityProviderSelector: FC = () => {
 
   const [currentIdps, setCurrentIdps] = useState(null);
   const [orgsConfig, setOrgsConfig] = useState(null);
-  const { idpsListUrl, orgsConfigUrl, fullBaseUrl } = useApi();
+  const { idpsListUrl, orgsConfigUrl, fullBaseUrl, orgsUrl } = useApi();
+  const [userOrgs, setUserOrgs] = useState(null);
 
   let { realm } = useParams();
   const { getCurrentOrgName, currentOrg } = useOrganization();
-  const currentOrgName = getCurrentOrgName();
+  const currentOrgDetails = userOrgs?.find((org) => org.id === currentOrg);
+  const currentOrgName =
+    currentOrgDetails?.displayName ||
+    currentOrgDetails?.name ||
+    getCurrentOrgName();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const { hasOrganizationRole } = useRoleAccess();
 
@@ -96,9 +101,22 @@ export const IdentityProviderSelector: FC = () => {
     }
   };
 
+  const fetchOrgs = async () => {
+    try {
+      const resp = await Axios.get(orgsUrl);
+      if (resp.status !== 200) {
+        throw new Error(`Error fetching organizations: ${resp.statusText}`);
+      }
+      setUserOrgs(resp.data);
+    } catch (e) {
+      console.error("Error fetching organizations:", e);
+    }
+  };
+
   useEffect(() => {
     fetchIdps();
     fetchOrgsConfig();
+    fetchOrgs();
   }, [showAdditionalIdps, currentOrg]);
 
   async function handleIdpEnable(
