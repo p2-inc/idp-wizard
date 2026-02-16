@@ -4,9 +4,9 @@ import keycloak from "../../keycloak";
 import { startCase } from "lodash";
 
 export const usePageTitle = (title?: string) => {
-  const realmName = keycloak.realm;
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const appName = featureFlags?.appName;
+  const realmName = featureFlags?.displayName || startCase(keycloak.realm);
 
   const setPageTitle = (pageTitle: string) => {
     const parts = [pageTitle];
@@ -14,7 +14,7 @@ export const usePageTitle = (title?: string) => {
     if (appName) {
       parts.push(appName);
     } else if (realmName) {
-      parts.push(startCase(realmName));
+      parts.push(realmName);
     }
 
     useTitle(parts.join(" | "));
