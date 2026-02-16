@@ -8,14 +8,15 @@ import { OrgPicker } from "./org-picker";
 
 type Props = {
   title?: string;
+  orgName?: string;
 };
 
-const MainNav: React.FC<Props> = ({ title }) => {
+const MainNav: React.FC<Props> = ({ title, orgName }) => {
   const dispatch = useAppDispatch();
   const { data: featureFlags } = useGetFeatureFlagsQuery();
   const { getCurrentOrgName } = useOrganization();
   const mustPickOrg = useAppSelector((state) => state.settings.mustPickOrg);
-  const currentOrgName = getCurrentOrgName();
+  const currentOrgName = orgName || getCurrentOrgName();
   const [isOrgPickerOpen, setIsOrgPickerOpen] = useState(mustPickOrg);
 
   useEffect(() => {

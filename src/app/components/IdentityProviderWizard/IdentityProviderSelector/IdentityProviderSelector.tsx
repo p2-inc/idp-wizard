@@ -102,6 +102,8 @@ export const IdentityProviderSelector: FC = () => {
   };
 
   const fetchOrgs = async () => {
+    if (getCurrentOrgName() === "Global") return;
+
     try {
       const resp = await Axios.get(orgsUrl);
       if (resp.status !== 200) {
@@ -186,7 +188,7 @@ export const IdentityProviderSelector: FC = () => {
     <PageSection variant={PageSectionVariants.light}>
       <Stack hasGutter>
         <StackItem>
-          <MainNav />
+          <MainNav orgName={currentOrgName} />
           {showAdditionalIdps && currentIdps?.length > 0 && (
             <ExpandableSection
               toggleText="Existing Identity Provider Configurations"
