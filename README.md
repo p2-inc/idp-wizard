@@ -49,19 +49,24 @@ Although it has been developed and working since Keycloak 14.0.0, the extensions
 
 Wizards are currently available for the following vendors.
 
-| Vendor    | SAML               | OIDC               | LDAP               | SCIM | Other |
-| --------- | ------------------ | ------------------ | ------------------ | ---- | ----- |
-| ADFS      | :white_check_mark: |                    | :white_check_mark: |      |       |
-| AWS       | :white_check_mark: |                    |                    |      |       |
-| Auth0     | :white_check_mark: | :white_check_mark: |                    |      |       |
-| Azure     | :white_check_mark: |                    |                    |      |       |
-| Duo       | :white_check_mark: |                    |                    |      |       |
-| Generic   | :white_check_mark: | :white_check_mark: | :white_check_mark: |      |       |
-| Google    | :white_check_mark: |                    |                    |      |       |
-| JumpCloud | :white_check_mark: |                    |                    |      |       |
-| Okta      | :white_check_mark: |                    | :white_check_mark: |      |       |
-| OneLogin  | :white_check_mark: |                    |                    |      |       |
-| PingOne   | :white_check_mark: |                    |                    |      |       |
+| Vendor               | SAML               | OIDC               | LDAP               | SCIM | Other |
+| -------------------- | ------------------ | ------------------ | ------------------ | ---- | ----- |
+| ADFS                 | :white_check_mark: |                    |                    |      |       |
+| AWS                  | :white_check_mark: |                    |                    |      |       |
+| Auth0                | :white_check_mark: | :white_check_mark: |                    |      |       |
+| Cloudflare           | :white_check_mark: |                    |                    |      |       |
+| CyberArk             | :white_check_mark: |                    |                    |      |       |
+| Duo                  | :white_check_mark: |                    |                    |      |       |
+| Entra Id             | :white_check_mark: |                    |                    |      |       |
+| Generic              | :white_check_mark: | :white_check_mark: | :white_check_mark: |      |       |
+| Google               | :white_check_mark: |                    |                    |      |       |
+| JumpCloud            | :white_check_mark: |                    |                    |      |       |
+| LastPass             | :white_check_mark: |                    |                    |      |       |
+| Okta                 | :white_check_mark: |                    | :white_check_mark: |      |       |
+| OneLogin             | :white_check_mark: |                    |                    |      |       |
+| Oracle               | :white_check_mark: |                    |                    |      |       |
+| PingOne              | :white_check_mark: |                    |                    |      |       |
+| Salesforce           | :white_check_mark: | :white_check_mark: |                    |      |       |
 
 ## Contributing
 
