@@ -74,9 +74,25 @@ On first run, Keycloak auto-imports `realm-export.json` which creates:
 
 - **Realm:** `wizard`
 - **Client:** `wizard-v2-dev` (public, redirect URI: `http://localhost:5173/*`)
-- **Test user:** `wizard` / `password` with `realm-admin` permissions
+- **Test user:** see below
 
 Keycloak data persists in a named Docker volume between restarts.
+
+> If the volume already exists from a previous run with bad state, recreate it cleanly:
+> ```bash
+> docker compose down -v && docker compose up
+> ```
+
+#### Dev test user
+
+| Field     | Value      |
+| --------- | ---------- |
+| Username  | `wizard`   |
+| Password  | `password` |
+| Email     | `wizard@example.com` |
+| Roles     | `realm-admin` (via `realm-management` client) |
+
+This user has full `realm-admin` permissions, which the wizard requires in order to create identity providers via the Keycloak Admin API.
 
 ### 3. Start the dev server
 

@@ -9,50 +9,132 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
+import { Route as AuthenticatedWizardProviderIdRouteImport } from './routes/_authenticated.wizard.$providerId'
+import { Route as AuthenticatedWizardProviderIdProtocolRouteImport } from './routes/_authenticated.wizard.$providerId.$protocol'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedWizardProviderIdRoute =
+  AuthenticatedWizardProviderIdRouteImport.update({
+    id: '/wizard/$providerId',
+    path: '/wizard/$providerId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedWizardProviderIdProtocolRoute =
+  AuthenticatedWizardProviderIdProtocolRouteImport.update({
+    id: '/$protocol',
+    path: '/$protocol',
+    getParentRoute: () => AuthenticatedWizardProviderIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/wizard/$providerId': typeof AuthenticatedWizardProviderIdRouteWithChildren
+  '/wizard/$providerId/$protocol': typeof AuthenticatedWizardProviderIdProtocolRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/wizard/$providerId': typeof AuthenticatedWizardProviderIdRouteWithChildren
+  '/wizard/$providerId/$protocol': typeof AuthenticatedWizardProviderIdProtocolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/wizard/$providerId': typeof AuthenticatedWizardProviderIdRouteWithChildren
+  '/_authenticated/wizard/$providerId/$protocol': typeof AuthenticatedWizardProviderIdProtocolRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/wizard/$providerId' | '/wizard/$providerId/$protocol'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/wizard/$providerId' | '/wizard/$providerId/$protocol'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/_authenticated/'
+    | '/_authenticated/wizard/$providerId'
+    | '/_authenticated/wizard/$providerId/$protocol'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/wizard/$providerId': {
+      id: '/_authenticated/wizard/$providerId'
+      path: '/wizard/$providerId'
+      fullPath: '/wizard/$providerId'
+      preLoaderRoute: typeof AuthenticatedWizardProviderIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/wizard/$providerId/$protocol': {
+      id: '/_authenticated/wizard/$providerId/$protocol'
+      path: '/$protocol'
+      fullPath: '/wizard/$providerId/$protocol'
+      preLoaderRoute: typeof AuthenticatedWizardProviderIdProtocolRouteImport
+      parentRoute: typeof AuthenticatedWizardProviderIdRoute
     }
   }
 }
 
+interface AuthenticatedWizardProviderIdRouteChildren {
+  AuthenticatedWizardProviderIdProtocolRoute: typeof AuthenticatedWizardProviderIdProtocolRoute
+}
+
+const AuthenticatedWizardProviderIdRouteChildren: AuthenticatedWizardProviderIdRouteChildren =
+  {
+    AuthenticatedWizardProviderIdProtocolRoute:
+      AuthenticatedWizardProviderIdProtocolRoute,
+  }
+
+const AuthenticatedWizardProviderIdRouteWithChildren =
+  AuthenticatedWizardProviderIdRoute._addFileChildren(
+    AuthenticatedWizardProviderIdRouteChildren,
+  )
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedWizardProviderIdRoute: typeof AuthenticatedWizardProviderIdRouteWithChildren
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedWizardProviderIdRoute:
+    AuthenticatedWizardProviderIdRouteWithChildren,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
