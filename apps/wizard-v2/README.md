@@ -18,23 +18,39 @@ wizard-v2/
 ├── docker/
 │   ├── docker-compose.yml      # Dev Keycloak (Phase Two image, pre-configured)
 │   └── realm-export.json       # Auto-imported on first start: realm, client, test user
+├── e2e/
+│   ├── fixtures/
+│   │   └── test.ts             # Playwright fixture with typed page objects
+│   ├── pages/
+│   │   ├── ProviderSelectorPage.ts
+│   │   └── WizardPage.ts
+│   └── provider-selector.spec.ts
 ├── public/
 │   ├── favicons/               # Favicon assets
 │   ├── phasetwo-logos/         # Phase Two brand assets
 │   ├── provider-logos/         # Per-provider logos for the selector UI
 │   └── wizards/                # Step screenshots, one folder per provider
 ├── src/
+│   ├── components/ui/          # shadcn/ui components
+│   ├── data/
+│   │   └── providers.ts        # Provider registry (id, name, logo, protocols)
+│   ├── hooks/
+│   │   └── useWizardConfig.ts  # Fetches realm config.json (logoUrl, appName, apiMode…)
 │   ├── lib/
 │   │   └── utils.ts            # cn() helper (clsx + tailwind-merge)
 │   ├── routes/
-│   │   ├── __root.tsx          # Root route — wraps app in OidcInitializationGate
-│   │   └── index.tsx           # Provider selector (/)
+│   │   ├── __root.tsx                                   # Root — OidcInitializationGate
+│   │   ├── _authenticated.tsx                           # Layout — home button header
+│   │   ├── _authenticated.index.tsx                     # Provider selector (/)
+│   │   ├── _authenticated.wizard.$providerId.tsx        # Protocol picker
+│   │   └── _authenticated.wizard.$providerId.$protocol.tsx  # Wizard runner
 │   ├── index.css               # Tailwind + Phase Two color scheme (OKLCH tokens)
 │   ├── main.tsx                # TanStack RouterProvider entry point
 │   └── oidc.ts                 # oidc-spa setup: useOidc, fetchWithAuth, OidcInitializationGate
 ├── wizards/
 │   └── generic-saml.json       # Declarative wizard definition (SAML)
 ├── .env.local.sample           # Environment variable template
+├── playwright.config.ts        # Playwright E2E config
 └── components.json             # shadcn/ui config
 ```
 
@@ -126,6 +142,39 @@ Assets in `public/` are served at the root path with no imports required.
 | `/wizards/<provider>/` | Step screenshots referenced from wizard JSON files |
 
 Example reference in a wizard JSON: `"/wizards/okta/saml/step1.png"`
+
+## Testing
+
+E2E tests use [Playwright](https://playwright.dev/) and run against the Vite dev server with OIDC in mock mode — no live Keycloak required.
+
+```bash
+# Run all tests headlessly
+pnpm test:e2e
+
+# Open interactive Playwright UI (great for writing tests)
+pnpm test:e2e:ui
+
+# View the last HTML report
+pnpm test:e2e:report
+```
+
+### Test structure
+
+```
+e2e/
+├── fixtures/
+│   └── test.ts               # Extended test fixture with typed page objects
+├── pages/
+│   ├── ProviderSelectorPage.ts   # Selectors and actions for the landing page
+│   └── WizardPage.ts             # Selectors and actions for wizard/picker views
+└── provider-selector.spec.ts     # Smoke tests: navigation, search, help dialog
+```
+
+Tests follow the [Page Object Model](https://playwright.dev/docs/pom) pattern. Add a new `*.spec.ts` alongside a matching page object in `e2e/pages/` as wizard steps are built out. Real wizard step tests should wait until the wizard JSON configuration format is settled.
+
+### CI
+
+In CI (`CI=true`), the web server is always started fresh, tests are retried up to 2 times, and the reporter uses GitHub annotations.
 
 ## Building
 

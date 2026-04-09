@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
 import Fuse from "fuse.js";
 import { Search, HelpCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,12 @@ import {
 } from "@/data/providers";
 import { useWizardConfig } from "@/hooks/useWizardConfig";
 
+const searchSchema = z.object({
+  org_id: z.string().optional(),
+});
+
 export const Route = createFileRoute("/_authenticated/")({
+  validateSearch: searchSchema,
   component: ProviderSelector,
 });
 
@@ -131,6 +137,7 @@ function ProviderSelector() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const { config } = useWizardConfig();
+  const { org_id: orgId } = Route.useSearch();
 
   const logoSrc = config.logoUrl ?? FALLBACK_LOGO;
 
@@ -148,15 +155,18 @@ function ProviderSelector() {
     : null;
 
   const handleSelect = (provider: Provider) => {
+    const search = orgId ? { org_id: orgId } : {};
     if (provider.protocols.length === 1) {
       navigate({
         to: "/wizard/$providerId/$protocol",
         params: { providerId: provider.id, protocol: provider.protocols[0] },
+        search,
       });
     } else {
       navigate({
         to: "/wizard/$providerId",
         params: { providerId: provider.id },
+        search,
       });
     }
   };

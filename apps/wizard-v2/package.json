@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen-api": "tsx openapi-codegen/gen.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
@@ -17,6 +21,7 @@
     "fuse.js": "^7.3.0",
     "lucide-react": "^1.8.0",
     "oidc-spa": "^10.2.1",
+    "openapi-fetch": "^0.17.0",
     "radix-ui": "^1.4.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -27,6 +32,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.59.1",
     "@tanstack/router-devtools": "^1.166.11",
     "@tanstack/router-plugin": "^1.167.12",
     "@types/node": "^24.12.2",
@@ -37,6 +43,8 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
+    "openapi-typescript": "^7.13.0",
+    "tsx": "^4.21.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
     "vite": "^8.0.4",

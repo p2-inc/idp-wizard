@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
 import { Route as AuthenticatedWizardProviderIdRouteImport } from './routes/_authenticated.wizard.$providerId'
+import { Route as AuthenticatedWizardProviderIdIndexRouteImport } from './routes/_authenticated.wizard.$providerId.index'
 import { Route as AuthenticatedWizardProviderIdProtocolRouteImport } from './routes/_authenticated.wizard.$providerId.$protocol'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -29,6 +30,12 @@ const AuthenticatedWizardProviderIdRoute =
     path: '/wizard/$providerId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedWizardProviderIdIndexRoute =
+  AuthenticatedWizardProviderIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedWizardProviderIdRoute,
+  } as any)
 const AuthenticatedWizardProviderIdProtocolRoute =
   AuthenticatedWizardProviderIdProtocolRouteImport.update({
     id: '/$protocol',
@@ -40,11 +47,12 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/wizard/$providerId': typeof AuthenticatedWizardProviderIdRouteWithChildren
   '/wizard/$providerId/$protocol': typeof AuthenticatedWizardProviderIdProtocolRoute
+  '/wizard/$providerId/': typeof AuthenticatedWizardProviderIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
-  '/wizard/$providerId': typeof AuthenticatedWizardProviderIdRouteWithChildren
   '/wizard/$providerId/$protocol': typeof AuthenticatedWizardProviderIdProtocolRoute
+  '/wizard/$providerId': typeof AuthenticatedWizardProviderIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -52,18 +60,24 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/wizard/$providerId': typeof AuthenticatedWizardProviderIdRouteWithChildren
   '/_authenticated/wizard/$providerId/$protocol': typeof AuthenticatedWizardProviderIdProtocolRoute
+  '/_authenticated/wizard/$providerId/': typeof AuthenticatedWizardProviderIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/wizard/$providerId' | '/wizard/$providerId/$protocol'
+  fullPaths:
+    | '/'
+    | '/wizard/$providerId'
+    | '/wizard/$providerId/$protocol'
+    | '/wizard/$providerId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/wizard/$providerId' | '/wizard/$providerId/$protocol'
+  to: '/' | '/wizard/$providerId/$protocol' | '/wizard/$providerId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/_authenticated/'
     | '/_authenticated/wizard/$providerId'
     | '/_authenticated/wizard/$providerId/$protocol'
+    | '/_authenticated/wizard/$providerId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -93,6 +107,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWizardProviderIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/wizard/$providerId/': {
+      id: '/_authenticated/wizard/$providerId/'
+      path: '/'
+      fullPath: '/wizard/$providerId/'
+      preLoaderRoute: typeof AuthenticatedWizardProviderIdIndexRouteImport
+      parentRoute: typeof AuthenticatedWizardProviderIdRoute
+    }
     '/_authenticated/wizard/$providerId/$protocol': {
       id: '/_authenticated/wizard/$providerId/$protocol'
       path: '/$protocol'
@@ -105,12 +126,15 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedWizardProviderIdRouteChildren {
   AuthenticatedWizardProviderIdProtocolRoute: typeof AuthenticatedWizardProviderIdProtocolRoute
+  AuthenticatedWizardProviderIdIndexRoute: typeof AuthenticatedWizardProviderIdIndexRoute
 }
 
 const AuthenticatedWizardProviderIdRouteChildren: AuthenticatedWizardProviderIdRouteChildren =
   {
     AuthenticatedWizardProviderIdProtocolRoute:
       AuthenticatedWizardProviderIdProtocolRoute,
+    AuthenticatedWizardProviderIdIndexRoute:
+      AuthenticatedWizardProviderIdIndexRoute,
   }
 
 const AuthenticatedWizardProviderIdRouteWithChildren =
