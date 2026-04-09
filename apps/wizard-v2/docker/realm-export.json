@@ -1,0 +1,52 @@
+{
+  "realm": "wizard",
+  "enabled": true,
+  "displayName": "IDP Wizard Dev",
+  "attributes": {
+    "_providerConfig.wizard.apiMode": "onprem",
+    "_providerConfig.wizard.emailAsUsername": "false",
+    "_providerConfig.wizard.enableDashboard": "true",
+    "_providerConfig.wizard.enableDirectorySync": "true",
+    "_providerConfig.wizard.enableIdentityProvider": "true",
+    "_providerConfig.wizard.trustEmail": "false"
+  },
+  "clients": [
+    {
+      "clientId": "wizard-v2-dev",
+      "name": "IDP Wizard v2 Dev",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173"
+      ],
+      "attributes": {}
+    }
+  ],
+  "users": [
+    {
+      "username": "wizard",
+      "email": "wizard@example.com",
+      "firstName": "Wizard",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "clientRoles": {
+        "realm-management": [
+          "realm-admin"
+        ]
+      }
+    }
+  ]
+}

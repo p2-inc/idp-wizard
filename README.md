@@ -15,11 +15,14 @@ This is a pnpm workspace monorepo. The frontend apps live under `apps/`, the Jav
 ```
 idp-wizard/
 ├── apps/
-│   ├── wizard-v1/          # Original PatternFly + webpack app (current production build)
-│   └── wizard-v2/          # New Vite + Tailwind + shadcn + TanStack Router app (in development)
-│       └── wizards/        # Declarative JSON wizard definitions
-├── ext/                    # Java Keycloak SPI extension
-├── pom.xml                 # Maven build — packages the active frontend into a Keycloak JAR
+│   ├── wizard-v1/              # Original PatternFly + webpack app (current production build)
+│   └── wizard-v2/              # New Vite + Tailwind + shadcn + TanStack Router app (in development)
+│       ├── docker/             # Dev Keycloak setup with pre-configured realm and client
+│       ├── public/             # Static assets (favicons, logos, provider images, wizard screenshots)
+│       ├── src/                # Application source
+│       └── wizards/            # Declarative JSON wizard definitions
+├── ext/                        # Java Keycloak SPI extension
+├── pom.xml                     # Maven build — packages the active frontend into a Keycloak JAR
 └── pnpm-workspace.yaml
 ```
 
@@ -29,7 +32,7 @@ The original implementation. Each identity provider has its own set of per-step 
 
 ### wizard-v2
 
-A rewrite in progress. Wizards are defined declaratively as JSON files (see `wizard-json-drafts/`) and rendered by a generic runtime engine, eliminating the need for per-provider component trees. Built with Vite, Tailwind CSS, shadcn/ui, TanStack Router, and oidc-spa for authentication.
+A rewrite in progress. Wizards are defined declaratively as JSON files (see `apps/wizard-v2/wizards/`) and rendered by a generic runtime engine, eliminating the need for per-provider component trees. Built with Vite, Tailwind CSS, shadcn/ui, TanStack Router, and oidc-spa for authentication. See [apps/wizard-v2/README.md](apps/wizard-v2/README.md) for full details.
 
 ## Quick start
 
@@ -96,31 +99,11 @@ Note: By submitting any code, documentation, or other materials submitted to thi
 
 ### Working with the code
 
-Run the latest version of the Phase Two enhanced Keycloak distribution:
-
-```bash
-docker run --name phasetwo_test --rm -p 8080:8080 \
-    -e KEYCLOAK_ADMIN=admin \
-    -e KEYCLOAK_ADMIN_PASSWORD=admin \
-    -e KC_HTTP_RELATIVE_PATH=/auth \
-    quay.io/phasetwo/phasetwo-keycloak:latest \
-    start-dev \
-    --spi-email-template-provider=freemarker-plus-mustache \
-    --spi-email-template-freemarker-plus-mustache-enabled=true
-```
-
-Build and run a local container with the idp-wizard extension (uses `Dockerfile` + `docker-compose.yml` in this repo):
-
-```bash
-mvn clean package
-docker compose up --build
-```
-
 #### wizard-v1 (current)
 
-Create a Realm, and in the `idp-wizard` Client configuration, update redirect URI for `http://localhost:9090/*` (default for the IdP wizard) and add `http://localhost:9090` to the Web Origins. Download the Client's `keycloak.json` and put it in `apps/wizard-v1/src/keycloak.json`.
+Run the Phase Two Keycloak distribution, create a realm, and in the `idp-wizard` client configuration update the redirect URI to `http://localhost:9090/*` and add `http://localhost:9090` to Web Origins. Download the client's `keycloak.json` and place it in `apps/wizard-v1/src/keycloak.json`.
 
-Using wizard at a different relative path than `/auth`? If so, make sure to update the following:
+Using the wizard at a different relative path than `/auth`? Update the following:
 
 - `RELATIVE_PATH` within [routes.tsx](./apps/wizard-v1/src/app/routes.tsx)
 - `wizard.ftl` ([login](./ext/main/resources/theme/wizard/login/wizard.ftl), [templates](./ext/main/resources/theme-resources/templates/wizard.ftl)) `<base href...`
@@ -132,14 +115,21 @@ cd apps/wizard-v1
 pnpm start:dev
 ```
 
+To build and test the full JAR-packaged extension in a local container:
+
+```bash
+mvn clean package
+docker compose up --build
+```
+
 #### wizard-v2 (in development)
 
-Copy the env sample and configure your OIDC settings. Set `VITE_OIDC_USE_MOCK=true` to develop without a running Keycloak instance.
+See [apps/wizard-v2/README.md](apps/wizard-v2/README.md) for full setup instructions.
 
 ```bash
 cp apps/wizard-v2/.env.local.sample apps/wizard-v2/.env.local
-cd apps/wizard-v2
-pnpm dev
+cd apps/wizard-v2/docker && docker compose up
+cd apps/wizard-v2 && pnpm dev
 ```
 
 ## License
