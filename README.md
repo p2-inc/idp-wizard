@@ -8,6 +8,29 @@ In addition to providing support for Identity Providers using OIDC and SAML, the
 
 ![youtube-video-gif](https://github.com/p2-inc/idp-wizard/assets/244253/e9b421c0-b487-4c07-9eed-87ea89fc574b)
 
+## Repository structure
+
+This is a pnpm workspace monorepo. The frontend apps live under `apps/`, the Java Keycloak SPI extension lives under `ext/`, and the Maven build at the root packages everything into a deployable JAR.
+
+```
+idp-wizard/
+├── apps/
+│   ├── wizard-v1/          # Original PatternFly + webpack app (current production build)
+│   └── wizard-v2/          # New Vite + Tailwind + shadcn + TanStack Router app (in development)
+│       └── wizards/        # Declarative JSON wizard definitions
+├── ext/                    # Java Keycloak SPI extension
+├── pom.xml                 # Maven build — packages the active frontend into a Keycloak JAR
+└── pnpm-workspace.yaml
+```
+
+### wizard-v1
+
+The original implementation. Each identity provider has its own set of per-step React components built on PatternFly 4. This is the currently deployed version.
+
+### wizard-v2
+
+A rewrite in progress. Wizards are defined declaratively as JSON files (see `wizard-json-drafts/`) and rendered by a generic runtime engine, eliminating the need for per-provider component trees. Built with Vite, Tailwind CSS, shadcn/ui, TanStack Router, and oidc-spa for authentication.
+
 ## Quick start
 
 The easiest way to get started is our [Docker image](https://quay.io/repository/phasetwo/phasetwo-keycloak?tab=info). Documentation and examples for using it are in the [phasetwo-containers](https://github.com/p2-inc/phasetwo-containers) repo. The most recent version of this extension is included.
@@ -32,7 +55,9 @@ There are some reasonable defaults used for the configuration, but the behavior 
 
 ## Building and installing
 
-This uses the `frontend-maven-plugin` to build UI code and then packages it as a jar file that can be installed as an extension in Keycloak. Checkout this project and run `mvn package`, which will produce a jar in the `target/` directory. Place the jar in the `providers` dir of your Keycloak distribution.
+This uses the `frontend-maven-plugin` to build the active frontend app and packages it as a JAR that can be installed as a Keycloak extension. Run `mvn package` from the repo root, which produces a JAR in `target/`. Place it in the `providers/` directory of your Keycloak distribution.
+
+The `pom.xml` `workingDirectory` controls which app is built. It currently points at `apps/wizard-v1`. When wizard-v2 is ready for production this will be updated to `apps/wizard-v2`.
 
 ### Dependencies
 
@@ -91,27 +116,37 @@ mvn clean package
 docker compose up --build
 ```
 
-Create a Realm, and in the `idp-wizard` Client configuration, update redirect URI for `http://localhost:9090/*` (default for the IdP wizard) and add `http://localhost:9090` to the Web Origins. Download the Client's `keycloak.json` and put it in `src/keycloak.json`.
+#### wizard-v1 (current)
+
+Create a Realm, and in the `idp-wizard` Client configuration, update redirect URI for `http://localhost:9090/*` (default for the IdP wizard) and add `http://localhost:9090` to the Web Origins. Download the Client's `keycloak.json` and put it in `apps/wizard-v1/src/keycloak.json`.
 
 Using wizard at a different relative path than `/auth`? If so, make sure to update the following:
 
-- `RELATIVE_PATH` within [routes.tsx](./src/app/routes.tsx)
+- `RELATIVE_PATH` within [routes.tsx](./apps/wizard-v1/src/app/routes.tsx)
 - `wizard.ftl` ([login](./ext/main/resources/theme/wizard/login/wizard.ftl), [templates](./ext/main/resources/theme-resources/templates/wizard.ftl)) `<base href...`
-- [keycloak.json](./src/keycloak.json) key of `auth-server-url`
-
-Start the idp-wizard:
+- [keycloak.json](./apps/wizard-v1/src/keycloak.json) key of `auth-server-url`
 
 ```bash
-git clone https://github.com/p2-inc/idp-wizard
-cd idp-wizard
-pnpm install && pnpm start:dev
+pnpm install
+cd apps/wizard-v1
+pnpm start:dev
+```
+
+#### wizard-v2 (in development)
+
+Copy the env sample and configure your OIDC settings. Set `VITE_OIDC_USE_MOCK=true` to develop without a running Keycloak instance.
+
+```bash
+cp apps/wizard-v2/.env.local.sample apps/wizard-v2/.env.local
+cd apps/wizard-v2
+pnpm dev
 ```
 
 ## License
 
 The extensions herein are used in the [Phase Two](https://phasetwo.io) cloud offering, and are released here as part of its commitment to making its [core extensions](https://phasetwo.io/docs/introduction/open-source) open source. Please consult the [license](COPYING) for information regarding use.
 
-We’ve changed the license of our core extensions from the AGPL v3 to the [Elastic License v2](https://github.com/elastic/elasticsearch/blob/main/licenses/ELASTIC-LICENSE-2.0.txt).
+We've changed the license of our core extensions from the AGPL v3 to the [Elastic License v2](https://github.com/elastic/elasticsearch/blob/main/licenses/ELASTIC-LICENSE-2.0.txt).
 
 - Our blog post on the subject https://phasetwo.io/blog/licensing-change/
 - An attempt at a clarification https://github.com/p2-inc/keycloak-orgs/issues/81#issuecomment-1554683102
