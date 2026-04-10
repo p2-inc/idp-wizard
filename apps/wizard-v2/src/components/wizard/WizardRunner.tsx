@@ -86,6 +86,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
       api,
       formValues,
       aliasSessionKey: definition.alias.sessionKey,
+      config,
     });
   };
 

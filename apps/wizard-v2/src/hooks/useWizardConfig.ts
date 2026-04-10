@@ -8,6 +8,7 @@ export interface WizardConfig {
   // spell-checker: disable-next-line
   apiMode: "cloud" | "onprem" | "";
   emailAsUsername: boolean;
+  usernameMapperImport: boolean;
   enableDashboard: boolean;
   enableLdap: boolean;
   enableGroupMapping: boolean;
@@ -20,6 +21,7 @@ const DEFAULT_CONFIG: WizardConfig = {
   displayName: "Identity Provider",
   apiMode: "",
   emailAsUsername: false,
+  usernameMapperImport: true,
   enableDashboard: false,
   enableLdap: false,
   enableGroupMapping: false,
