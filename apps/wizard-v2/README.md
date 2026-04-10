@@ -10,6 +10,7 @@ A rewrite of the Phase Two IDP Wizard. Wizards are defined declaratively as JSON
 - **shadcn/ui** (new-york style) — component library
 - **TanStack Router** — file-based routing with full type safety
 - **oidc-spa** — OIDC authentication against Keycloak
+- **openapi-fetch** — typed HTTP clients generated from OpenAPI specs
 
 ## Project structure
 
@@ -25,30 +26,52 @@ wizard-v2/
 │   │   ├── ProviderSelectorPage.ts
 │   │   └── WizardPage.ts
 │   └── provider-selector.spec.ts
+├── openapi-codegen/
+│   └── gen.ts                  # Generates typed API clients from OpenAPI specs
 ├── public/
 │   ├── favicons/               # Favicon assets
 │   ├── phasetwo-logos/         # Phase Two brand assets
 │   ├── provider-logos/         # Per-provider logos for the selector UI
 │   └── wizards/                # Step screenshots, one folder per provider
 ├── src/
-│   ├── components/ui/          # shadcn/ui components
+│   ├── api/
+│   │   ├── clients.ts          # createOrgsClient / createAdminClient (openapi-fetch)
+│   │   └── types/
+│   │       ├── orgs.d.ts       # Generated types — Phase Two Orgs API
+│   │       └── admin.d.ts      # Generated types — Keycloak Admin API
+│   ├── components/
+│   │   ├── ui/                 # shadcn/ui components
+│   │   └── wizard/
+│   │       ├── types.ts        # TypeScript types for wizard JSON schema
+│   │       ├── resolveTemplate.ts  # {{token}} template resolver
+│   │       ├── executeAction.ts    # Action executor (HTTP calls, alias cleanup)
+│   │       ├── WizardRunner.tsx    # Loads JSON, renders steps + navigation
+│   │       └── WizardStep.tsx      # Renders individual step blocks
+│   ├── context/
+│   │   └── WizardContext.tsx   # State, reducer, and React context
 │   ├── data/
 │   │   └── providers.ts        # Provider registry (id, name, logo, protocols)
 │   ├── hooks/
-│   │   └── useWizardConfig.ts  # Fetches realm config.json (logoUrl, appName, apiMode…)
+│   │   ├── useWizardApi.ts     # Resolves API clients, endpoints, apiMode
+│   │   └── useWizardConfig.ts  # Fetches realm config.json (logoUrl, appName…)
 │   ├── lib/
+│   │   ├── alias.ts            # sessionStorage alias helpers
 │   │   └── utils.ts            # cn() helper (clsx + tailwind-merge)
 │   ├── routes/
-│   │   ├── __root.tsx                                   # Root — OidcInitializationGate
-│   │   ├── _authenticated.tsx                           # Layout — home button header
-│   │   ├── _authenticated.index.tsx                     # Provider selector (/)
-│   │   ├── _authenticated.wizard.$providerId.tsx        # Protocol picker
-│   │   └── _authenticated.wizard.$providerId.$protocol.tsx  # Wizard runner
+│   │   ├── __root.tsx                                        # Root — OidcInitializationGate
+│   │   ├── _authenticated.tsx                                # Layout — home button header
+│   │   ├── _authenticated.index.tsx                          # Provider selector (/)
+│   │   ├── _authenticated.wizard.$providerId.tsx             # Layout wrapper — Outlet only
+│   │   ├── _authenticated.wizard.$providerId.index.tsx       # Protocol picker
+│   │   └── _authenticated.wizard.$providerId.$protocol.tsx   # Wizard page
 │   ├── index.css               # Tailwind + Phase Two color scheme (OKLCH tokens)
 │   ├── main.tsx                # TanStack RouterProvider entry point
 │   └── oidc.ts                 # oidc-spa setup: useOidc, fetchWithAuth, OidcInitializationGate
 ├── wizards/
-│   └── generic-saml.json       # Declarative wizard definition (SAML)
+│   ├── saml/
+│   │   └── saml.json           # Generic SAML wizard definition
+│   └── <provider>/
+│       └── <protocol>.json     # Provider-specific wizard definitions
 ├── .env.local.sample           # Environment variable template
 ├── playwright.config.ts        # Playwright E2E config
 └── components.json             # shadcn/ui config
@@ -56,11 +79,83 @@ wizard-v2/
 
 ## Architecture
 
-Wizards are JSON files in `wizards/`. Each file describes a complete wizard — steps, UI blocks, forms, actions, and API calls — without any bespoke React components. A runtime engine (in development) reads the JSON and renders the wizard generically.
+Wizards are JSON files in `wizards/`. Each file describes a complete wizard — steps, UI blocks, forms, actions, and API calls — without any bespoke React components. A runtime engine reads the JSON and renders the wizard generically.
 
 This means adding a new identity provider requires only a new JSON file, not a new component tree.
 
-See `wizards/generic-saml.json` for a working example of the schema.
+### Wizard JSON schema
+
+Wizard files live at `wizards/{providerId}/{protocol}.json`. The runtime loads the file for the active provider and protocol. If no provider-specific file exists, the wizard shows a "not yet available" message — there is no generic fallback.
+
+Each wizard JSON has four top-level keys:
+
+| Key | Description |
+|-----|-------------|
+| `steps` | Ordered list of wizard steps, each with an `id`, `title`, optional `enableNextWhen` expression, and a list of `blocks` |
+| `forms` | Named form definitions (fields, validation) rendered by `FormGroup` blocks |
+| `actions` | Named action definitions (HTTP calls, alias cleanup) invoked on form submit or confirm |
+| `alias` | Alias configuration — `sessionKey` for sessionStorage, `prefix` for generated alias strings |
+
+Template tokens in JSON values (`{{api.entityId}}`, `{{form.fieldId}}`, `{{state.metadata}}`, `{{alias}}`, `{{item.*}}`) are resolved at runtime from the wizard context.
+
+## API clients
+
+The wizard uses two typed HTTP clients generated from OpenAPI specs — one for the Phase Two Orgs API (cloud/organization mode) and one for the Keycloak Admin API (on-premises/realm-wide mode). Both are created in `src/api/clients.ts` using [openapi-fetch](https://openapi-ts.dev/openapi-fetch/).
+
+### Regenerating types
+
+```bash
+npx tsx openapi-codegen/gen.ts
+```
+
+This fetches the latest specs and writes:
+- `src/api/types/orgs.d.ts` — Phase Two Orgs API types
+- `src/api/types/admin.d.ts` — Keycloak Admin API types
+
+### Cloud vs. on-premises mode
+
+The wizard operates in one of two API modes depending on how it is launched:
+
+| Mode | Trigger | API used | Endpoint pattern |
+|------|---------|---------|-----------------|
+| **cloud** | `?org_id=<id>` present in URL | Phase Two Orgs API | `/{realm}/orgs/{orgId}/idps/...` |
+| **onprem** | No `org_id` param | Keycloak Admin API | `/admin/realms/{realm}/identity-provider/...` |
+
+`useWizardApi` (in `src/hooks/useWizardApi.ts`) inspects the `org_id` search param to set `apiMode` and resolves the correct endpoint URLs and typed client for each mode. The wizard JSON actions reference named endpoint slots (`importConfig`, `createIdp`, `addMappers`) rather than raw URLs — these are resolved to the correct mode-specific URLs at runtime.
+
+### Endpoint reference
+
+| Slot | Cloud URL | On-prem URL |
+|------|-----------|-------------|
+| `importConfig` | `POST /{realm}/orgs/{orgId}/idps/import-config` | `POST /admin/realms/{realm}/identity-provider/import-config` |
+| `createIdp` | `POST /{realm}/orgs/{orgId}/idps` | `POST /admin/realms/{realm}/identity-provider/instances` |
+| `addMappers` | `POST /{realm}/orgs/{orgId}/idps/{alias}/mappers` | `POST /admin/realms/{realm}/identity-provider/instances/{alias}/mappers` |
+
+### Realm and server URL
+
+Both are parsed from `VITE_OIDC_ISSUER_URI` at startup. The parser handles both legacy Keycloak paths (`/auth/realms/<realm>`) and modern paths (`/realms/<realm>`).
+
+### Realm config
+
+`useWizardConfig` fetches `{issuerUri}/wizard/config.json` and exposes optional realm-level overrides:
+
+| Key | Description |
+|-----|-------------|
+| `logoUrl` | Replaces the Phase Two slash logo on the provider selector |
+| `appName` | Shown above the provider search card |
+| `apiMode` | Override the auto-detected mode (`"cloud"` or `"onprem"`) |
+| `emailAsUsername` | Adds an email→username mapper when creating the IDP |
+
+If the file is missing or the fetch fails, defaults are used silently.
+
+## IDP alias
+
+Each wizard session generates a unique IDP alias (e.g. `saml-saml-a1b2c3`) stored in `sessionStorage`. The alias is:
+
+- Stable for the duration of the browser tab/session
+- Used as the IDP identifier in all API calls during the wizard
+- Cleared from `sessionStorage` on successful wizard completion (via the `clearAlias` action)
+- Scoped per provider+protocol pair so multiple concurrent wizard sessions don't collide
 
 ## Local development
 
@@ -117,6 +212,8 @@ pnpm dev
 ```
 
 The app runs at `http://localhost:5173`. Log in with `wizard` / `password`.
+
+To test organization (cloud) mode, append `?org_id=<your-org-id>` to the URL. The debug strip in dev mode shows the resolved `apiMode`, `orgId`, `realm`, alias, and endpoint URLs.
 
 ### Mock mode
 

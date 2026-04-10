@@ -1,55 +1,48 @@
 /**
  * WizardRunner — loads a wizard JSON definition and renders the current step.
  *
- * Responsibilities:
- * - Import the JSON for the given providerId + protocol
- * - Render the step navigation (sidebar or step indicator)
- * - Render the current step via <WizardStep>
- * - Call executeAction when a form is submitted or the confirm button is clicked
- * - Advance/gate steps based on WizardState
- *
- * The runner is context-aware — it reads from WizardContext for state and API
- * clients. It does not own any state directly.
- *
- * TODO: the JSON loader, step navigation UI, and executeAction integration are
- * all stubs. The step renderer (WizardStep + block renderers) is partially
- * implemented. Build these out in order:
- *   1. JSON loader (dynamic import from wizards/{providerId}/{protocol}.json)
- *   2. Step navigation sidebar (step names, canJumpTo gating, current indicator)
- *   3. Form renderers (controlled inputs, file upload, validation)
- *   4. executeAction HTTP calls (importConfig, createIdp, addMappers)
- *   5. enableNextWhen expression evaluator
+ * Layout:
+ *   ┌─────────────────────────────────────────────────────┐
+ *   │  [← Providers]         [Provider logo + name]       │  ← _authenticated.tsx header
+ *   ├───────────────────┬─────────────────────────────────┤
+ *   │  Step 1           │  Step content                   │
+ *   │  Step 2  ←sidebar │                                 │
+ *   │  Step 3           │                                 │
+ *   │                   │                                 │
+ *   │  [P2 logo]        │  [Back]  [Continue]             │
+ *   └───────────────────┴─────────────────────────────────┘
  */
 import { useState, useEffect } from "react";
 import { ChevronRight, Construction } from "lucide-react";
 import { useWizardContext } from "@/context/WizardContext";
+import { useWizardConfig } from "@/hooks/useWizardConfig";
 import { WizardStep } from "./WizardStep";
 import { executeAction } from "./executeAction";
 import type { WizardDefinition } from "./types";
+import type { Provider } from "@/data/providers";
+import { cn } from "@/lib/utils";
 
 interface Props {
   providerId: string;
   protocol: string;
+  provider: Provider;
 }
 
-export function WizardRunner({ providerId, protocol }: Props) {
+const FALLBACK_LOGO = "/phasetwo-logos/logo_phase_slash.svg";
+
+export function WizardRunner({ providerId, protocol, provider }: Props) {
   const ctx = useWizardContext();
   const { state, dispatch, api, orgsClient, adminClient, apiMode, realm, orgId } = ctx;
+  const { config } = useWizardConfig();
 
   const [definition, setDefinition] = useState<WizardDefinition | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   // ---------------------------------------------------------------------------
   // Load the wizard JSON definition
-  //
-  // import.meta.glob pre-registers all wizard JSON files at build time so Vite
-  // can bundle them. At runtime we look for a provider-specific file first
-  // (e.g. wizards/okta/saml.json) and fall back to the generic protocol wizard
-  // (wizards/generic/saml.json) if none exists.
   // ---------------------------------------------------------------------------
   useEffect(() => {
     const modules = import.meta.glob("../../../wizards/**/*.json");
-
     const providerKey = `../../../wizards/${providerId}/${protocol}.json`;
     const loader = modules[providerKey];
 
@@ -64,7 +57,7 @@ export function WizardRunner({ providerId, protocol }: Props) {
   }, [providerId, protocol]);
 
   // ---------------------------------------------------------------------------
-  // Action handler — called by WizardStep when a form submits or confirm fires
+  // Action handler
   // ---------------------------------------------------------------------------
   const handleAction = async (
     actionKey: string,
@@ -97,17 +90,16 @@ export function WizardRunner({ providerId, protocol }: Props) {
   };
 
   // ---------------------------------------------------------------------------
-  // Render
+  // Error state
   // ---------------------------------------------------------------------------
-
   if (loadError) {
     return (
-      <div className="flex flex-col items-center gap-3 py-16 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
         <Construction className="text-muted-foreground/50 h-10 w-10" />
         <p className="font-medium">Wizard not yet available</p>
         <p className="text-muted-foreground max-w-xs text-sm">
           A guided setup for this provider and protocol hasn't been built yet.
-          Check back soon or use the generic wizard from the provider selector.
+          Check back soon or configure it manually in the Keycloak admin console.
         </p>
       </div>
     );
@@ -115,7 +107,7 @@ export function WizardRunner({ providerId, protocol }: Props) {
 
   if (!definition) {
     return (
-      <div className="text-muted-foreground py-8 text-center text-sm">
+      <div className="text-muted-foreground flex flex-1 items-center justify-center py-8 text-sm">
         Loading wizard…
       </div>
     );
@@ -129,76 +121,127 @@ export function WizardRunner({ providerId, protocol }: Props) {
     ? evaluateExpression(currentStep.enableNextWhen, state)
     : true;
 
+  const sidebarLogo = config.logoUrl ?? FALLBACK_LOGO;
+
   return (
-    <div className="flex gap-8">
-      {/* Step sidebar */}
-      <aside className="hidden w-48 shrink-0 md:block">
-        <ol className="flex flex-col gap-1">
-          {definition.steps.map((step) => {
-            const isActive = step.id === state.currentStep;
-            const isReached = step.id <= state.stepIdReached;
-            return (
-              <li key={step.id}>
-                <button
-                  onClick={() =>
-                    isReached && dispatch({ type: "ADVANCE_STEP", toStep: step.id })
-                  }
-                  disabled={!isReached}
-                  className={[
-                    "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs transition-colors",
-                    isActive
-                      ? "bg-accent font-medium text-foreground"
-                      : isReached
-                        ? "text-muted-foreground hover:text-foreground"
-                        : "cursor-default text-muted-foreground/40",
-                  ].join(" ")}
-                >
-                  <span className={[
-                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : isReached
-                        ? "bg-muted text-muted-foreground"
-                        : "bg-muted/40 text-muted-foreground/40",
-                  ].join(" ")}>
-                    {step.id}
-                  </span>
-                  {step.title}
-                </button>
-              </li>
-            );
-          })}
-        </ol>
+    <div className="flex h-full min-h-0">
+      {/* ------------------------------------------------------------------ */}
+      {/* Left sidebar                                                        */}
+      {/* ------------------------------------------------------------------ */}
+      <aside className="border-border flex w-52 shrink-0 flex-col border-r">
+        <nav className="flex-1 overflow-y-auto p-4">
+          <ol className="flex flex-col gap-1">
+            {definition.steps.map((step) => {
+              const isActive = step.id === state.currentStep;
+              const isReached = step.id <= state.stepIdReached;
+              return (
+                <li key={step.id}>
+                  <button
+                    onClick={() =>
+                      isReached &&
+                      dispatch({ type: "ADVANCE_STEP", toStep: step.id })
+                    }
+                    disabled={!isReached}
+                    className={cn(
+                      "flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-xs transition-colors",
+                      isActive
+                        ? "bg-accent font-medium text-foreground"
+                        : isReached
+                          ? "text-muted-foreground hover:text-foreground"
+                          : "cursor-default text-muted-foreground/40",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
+                        isActive
+                          ? "bg-primary text-primary-foreground"
+                          : isReached
+                            ? "bg-muted text-muted-foreground"
+                            : "bg-muted/40 text-muted-foreground/40",
+                      )}
+                    >
+                      {step.id}
+                    </span>
+                    {step.title}
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
+
+        {/* Phase Two / realm logo at bottom of sidebar */}
+        <div className="border-border border-t p-4">
+          <img
+            src={sidebarLogo}
+            alt={config.appName ?? "Phase Two"}
+            className="h-6 object-contain opacity-60"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = FALLBACK_LOGO;
+            }}
+          />
+        </div>
       </aside>
 
-      {/* Step content */}
-      <div className="flex flex-1 flex-col gap-6">
-        <WizardStep
-          step={currentStep}
-          forms={definition.forms}
-          onAction={handleAction}
-        />
+      {/* ------------------------------------------------------------------ */}
+      {/* Main content area                                                   */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Provider header */}
+        <div className="border-border flex shrink-0 items-center gap-3 border-b px-6 py-4">
+          <img
+            src={provider.logo}
+            alt={provider.name}
+            className="h-8 w-8 shrink-0 object-contain"
+          />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold leading-tight">{provider.name}</p>
+            <p className="text-muted-foreground text-xs uppercase tracking-wide">
+              {protocol}
+            </p>
+          </div>
+        </div>
 
-        {/* Navigation buttons */}
-        <div className="flex justify-end gap-3">
-          {state.currentStep > 1 && (
-            <button
-              onClick={() => dispatch({ type: "ADVANCE_STEP", toStep: state.currentStep - 1 })}
-              className="border-border rounded-md border px-4 py-2 text-sm transition-colors hover:bg-accent"
-            >
-              Back
-            </button>
-          )}
-          {!isLastStep && (
-            <button
-              onClick={() => dispatch({ type: "ADVANCE_STEP", toStep: state.currentStep + 1 })}
-              disabled={!canAdvance}
-              className="flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
-            >
-              Continue
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          )}
+        {/* Step content */}
+        <div className="flex flex-1 flex-col overflow-y-auto px-6 py-6">
+          <WizardStep
+            step={currentStep}
+            forms={definition.forms}
+            onAction={handleAction}
+          />
+
+          {/* Navigation buttons */}
+          <div className="mt-8 flex justify-end gap-3">
+            {state.currentStep > 1 && (
+              <button
+                onClick={() =>
+                  dispatch({
+                    type: "ADVANCE_STEP",
+                    toStep: state.currentStep - 1,
+                  })
+                }
+                className="border-border rounded-md border px-4 py-2 text-sm transition-colors hover:bg-accent"
+              >
+                Back
+              </button>
+            )}
+            {!isLastStep && (
+              <button
+                onClick={() =>
+                  dispatch({
+                    type: "ADVANCE_STEP",
+                    toStep: state.currentStep + 1,
+                  })
+                }
+                disabled={!canAdvance}
+                className="flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+              >
+                Continue
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -207,9 +250,6 @@ export function WizardRunner({ providerId, protocol }: Props) {
 
 // ---------------------------------------------------------------------------
 // Expression evaluator for enableNextWhen
-//
-// Supports simple boolean state lookups: "state.metadataValidated"
-// TODO: extend to support comparisons like "state.stepIdReached >= 3"
 // ---------------------------------------------------------------------------
 function evaluateExpression(
   expression: string,
@@ -217,14 +257,12 @@ function evaluateExpression(
 ): boolean {
   const trimmed = expression.trim();
 
-  // "state.fieldName" — direct boolean field lookup
   const stateMatch = trimmed.match(/^state\.(\w+)$/);
   if (stateMatch) {
     const field = stateMatch[1] as keyof typeof state;
     return Boolean(state[field]);
   }
 
-  // Fallback — unknown expression, allow advancement
   console.warn(`WizardRunner: unknown enableNextWhen expression: "${expression}"`);
   return true;
 }

@@ -1,6 +1,6 @@
 /**
  * TypeScript types mirroring the wizard JSON schema (schemaVersion: "1.0").
- * Keep in sync with the schema described in AGENTS.md and wizards/generic/saml.json.
+ * Keep in sync with the schema described in AGENTS.md and wizards/**\/\*.json.
  */
 
 // ---------------------------------------------------------------------------
@@ -23,7 +23,7 @@ export interface CopyBlock {
 export interface FormGroupBlock {
   type: "formGroup";
   id: string;
-  /** When true, only one form in the group can be validated at a time */
+  /** When true, only one form in the group can be validated at a time (renders as tabs) */
   exclusive: boolean;
   /** Keys into the parent wizard's `forms` dictionary */
   forms: string[];
@@ -51,12 +51,20 @@ export interface ConfirmBlock {
   adminButtonText: string;
 }
 
+export interface ImageBlock {
+  type: "image";
+  src: string;
+  alt?: string;
+  caption?: string;
+}
+
 export type WizardBlock =
   | TextBlock
   | CopyBlock
   | FormGroupBlock
   | AttributeTableBlock
-  | ConfirmBlock;
+  | ConfirmBlock
+  | ImageBlock;
 
 // ---------------------------------------------------------------------------
 // Steps
@@ -76,7 +84,7 @@ export interface WizardStep {
 // Forms
 // ---------------------------------------------------------------------------
 
-export type FieldType = "text" | "url" | "file";
+export type FieldType = "text" | "url" | "file" | "password" | "textarea";
 
 export interface FormField {
   id: string;
@@ -107,6 +115,14 @@ export interface WizardForm {
 
 export type ContentType = "json" | "multipart";
 
+export type EndpointSlot =
+  | "importConfig"
+  | "createIdp"
+  | "addMappers"
+  | "testLdapConnection"
+  | "createComponent"
+  | "triggerSync";
+
 export interface ActionOnSuccess {
   /** Merge the entire response body into state.metadata */
   mergeIntoMetadata?: string;
@@ -117,7 +133,7 @@ export interface ActionOnSuccess {
 }
 
 export interface HttpAction {
-  endpoint: "importConfig" | "createIdp" | "addMappers";
+  endpoint: EndpointSlot;
   method: "POST" | "PUT" | "GET" | "DELETE";
   contentType: ContentType;
   /** Body template — values like "{{form.url}}" are resolved at call time */
@@ -135,7 +151,14 @@ export interface ClearAliasAction {
   type: "clearAlias";
 }
 
-export type WizardAction = HttpAction | ClearAliasAction;
+/** Saves current form values into wizard state fields without an API call */
+export interface SaveFormAction {
+  type: "saveForm";
+  dispatch?: string[];
+  fields: string[];
+}
+
+export type WizardAction = HttpAction | ClearAliasAction | SaveFormAction;
 
 // ---------------------------------------------------------------------------
 // IDP config defaults

@@ -48,7 +48,6 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
 
     const adminBase = `${serverUrl}/admin`;
 
-    // Template values exposed to wizard JSON blocks via {{api.*}}
     const api = {
       entityId: `${serverUrl}/realms/${realm}`,
       ssoUrl: (alias: string) => `${serverUrl}/realms/${realm}/broker/${alias}/endpoint`,
@@ -57,10 +56,6 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
         `${adminBase}/${realm}/console/#/identity-providers/saml/${alias}/settings`,
       adminLinkOidc: (alias: string) =>
         `${adminBase}/${realm}/console/#/identity-providers/oidc/${alias}/settings`,
-      /**
-       * Legacy URL-based endpoints kept for the wizard JSON action runner
-       * until the runner is built to call typed client methods directly.
-       */
       endpoints:
         apiMode === "cloud" && orgId
           ? {
@@ -68,12 +63,21 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
               createIdp: `${serverUrl}/realms/${realm}/orgs/${orgId}/idps`,
               addMappers: (alias: string) =>
                 `${serverUrl}/realms/${realm}/orgs/${orgId}/idps/${alias}/mappers`,
+              // LDAP user federation always uses the admin API regardless of apiMode
+              testLdapConnection: `${adminBase}/realms/${realm}/testLDAPConnection`,
+              createComponent: `${adminBase}/realms/${realm}/components`,
+              triggerSync: (componentId: string) =>
+                `${adminBase}/realms/${realm}/user-storage/${componentId}/sync`,
             }
           : {
               importConfig: `${adminBase}/realms/${realm}/identity-provider/import-config`,
               createIdp: `${adminBase}/realms/${realm}/identity-provider/instances`,
               addMappers: (alias: string) =>
                 `${adminBase}/realms/${realm}/identity-provider/instances/${alias}/mappers`,
+              testLdapConnection: `${adminBase}/realms/${realm}/testLDAPConnection`,
+              createComponent: `${adminBase}/realms/${realm}/components`,
+              triggerSync: (componentId: string) =>
+                `${adminBase}/realms/${realm}/user-storage/${componentId}/sync`,
             },
     };
 

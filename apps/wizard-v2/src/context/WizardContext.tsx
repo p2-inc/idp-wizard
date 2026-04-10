@@ -9,6 +9,12 @@ export interface WizardEndpoints {
   createIdp: string;
   /** POST — adds attribute mappers to an existing IDP */
   addMappers: (alias: string) => string;
+  /** POST — tests an LDAP connection or authentication */
+  testLdapConnection: string;
+  /** POST — creates a Keycloak component (e.g. user storage provider) */
+  createComponent: string;
+  /** POST — triggers a user sync for a user storage component */
+  triggerSync: (componentId: string) => string;
 }
 
 /** Read-only derived values the wizard templates can reference as {{api.*}} */
@@ -52,17 +58,31 @@ export interface WizardState {
   /** Raw IDP config returned from the import-config endpoint */
   metadata: Record<string, unknown> | null;
   metadataValidated: boolean;
+  credentialsProvided: boolean;
+  connectionTested: boolean;
+  authTested: boolean;
   submitting: boolean;
   submitted: boolean;
   error: string | null;
   result: string | null;
   idpTestLink: string | null;
+  /** Accumulated form values from saveForm actions, keyed by field id */
+  formValues: Record<string, unknown>;
+  /** Client ID saved from credentials step (OIDC) */
+  clientId: string | null;
+  /** Client secret saved from credentials step (OIDC) */
+  clientSecret: string | null;
 }
 
 export type WizardAction =
   | { type: "ADVANCE_STEP"; toStep: number }
   | { type: "SET_METADATA"; metadata: Record<string, unknown> }
   | { type: "METADATA_VALIDATED" }
+  | { type: "CREDENTIALS_PROVIDED" }
+  | { type: "CONNECTION_TESTED" }
+  | { type: "AUTH_TESTED" }
+  | { type: "SCHEMA_SAVED" }
+  | { type: "SAVE_FORM_VALUES"; values: Record<string, unknown> }
   | { type: "SUBMIT_START" }
   | { type: "SUBMIT_SUCCESS"; result: string; idpTestLink?: string }
   | { type: "SUBMIT_ERROR"; error: string }
@@ -75,11 +95,22 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         ...state,
         currentStep: action.toStep,
         stepIdReached: Math.max(state.stepIdReached, action.toStep),
+        error: null,
       };
     case "SET_METADATA":
       return { ...state, metadata: action.metadata };
     case "METADATA_VALIDATED":
       return { ...state, metadataValidated: true };
+    case "CREDENTIALS_PROVIDED":
+      return { ...state, credentialsProvided: true };
+    case "CONNECTION_TESTED":
+      return { ...state, connectionTested: true };
+    case "AUTH_TESTED":
+      return { ...state, authTested: true };
+    case "SCHEMA_SAVED":
+      return state;
+    case "SAVE_FORM_VALUES":
+      return { ...state, formValues: { ...state.formValues, ...action.values } };
     case "SUBMIT_START":
       return { ...state, submitting: true, error: null };
     case "SUBMIT_SUCCESS":
@@ -106,11 +137,17 @@ export function makeInitialWizardState(alias: string): WizardState {
     stepIdReached: 1,
     metadata: null,
     metadataValidated: false,
+    credentialsProvided: false,
+    connectionTested: false,
+    authTested: false,
     submitting: false,
     submitted: false,
     error: null,
     result: null,
     idpTestLink: null,
+    formValues: {},
+    clientId: null,
+    clientSecret: null,
   };
 }
 

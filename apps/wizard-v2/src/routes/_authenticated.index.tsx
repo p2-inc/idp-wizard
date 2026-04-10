@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import Fuse from "fuse.js";
-import { Search, HelpCircle } from "lucide-react";
+import { Search, HelpCircle, Building2, ChevronDown, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -19,6 +19,7 @@ import {
   type Provider,
 } from "@/data/providers";
 import { useWizardConfig } from "@/hooks/useWizardConfig";
+import { useOidc } from "@/oidc";
 
 const searchSchema = z.object({
   org_id: z.string().optional(),
@@ -31,6 +32,28 @@ export const Route = createFileRoute("/_authenticated/")({
 
 const FALLBACK_LOGO = "/phasetwo-logos/logo_phase_slash.svg";
 
+// ---------------------------------------------------------------------------
+// Required roles to manage identity providers in an org
+// ---------------------------------------------------------------------------
+const REQUIRED_ORG_ROLES = [
+  "view-organization",
+  "manage-organization",
+  "view-identity-providers",
+  "manage-identity-providers",
+];
+
+// ---------------------------------------------------------------------------
+// Token organizations claim shape
+// ---------------------------------------------------------------------------
+type OrgClaims = Record<string, { name?: string; roles?: string[] }>;
+
+function hasAllRoles(orgEntry: { roles?: string[] }): boolean {
+  return REQUIRED_ORG_ROLES.every((r) => orgEntry.roles?.includes(r));
+}
+
+// ---------------------------------------------------------------------------
+// Protocol badges
+// ---------------------------------------------------------------------------
 const protocolBadgeClass: Record<Protocol, string> = {
   saml: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
   oidc: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
@@ -82,6 +105,92 @@ function ProviderRow({
   );
 }
 
+// ---------------------------------------------------------------------------
+// Organization picker
+// ---------------------------------------------------------------------------
+function OrgPicker({
+  orgId,
+  orgs,
+  onChange,
+}: {
+  orgId: string | null;
+  orgs: OrgClaims;
+  onChange: (id: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const eligibleOrgs = Object.entries(orgs).filter(([, v]) => hasAllRoles(v));
+  if (eligibleOrgs.length === 0) return null;
+
+  const currentName =
+    orgId && orgs[orgId]
+      ? (orgs[orgId].name ?? orgId)
+      : "Global (realm-wide)";
+
+  return (
+    <div className="w-full max-w-sm">
+      <button
+        onClick={() => setOpen(true)}
+        className="border-border bg-card flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent"
+      >
+        <div className="flex items-center gap-2 truncate">
+          <Building2 className="text-muted-foreground h-4 w-4 shrink-0" />
+          <span className="truncate font-medium">{currentName}</span>
+        </div>
+        <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
+      </button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Select Organization</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-1 py-2">
+            {/* Realm-wide option */}
+            <button
+              onClick={() => { onChange(null); setOpen(false); }}
+              className={cn(
+                "flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent",
+                !orgId && "bg-accent",
+              )}
+            >
+              <div>
+                <p className="font-medium">Global</p>
+                <p className="text-muted-foreground text-xs">Realm-wide configuration</p>
+              </div>
+              {!orgId && <Check className="h-4 w-4 text-primary" />}
+            </button>
+
+            {eligibleOrgs.length > 0 && (
+              <div className="border-border my-1 border-t" />
+            )}
+
+            {eligibleOrgs.map(([id, org]) => (
+              <button
+                key={id}
+                onClick={() => { onChange(id); setOpen(false); }}
+                className={cn(
+                  "flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent",
+                  orgId === id && "bg-accent",
+                )}
+              >
+                <div>
+                  <p className="font-medium">{org.name ?? id}</p>
+                  <p className="text-muted-foreground font-mono text-xs">{id}</p>
+                </div>
+                {orgId === id && <Check className="h-4 w-4 text-primary" />}
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Instructions dialog
+// ---------------------------------------------------------------------------
 function InstructionsDialog() {
   return (
     <Dialog>
@@ -133,11 +242,23 @@ function InstructionsDialog() {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 function ProviderSelector() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const { config } = useWizardConfig();
-  const { org_id: orgId } = Route.useSearch();
+  const { org_id: initialOrgId } = Route.useSearch();
+
+  // Org state — starts from URL param, can be changed via picker
+  const [orgId, setOrgId] = useState<string | null>(initialOrgId ?? null);
+
+  // Read organizations from the OIDC token
+  const oidc = useOidc();
+  const orgs: OrgClaims =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ((oidc.decodedIdToken as any)?.organizations as OrgClaims) ?? {};
 
   const logoSrc = config.logoUrl ?? FALLBACK_LOGO;
 
@@ -171,9 +292,18 @@ function ProviderSelector() {
     }
   };
 
+  const handleOrgChange = (id: string | null) => {
+    setOrgId(id);
+    navigate({
+      to: "/",
+      search: id ? { org_id: id } : {},
+      replace: true,
+    });
+  };
+
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 p-6">
-      {/* Branding above the card */}
+    <div className="flex flex-1 flex-col items-center justify-center gap-6 p-6">
+      {/* Branding */}
       <div className="flex flex-col items-center gap-3">
         <img
           src={logoSrc}
@@ -184,15 +314,17 @@ function ProviderSelector() {
           }}
         />
         {config.appName && (
-          <p className="text-sm font-medium text-foreground">
-            {config.appName}
-          </p>
+          <p className="text-sm font-medium text-foreground">{config.appName}</p>
         )}
       </div>
 
-      {/* Card */}
+      {/* Org picker — only shown when there are eligible orgs */}
+      {Object.keys(orgs).some((id) => hasAllRoles(orgs[id])) && (
+        <OrgPicker orgId={orgId} orgs={orgs} onChange={handleOrgChange} />
+      )}
+
+      {/* Provider search card */}
       <div className="bg-card border-border w-full max-w-sm overflow-hidden rounded-xl border shadow-md">
-        {/* Search */}
         <div className="border-border border-b p-3">
           <div className="relative">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
@@ -208,7 +340,6 @@ function ProviderSelector() {
           </div>
         </div>
 
-        {/* List */}
         <div className="max-h-72 overflow-y-auto">
           {filteredProviders ? (
             filteredProviders.length === 0 ? (
@@ -227,7 +358,6 @@ function ProviderSelector() {
             )
           ) : (
             <>
-              {/* Specific providers */}
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Providers
               </div>
@@ -240,7 +370,6 @@ function ProviderSelector() {
                 />
               ))}
 
-              {/* Generics */}
               <div className="border-border border-t" />
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Generic
@@ -258,7 +387,7 @@ function ProviderSelector() {
         </div>
       </div>
 
-      {/* Help link below card */}
+      {/* Help link */}
       <div className="flex w-full max-w-sm justify-center">
         <InstructionsDialog />
       </div>

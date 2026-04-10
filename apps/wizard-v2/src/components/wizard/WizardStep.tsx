@@ -4,25 +4,25 @@
  * Iterates over the step's `blocks` array and delegates each block to the
  * appropriate block renderer. This component is stateless — all state lives
  * in WizardContext.
- *
- * TODO: implement block renderers as this component is fleshed out.
- * Current stubs display placeholder UI so the runner can be wired up end-to-end
- * before individual blocks are polished.
  */
-import type { WizardStep as WizardStepDef, WizardBlock } from "./types";
+import { useState } from "react";
+import type { WizardStep as WizardStepDef, WizardBlock, WizardForm, FormField } from "./types";
 import { resolveTemplate, buildTemplateContext } from "./resolveTemplate";
 import { useWizardContext } from "@/context/WizardContext";
+import { CopyField } from "@/components/ui/copy-field";
+import { FileInput } from "@/components/ui/file-input";
+import { ImageZoom } from "./ImageZoom";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 
 interface Props {
   step: WizardStepDef;
-  forms: Record<string, import("./types").WizardForm>;
-  /** Called when the user submits a form or clicks the confirm button */
+  forms: Record<string, WizardForm>;
   onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
 }
 
 export function WizardStep({ step, forms, onAction }: Props) {
   const { state, api } = useWizardContext();
-
   const ctx = buildTemplateContext({ alias: state.alias, api, state });
 
   return (
@@ -42,13 +42,13 @@ export function WizardStep({ step, forms, onAction }: Props) {
 }
 
 // ---------------------------------------------------------------------------
-// Block renderers
+// Block dispatcher
 // ---------------------------------------------------------------------------
 
 interface BlockProps {
   block: WizardBlock;
   ctx: Record<string, unknown>;
-  forms: Record<string, import("./types").WizardForm>;
+  forms: Record<string, WizardForm>;
   onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
 }
 
@@ -59,10 +59,19 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
 
     case "copy":
       return (
-        <CopyBlockRenderer
+        <CopyField
           label={block.label}
           value={resolveTemplate(block.value, ctx)}
           hint={block.hint}
+        />
+      );
+
+    case "image":
+      return (
+        <ImageZoom
+          src={resolveTemplate(block.src, ctx)}
+          alt={block.alt}
+          caption={block.caption}
         />
       );
 
@@ -88,48 +97,16 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
       );
 
     default:
-      // Exhaustiveness check — will surface unknown block types at compile time
       return null;
   }
 }
 
 // ---------------------------------------------------------------------------
-// Individual block stubs
-// Each one is a separate named component so they can be extracted to their
-// own files once the implementation grows.
+// Block renderers
 // ---------------------------------------------------------------------------
 
 function TextBlockRenderer({ content }: { content: string }) {
-  return <p className="text-muted-foreground text-sm">{content}</p>;
-}
-
-function CopyBlockRenderer({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-}) {
-  const handleCopy = () => navigator.clipboard.writeText(value);
-
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-sm font-medium">{label}</span>
-      <div className="border-border flex items-center gap-2 rounded-md border px-3 py-2">
-        <code className="flex-1 truncate font-mono text-xs">{value || "—"}</code>
-        <button
-          onClick={handleCopy}
-          className="text-muted-foreground hover:text-foreground shrink-0 text-xs transition-colors"
-          disabled={!value}
-        >
-          Copy
-        </button>
-      </div>
-      {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
-    </div>
-  );
+  return <p className="text-muted-foreground text-sm leading-relaxed">{content}</p>;
 }
 
 function FormGroupRenderer({
@@ -138,27 +115,42 @@ function FormGroupRenderer({
   onAction,
 }: {
   block: import("./types").FormGroupBlock;
-  forms: Record<string, import("./types").WizardForm>;
+  forms: Record<string, WizardForm>;
   onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
 }) {
-  // TODO: render as tabs (exclusive) or accordion; for now show all forms stacked
+  const validForms = block.forms.filter((k) => forms[k]);
+
+  if (block.exclusive && validForms.length > 1) {
+    return (
+      <Tabs defaultValue={validForms[0]}>
+        <TabsList className="w-full">
+          {validForms.map((formKey) => (
+            <TabsTrigger key={formKey} value={formKey} className="flex-1">
+              {forms[formKey].title}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {validForms.map((formKey) => (
+          <TabsContent key={formKey} value={formKey} className="mt-4">
+            <FormRenderer formKey={formKey} form={forms[formKey]} onAction={onAction} />
+          </TabsContent>
+        ))}
+      </Tabs>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      {block.forms.map((formKey) => {
-        const form = forms[formKey];
-        if (!form) return null;
-        return (
-          <FormRenderer
-            key={formKey}
-            formKey={formKey}
-            form={form}
-            onAction={onAction}
-          />
-        );
-      })}
+      {validForms.map((formKey) => (
+        <FormRenderer key={formKey} formKey={formKey} form={forms[formKey]} onAction={onAction} />
+      ))}
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// FormRenderer — controlled form with real inputs
+// ---------------------------------------------------------------------------
 
 function FormRenderer({
   formKey,
@@ -166,24 +158,144 @@ function FormRenderer({
   onAction,
 }: {
   formKey: string;
-  form: import("./types").WizardForm;
+  form: WizardForm;
   onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
 }) {
-  // TODO: implement controlled form state, validation, file inputs
-  // For now: renders a placeholder so the step renders without crashing
+  const { state } = useWizardContext();
+  const [values, setValues] = useState<Record<string, unknown>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const setValue = (id: string, v: unknown) =>
+    setValues((prev) => ({ ...prev, [id]: v }));
+
+  const validate = (): boolean => {
+    const next: Record<string, string> = {};
+    for (const field of form.fields) {
+      const v = values[field.id];
+      if (field.required && (v === undefined || v === null || v === "")) {
+        next[field.id] = `${field.label} is required.`;
+      }
+    }
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    setSubmitting(true);
+    try {
+      await onAction(form.submit.action, values);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
-    <div className="border-border rounded-lg border p-4">
-      <p className="text-sm font-medium">{form.title}</p>
-      <p className="text-muted-foreground text-xs">{form.description}</p>
-      <p className="text-muted-foreground mt-3 text-xs italic">
-        [{formKey} form — not yet implemented]
-      </p>
-      <button
-        onClick={() => onAction(form.submit.action, {})}
-        className="border-border mt-3 rounded border px-3 py-1.5 text-xs transition-colors hover:bg-accent"
-      >
-        {form.submit.label}
-      </button>
+    <div className="bg-card rounded-lg border p-5">
+      {form.description && (
+        <p className="text-muted-foreground mb-4 text-sm">{form.description}</p>
+      )}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
+        {form.fields.map((field) => (
+          <FieldRenderer
+            key={field.id}
+            field={field}
+            value={values[field.id]}
+            error={errors[field.id]}
+            onChange={(v) => {
+              setValue(field.id, v);
+              if (errors[field.id]) setErrors((prev) => { const n = { ...prev }; delete n[field.id]; return n; });
+            }}
+          />
+        ))}
+
+        {state.error && (
+          <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {state.error}
+          </p>
+        )}
+
+        <button
+          type="submit"
+          disabled={submitting || state.submitting}
+          className="mt-1 w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          {submitting || state.submitting ? "Working…" : form.submit.label}
+        </button>
+      </form>
+    </div>
+  );
+
+  // suppress unused var — formKey is used by the parent for tab keys
+  void formKey;
+}
+
+// ---------------------------------------------------------------------------
+// FieldRenderer — dispatches to the right input type
+// ---------------------------------------------------------------------------
+
+function FieldRenderer({
+  field,
+  value,
+  error,
+  onChange,
+}: {
+  field: FormField;
+  value: unknown;
+  error?: string;
+  onChange: (v: unknown) => void;
+}) {
+  const baseInput = cn(
+    "border-border w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors",
+    "placeholder:text-muted-foreground",
+    "focus:ring-2 focus:ring-ring focus:ring-offset-1",
+    error && "border-destructive focus:ring-destructive",
+  );
+
+  return (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium">
+        {field.label}
+        {field.required && <span className="text-destructive ml-0.5">*</span>}
+      </label>
+
+      {field.type === "file" ? (
+        <FileInput
+          accept={field.accept}
+          required={field.required}
+          value={(value as File) ?? null}
+          onChange={onChange}
+        />
+      ) : field.type === "textarea" ? (
+        <textarea
+          placeholder={field.placeholder}
+          required={field.required}
+          value={(value as string) ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          rows={4}
+          className={cn(baseInput, "resize-none")}
+        />
+      ) : (
+        <input
+          type={
+            field.type === "password"
+              ? "password"
+              : field.type === "url"
+                ? "url"
+                : "text"
+          }
+          placeholder={field.placeholder}
+          required={field.required}
+          value={(value as string) ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          className={baseInput}
+          autoComplete={field.type === "password" ? "current-password" : undefined}
+        />
+      )}
+
+      {error && <p className="text-destructive text-xs">{error}</p>}
     </div>
   );
 }
@@ -202,9 +314,10 @@ function AttributeTableRenderer({
       {rows.map((row, i) => (
         <div
           key={i}
-          className={`grid grid-cols-2 px-4 py-2.5 font-mono text-xs ${
-            i !== rows.length - 1 ? "border-border border-b" : ""
-          }`}
+          className={cn(
+            "grid grid-cols-2 px-4 py-2.5 font-mono text-xs",
+            i !== rows.length - 1 && "border-border border-b",
+          )}
         >
           <span>{row.idpAttribute}</span>
           <span className="text-muted-foreground">{row.keycloakAttribute}</span>
@@ -224,7 +337,7 @@ function ConfirmBlockRenderer({
   onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
 }) {
   const { state } = useWizardContext();
-  const adminLink = resolveTemplate(block.adminLink, ctx);
+  const adminLink = block.adminLink ? resolveTemplate(block.adminLink, ctx) : "";
 
   return (
     <div className="flex flex-col gap-4">
