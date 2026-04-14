@@ -4,11 +4,17 @@
   "providerId": "auth0",
   "protocol": "oidc",
   "title": "Auth0 OpenID Connect",
-  "alias": { "prefix": "auth0-oidc", "sessionKey": "p2_auth0_oidc" },
+  "alias": {
+    "prefix": "auth0-oidc",
+    "sessionKey": "p2_auth0_oidc"
+  },
   "idpConfig": {
     "providerId": "oidc",
     "hideOnLogin": true,
-    "defaults": { "syncMode": "FORCE", "clientAuthMethod": "client_secret_post" }
+    "defaults": {
+      "syncMode": "FORCE",
+      "clientAuthMethod": "client_secret_post"
+    }
   },
   "steps": [
     {
@@ -18,6 +24,14 @@
         {
           "type": "text",
           "content": "In the Auth0 Dashboard, create a new Regular Web Application. Note the Domain, Client ID, and Client Secret from the application settings."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/COMMON/auth0-1.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/COMMON/auth0-2.png"
         }
       ]
     },
@@ -31,10 +45,16 @@
           "content": "Enter your Auth0 tenant domain and the client credentials from your application settings. The domain is used to fetch the OpenID Connect configuration automatically."
         },
         {
+          "type": "image",
+          "src": "/wizards/auth0/OIDC/auth0-3.png"
+        },
+        {
           "type": "formGroup",
           "id": "auth0Creds",
           "exclusive": false,
-          "forms": ["domainCredentials"]
+          "forms": [
+            "domainCredentials"
+          ]
         }
       ]
     },
@@ -51,6 +71,10 @@
           "label": "Redirect URI",
           "value": "{{api.ssoUrl}}",
           "hint": "Add this to the Allowed Callback URLs in Auth0"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/OIDC/auth0-4.png"
         }
       ]
     },
@@ -98,7 +122,10 @@
           "required": true
         }
       ],
-      "submit": { "label": "Verify & Save", "action": "validateDomainCredentials" }
+      "submit": {
+        "label": "Verify & Save",
+        "action": "validateDomainCredentials"
+      }
     }
   },
   "actions": {
@@ -112,7 +139,10 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": ["METADATA_VALIDATED", "CREDENTIALS_PROVIDED"]
+        "dispatch": [
+          "METADATA_VALIDATED",
+          "CREDENTIALS_PROVIDED"
+        ]
       },
       "messages": {
         "success": "Auth0 configuration verified. Continue to set the redirect URI.",
@@ -143,12 +173,16 @@
             "result": "Auth0 Identity Provider created successfully."
           }
         ],
-        "then": ["clearAlias"]
+        "then": [
+          "clearAlias"
+        ]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."
       }
     },
-    "clearAlias": { "type": "clearAlias" }
+    "clearAlias": {
+      "type": "clearAlias"
+    }
   }
 }

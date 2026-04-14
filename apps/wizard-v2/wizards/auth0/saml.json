@@ -4,12 +4,10 @@
   "providerId": "auth0",
   "protocol": "saml",
   "title": "Auth0 SAML",
-
   "alias": {
     "prefix": "auth0-saml",
     "sessionKey": "p2_auth0_saml"
   },
-
   "idpConfig": {
     "providerId": "saml",
     "hideOnLogin": true,
@@ -20,7 +18,6 @@
       "principalType": "SUBJECT"
     }
   },
-
   "steps": [
     {
       "id": 1,
@@ -47,6 +44,26 @@
           "label": "SAML Metadata URL",
           "value": "{{api.samlMetadata}}",
           "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/COMMON/auth0-1.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/COMMON/auth0-2.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/SAML/auth0-3SAML.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/SAML/auth0-5SAML.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/SAML/auth0-6SAML.png"
         }
       ]
     },
@@ -60,10 +77,16 @@
           "content": "Download the SAML metadata file from the Auth0 SAML2 addon settings and upload it here."
         },
         {
+          "type": "image",
+          "src": "/wizards/auth0/SAML/auth0-4SAML.png"
+        },
+        {
           "type": "formGroup",
           "id": "metadataInput",
           "exclusive": false,
-          "forms": ["metadataFile"]
+          "forms": [
+            "metadataFile"
+          ]
         }
       ]
     },
@@ -78,10 +101,22 @@
         {
           "type": "attributeTable",
           "rows": [
-            { "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/username",     "keycloakAttribute": "username"  },
-            { "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", "keycloakAttribute": "email"     },
-            { "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",    "keycloakAttribute": "firstName" },
-            { "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",      "keycloakAttribute": "lastName"  }
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/username",
+              "keycloakAttribute": "username"
+            },
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+              "keycloakAttribute": "email"
+            },
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+              "keycloakAttribute": "firstName"
+            },
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+              "keycloakAttribute": "lastName"
+            }
           ]
         }
       ]
@@ -113,7 +148,6 @@
       ]
     }
   ],
-
   "forms": {
     "metadataFile": {
       "title": "Metadata File",
@@ -133,7 +167,6 @@
       }
     }
   },
-
   "actions": {
     "validateMetadataFile": {
       "endpoint": "importConfig",
@@ -145,14 +178,15 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": ["METADATA_VALIDATED"]
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
       },
       "messages": {
         "success": "Metadata file validated. Continue to the next step.",
         "error": "Validation failed. Check the file and try again."
       }
     },
-
     "createIdp": {
       "endpoint": "createIdp",
       "method": "POST",
@@ -166,24 +200,45 @@
       },
       "onSuccess": {
         "dispatch": [
-          { "type": "SUBMIT_SUCCESS", "result": "SAML Identity Provider created successfully." }
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
         ],
-        "then": ["addSamlMappers", "clearAlias"]
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."
       }
     },
-
     "addSamlMappers": {
       "endpoint": "addMappers",
       "method": "POST",
       "contentType": "json",
       "foreach": [
-        { "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/username",     "friendlyName": "username",     "userAttribute": "username"  },
-        { "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", "friendlyName": "emailaddress", "userAttribute": "email"     },
-        { "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",    "friendlyName": "givenname",    "userAttribute": "firstName" },
-        { "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",      "friendlyName": "surname",      "userAttribute": "lastName"  }
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/username",
+          "friendlyName": "username",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+          "friendlyName": "emailaddress",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+          "friendlyName": "givenname",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+          "friendlyName": "surname",
+          "userAttribute": "lastName"
+        }
       ],
       "body": {
         "identityProviderAlias": "{{alias}}",
@@ -198,7 +253,6 @@
         }
       }
     },
-
     "clearAlias": {
       "type": "clearAlias"
     }

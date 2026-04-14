@@ -4,11 +4,17 @@
   "providerId": "salesforce",
   "protocol": "oidc",
   "title": "Salesforce OpenID Connect",
-  "alias": { "prefix": "salesforce-oidc", "sessionKey": "p2_salesforce_oidc" },
+  "alias": {
+    "prefix": "salesforce-oidc",
+    "sessionKey": "p2_salesforce_oidc"
+  },
   "idpConfig": {
     "providerId": "oidc",
     "hideOnLogin": true,
-    "defaults": { "syncMode": "FORCE", "clientAuthMethod": "client_secret_post" }
+    "defaults": {
+      "syncMode": "FORCE",
+      "clientAuthMethod": "client_secret_post"
+    }
   },
   "steps": [
     {
@@ -18,6 +24,18 @@
         {
           "type": "text",
           "content": "In Salesforce Setup, navigate to App Manager and create a new Connected App. Enable OAuth Settings and note the Consumer Key and Consumer Secret."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/COMMON/salesforce-0.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/COMMON/salesforce-1.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/COMMON/salesforce-2.png"
         }
       ]
     },
@@ -34,6 +52,14 @@
           "label": "Redirect URI",
           "value": "{{api.ssoUrl}}",
           "hint": "Add this as a Callback URL in Salesforce"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/OIDC/salesforce_oidc_0.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/OIDC/salesforce_oidc_1.png"
         }
       ]
     },
@@ -47,10 +73,24 @@
           "content": "Enter your Salesforce instance domain and the consumer credentials from your Connected App."
         },
         {
+          "type": "image",
+          "src": "/wizards/salesforce/OIDC/salesforce_oidc_2.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/OIDC/salesforce_oidc_3.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/OIDC/salesforce_oidc_4.png"
+        },
+        {
           "type": "formGroup",
           "id": "sfCreds",
           "exclusive": false,
-          "forms": ["domainCredentials"]
+          "forms": [
+            "domainCredentials"
+          ]
         }
       ]
     },
@@ -98,7 +138,10 @@
           "required": true
         }
       ],
-      "submit": { "label": "Verify & Save", "action": "validateDomainCredentials" }
+      "submit": {
+        "label": "Verify & Save",
+        "action": "validateDomainCredentials"
+      }
     }
   },
   "actions": {
@@ -112,7 +155,10 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": ["METADATA_VALIDATED", "CREDENTIALS_PROVIDED"]
+        "dispatch": [
+          "METADATA_VALIDATED",
+          "CREDENTIALS_PROVIDED"
+        ]
       },
       "messages": {
         "success": "Salesforce configuration verified. You can now create the identity provider.",
@@ -143,12 +189,16 @@
             "result": "Salesforce Identity Provider created successfully."
           }
         ],
-        "then": ["clearAlias"]
+        "then": [
+          "clearAlias"
+        ]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."
       }
     },
-    "clearAlias": { "type": "clearAlias" }
+    "clearAlias": {
+      "type": "clearAlias"
+    }
   }
 }

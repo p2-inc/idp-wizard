@@ -4,12 +4,10 @@
   "providerId": "aws",
   "protocol": "saml",
   "title": "AWS SSO SAML",
-
   "alias": {
     "prefix": "aws-saml",
     "sessionKey": "p2_aws_saml"
   },
-
   "idpConfig": {
     "providerId": "saml",
     "hideOnLogin": true,
@@ -20,7 +18,6 @@
       "principalType": "SUBJECT"
     }
   },
-
   "steps": [
     {
       "id": 1,
@@ -47,6 +44,18 @@
           "label": "SAML Metadata URL",
           "value": "{{api.samlMetadata}}",
           "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_1.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_2.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_4.png"
         }
       ]
     },
@@ -60,10 +69,16 @@
           "content": "Enter the metadata URL from the AWS SSO application configuration."
         },
         {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_3.png"
+        },
+        {
           "type": "formGroup",
           "id": "metadataInput",
           "exclusive": false,
-          "forms": ["metadataUrl"]
+          "forms": [
+            "metadataUrl"
+          ]
         }
       ]
     },
@@ -78,11 +93,31 @@
         {
           "type": "attributeTable",
           "rows": [
-            { "idpAttribute": "username",  "keycloakAttribute": "username"  },
-            { "idpAttribute": "email",     "keycloakAttribute": "email"     },
-            { "idpAttribute": "firstName", "keycloakAttribute": "firstName" },
-            { "idpAttribute": "lastName",  "keycloakAttribute": "lastName"  }
+            {
+              "idpAttribute": "username",
+              "keycloakAttribute": "username"
+            },
+            {
+              "idpAttribute": "email",
+              "keycloakAttribute": "email"
+            },
+            {
+              "idpAttribute": "firstName",
+              "keycloakAttribute": "firstName"
+            },
+            {
+              "idpAttribute": "lastName",
+              "keycloakAttribute": "lastName"
+            }
           ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_5a.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_5.png"
         }
       ]
     },
@@ -93,6 +128,18 @@
         {
           "type": "text",
           "content": "Assign the users or groups who should have access in your identity provider, then continue."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_6.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_7.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_8.png"
         }
       ]
     },
@@ -113,7 +160,6 @@
       ]
     }
   ],
-
   "forms": {
     "metadataUrl": {
       "title": "Metadata URL",
@@ -133,7 +179,6 @@
       }
     }
   },
-
   "actions": {
     "validateMetadataUrl": {
       "endpoint": "importConfig",
@@ -145,14 +190,15 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": ["METADATA_VALIDATED"]
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
       },
       "messages": {
         "success": "Metadata URL validated. Continue to the next step.",
         "error": "Validation failed. Check the URL and try again."
       }
     },
-
     "createIdp": {
       "endpoint": "createIdp",
       "method": "POST",
@@ -166,24 +212,45 @@
       },
       "onSuccess": {
         "dispatch": [
-          { "type": "SUBMIT_SUCCESS", "result": "SAML Identity Provider created successfully." }
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
         ],
-        "then": ["addSamlMappers", "clearAlias"]
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."
       }
     },
-
     "addSamlMappers": {
       "endpoint": "addMappers",
       "method": "POST",
       "contentType": "json",
       "foreach": [
-        { "attributeName": "username",  "friendlyName": "username",  "userAttribute": "username"  },
-        { "attributeName": "email",     "friendlyName": "email",     "userAttribute": "email"     },
-        { "attributeName": "firstName", "friendlyName": "firstName", "userAttribute": "firstName" },
-        { "attributeName": "lastName",  "friendlyName": "lastName",  "userAttribute": "lastName"  }
+        {
+          "attributeName": "username",
+          "friendlyName": "username",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "email",
+          "friendlyName": "email",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
+          "userAttribute": "lastName"
+        }
       ],
       "body": {
         "identityProviderAlias": "{{alias}}",
@@ -198,7 +265,6 @@
         }
       }
     },
-
     "clearAlias": {
       "type": "clearAlias"
     }

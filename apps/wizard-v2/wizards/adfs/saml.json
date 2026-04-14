@@ -4,12 +4,10 @@
   "providerId": "adfs",
   "protocol": "saml",
   "title": "ADFS SAML",
-
   "alias": {
     "prefix": "adfs-saml",
     "sessionKey": "p2_adfs_saml"
   },
-
   "idpConfig": {
     "providerId": "saml",
     "hideOnLogin": true,
@@ -23,7 +21,6 @@
       "xmlSigKeyInfoKeyNameTransformer": "CERT_SUBJECT"
     }
   },
-
   "steps": [
     {
       "id": 1,
@@ -50,6 +47,22 @@
           "label": "SAML Metadata URL",
           "value": "{{api.samlMetadata}}",
           "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_0.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_1.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_2.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_3.png"
         }
       ]
     },
@@ -63,10 +76,16 @@
           "content": "Enter the metadata URL provided by your AD FS server."
         },
         {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_13.png"
+        },
+        {
           "type": "formGroup",
           "id": "metadataInput",
           "exclusive": false,
-          "forms": ["metadataUrl"]
+          "forms": [
+            "metadataUrl"
+          ]
         }
       ]
     },
@@ -81,11 +100,47 @@
         {
           "type": "attributeTable",
           "rows": [
-            { "idpAttribute": "http://schemas.microsoft.com/2012/12/certificatecontext/field/subjectname", "keycloakAttribute": "username"  },
-            { "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",       "keycloakAttribute": "email"     },
-            { "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",          "keycloakAttribute": "firstName" },
-            { "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",            "keycloakAttribute": "lastName"  }
+            {
+              "idpAttribute": "http://schemas.microsoft.com/2012/12/certificatecontext/field/subjectname",
+              "keycloakAttribute": "username"
+            },
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+              "keycloakAttribute": "email"
+            },
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+              "keycloakAttribute": "firstName"
+            },
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+              "keycloakAttribute": "lastName"
+            }
           ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_7.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_8.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_9.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_10.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_11.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_12.png"
         }
       ]
     },
@@ -96,6 +151,18 @@
         {
           "type": "text",
           "content": "Assign the users or groups who should have access in your identity provider, then continue."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_4.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_5.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_6.png"
         }
       ]
     },
@@ -116,7 +183,6 @@
       ]
     }
   ],
-
   "forms": {
     "metadataUrl": {
       "title": "Metadata URL",
@@ -136,7 +202,6 @@
       }
     }
   },
-
   "actions": {
     "validateMetadataUrl": {
       "endpoint": "importConfig",
@@ -148,14 +213,15 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": ["METADATA_VALIDATED"]
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
       },
       "messages": {
         "success": "Metadata URL validated. Continue to the next step.",
         "error": "Validation failed. Check the URL and try again."
       }
     },
-
     "createIdp": {
       "endpoint": "createIdp",
       "method": "POST",
@@ -169,24 +235,45 @@
       },
       "onSuccess": {
         "dispatch": [
-          { "type": "SUBMIT_SUCCESS", "result": "SAML Identity Provider created successfully." }
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
         ],
-        "then": ["addSamlMappers", "clearAlias"]
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."
       }
     },
-
     "addSamlMappers": {
       "endpoint": "addMappers",
       "method": "POST",
       "contentType": "json",
       "foreach": [
-        { "attributeName": "http://schemas.microsoft.com/2012/12/certificatecontext/field/subjectname", "friendlyName": "subjectname",  "userAttribute": "username"  },
-        { "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",       "friendlyName": "emailaddress", "userAttribute": "email"     },
-        { "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",          "friendlyName": "givenname",    "userAttribute": "firstName" },
-        { "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",            "friendlyName": "surname",      "userAttribute": "lastName"  }
+        {
+          "attributeName": "http://schemas.microsoft.com/2012/12/certificatecontext/field/subjectname",
+          "friendlyName": "subjectname",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+          "friendlyName": "emailaddress",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+          "friendlyName": "givenname",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+          "friendlyName": "surname",
+          "userAttribute": "lastName"
+        }
       ],
       "body": {
         "identityProviderAlias": "{{alias}}",
@@ -201,7 +288,6 @@
         }
       }
     },
-
     "clearAlias": {
       "type": "clearAlias"
     }

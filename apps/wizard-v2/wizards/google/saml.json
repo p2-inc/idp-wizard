@@ -4,12 +4,10 @@
   "providerId": "google",
   "protocol": "saml",
   "title": "Google Workspace SAML",
-
   "alias": {
     "prefix": "google-saml",
     "sessionKey": "p2_google_saml"
   },
-
   "idpConfig": {
     "providerId": "saml",
     "hideOnLogin": true,
@@ -20,7 +18,6 @@
       "principalType": "SUBJECT"
     }
   },
-
   "steps": [
     {
       "id": 1,
@@ -28,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Google Admin console, navigate to Apps \u2192 Web and mobile apps \u2192 Add App \u2192 Add custom SAML app. Enter the following values."
+          "content": "In the Google Admin console, navigate to Apps → Web and mobile apps → Add App → Add custom SAML app. Enter the following values."
         },
         {
           "type": "copy",
@@ -47,6 +44,22 @@
           "label": "SAML Metadata URL",
           "value": "{{api.samlMetadata}}",
           "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_1a.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_1b.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_2.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_4.png"
         }
       ]
     },
@@ -60,10 +73,16 @@
           "content": "Download the IdP metadata XML file from Google and upload it here."
         },
         {
+          "type": "image",
+          "src": "/wizards/google/google_saml_3.png"
+        },
+        {
           "type": "formGroup",
           "id": "metadataInput",
           "exclusive": false,
-          "forms": ["metadataFile"]
+          "forms": [
+            "metadataFile"
+          ]
         }
       ]
     },
@@ -78,11 +97,27 @@
         {
           "type": "attributeTable",
           "rows": [
-            { "idpAttribute": "uid",       "keycloakAttribute": "username"  },
-            { "idpAttribute": "email",     "keycloakAttribute": "email"     },
-            { "idpAttribute": "givenName", "keycloakAttribute": "firstName" },
-            { "idpAttribute": "sn",        "keycloakAttribute": "lastName"  }
+            {
+              "idpAttribute": "uid",
+              "keycloakAttribute": "username"
+            },
+            {
+              "idpAttribute": "email",
+              "keycloakAttribute": "email"
+            },
+            {
+              "idpAttribute": "givenName",
+              "keycloakAttribute": "firstName"
+            },
+            {
+              "idpAttribute": "sn",
+              "keycloakAttribute": "lastName"
+            }
           ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_5.png"
         }
       ]
     },
@@ -93,6 +128,14 @@
         {
           "type": "text",
           "content": "Assign the users or groups who should have access in your identity provider, then continue."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_6a.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_6b.png"
         }
       ]
     },
@@ -113,7 +156,6 @@
       ]
     }
   ],
-
   "forms": {
     "metadataFile": {
       "title": "Metadata File",
@@ -133,7 +175,6 @@
       }
     }
   },
-
   "actions": {
     "validateMetadataFile": {
       "endpoint": "importConfig",
@@ -145,14 +186,15 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": ["METADATA_VALIDATED"]
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
       },
       "messages": {
         "success": "Metadata file validated. Continue to the next step.",
         "error": "Validation failed. Check the file and try again."
       }
     },
-
     "createIdp": {
       "endpoint": "createIdp",
       "method": "POST",
@@ -166,24 +208,45 @@
       },
       "onSuccess": {
         "dispatch": [
-          { "type": "SUBMIT_SUCCESS", "result": "SAML Identity Provider created successfully." }
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
         ],
-        "then": ["addSamlMappers", "clearAlias"]
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."
       }
     },
-
     "addSamlMappers": {
       "endpoint": "addMappers",
       "method": "POST",
       "contentType": "json",
       "foreach": [
-        { "attributeName": "uid",       "friendlyName": "uid",       "userAttribute": "username"  },
-        { "attributeName": "email",     "friendlyName": "email",     "userAttribute": "email"     },
-        { "attributeName": "givenName", "friendlyName": "givenName", "userAttribute": "firstName" },
-        { "attributeName": "sn",        "friendlyName": "sn",        "userAttribute": "lastName"  }
+        {
+          "attributeName": "uid",
+          "friendlyName": "uid",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "email",
+          "friendlyName": "email",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "givenName",
+          "friendlyName": "givenName",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "sn",
+          "friendlyName": "sn",
+          "userAttribute": "lastName"
+        }
       ],
       "body": {
         "identityProviderAlias": "{{alias}}",
@@ -198,7 +261,6 @@
         }
       }
     },
-
     "clearAlias": {
       "type": "clearAlias"
     }
