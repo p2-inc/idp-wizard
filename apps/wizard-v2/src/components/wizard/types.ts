@@ -56,6 +56,8 @@ export interface ImageBlock {
   src: string;
   alt?: string;
   caption?: string;
+  /** When true, skip the default inline max-width cap. */
+  fullWidth?: boolean;
 }
 
 export type WizardBlock =

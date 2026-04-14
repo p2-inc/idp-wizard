@@ -32,7 +32,16 @@ const FALLBACK_LOGO = "/phasetwo-logos/logo_phase_slash.svg";
 
 export function WizardRunner({ providerId, protocol, provider }: Props) {
   const ctx = useWizardContext();
-  const { state, dispatch, api, orgsClient, adminClient, apiMode, realm, orgId } = ctx;
+  const {
+    state,
+    dispatch,
+    api,
+    orgsClient,
+    adminClient,
+    apiMode,
+    realm,
+    orgId,
+  } = ctx;
   const { config } = useWizardConfig();
 
   const [definition, setDefinition] = useState<WizardDefinition | null>(null);
@@ -52,7 +61,9 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
     }
 
     loader()
-      .then((mod) => setDefinition((mod as { default: WizardDefinition }).default))
+      .then((mod) =>
+        setDefinition((mod as { default: WizardDefinition }).default),
+      )
       .catch(() => setLoadError("not-found"));
   }, [providerId, protocol]);
 
@@ -62,17 +73,17 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
   const handleAction = async (
     actionKey: string,
     formValues?: Record<string, unknown>,
-  ) => {
-    if (!definition) return;
+  ): Promise<boolean> => {
+    if (!definition) return false;
     const action = definition.actions[actionKey];
     if (!action) {
       console.warn(`WizardRunner: unknown action key "${actionKey}"`);
-      return;
+      return false;
     }
 
     dispatch({ type: "SUBMIT_START" });
 
-    await executeAction({
+    const result = await executeAction({
       actionKey,
       action,
       allActions: definition.actions,
@@ -88,6 +99,12 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
       aliasSessionKey: definition.alias.sessionKey,
       config,
     });
+
+    // Ensure submitting is cleared if the action didn't dispatch SUBMIT_SUCCESS
+    // or SUBMIT_ERROR (e.g. intermediate steps that only dispatch METADATA_VALIDATED).
+    if (result.ok) dispatch({ type: "RESET_SUBMITTING" });
+
+    return result.ok;
   };
 
   // ---------------------------------------------------------------------------
@@ -100,7 +117,8 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
         <p className="font-medium">Wizard not yet available</p>
         <p className="text-muted-foreground max-w-xs text-sm">
           A guided setup for this provider and protocol hasn't been built yet.
-          Check back soon or configure it manually in the Keycloak admin console.
+          Check back soon or configure it manually in the Keycloak admin
+          console.
         </p>
       </div>
     );
@@ -117,7 +135,8 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
   const currentStep = definition.steps.find((s) => s.id === state.currentStep);
   if (!currentStep) return null;
 
-  const isLastStep = state.currentStep === definition.steps[definition.steps.length - 1].id;
+  const isLastStep =
+    state.currentStep === definition.steps[definition.steps.length - 1].id;
   const canAdvance = currentStep.enableNextWhen
     ? evaluateExpression(currentStep.enableNextWhen, state)
     : true;
@@ -177,7 +196,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
           <img
             src={sidebarLogo}
             alt={config.appName ?? "Phase Two"}
-            className="h-6 object-contain opacity-60"
+            className="h-6 object-contain opacity-90"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src = FALLBACK_LOGO;
             }}
@@ -197,7 +216,9 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
             className="h-8 w-8 shrink-0 object-contain"
           />
           <div className="min-w-0">
-            <p className="text-sm font-semibold leading-tight">{provider.name}</p>
+            <p className="text-sm font-semibold leading-tight">
+              {provider.name}
+            </p>
             <p className="text-muted-foreground text-xs uppercase tracking-wide">
               {protocol}
             </p>
@@ -264,6 +285,8 @@ function evaluateExpression(
     return Boolean(state[field]);
   }
 
-  console.warn(`WizardRunner: unknown enableNextWhen expression: "${expression}"`);
+  console.warn(
+    `WizardRunner: unknown enableNextWhen expression: "${expression}"`,
+  );
   return true;
 }

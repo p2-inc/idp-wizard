@@ -1,20 +1,35 @@
 import { useState } from "react";
 import { X, ZoomIn } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ImageZoomProps {
   src: string;
   alt?: string;
   caption?: string;
   className?: string;
+  fullWidth?: boolean;
 }
 
-export function ImageZoom({ src, alt = "", caption, className }: ImageZoomProps) {
+export function ImageZoom({
+  src,
+  alt = "",
+  caption,
+  className,
+  fullWidth = false,
+}: ImageZoomProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <figure className={className}>
+      <figure
+        className={cn(
+          "w-full",
+          fullWidth ? null : "max-w-[760px]",
+          className,
+        )}
+      >
         <button
+          type="button"
           onClick={() => setOpen(true)}
           className="group relative block w-full overflow-hidden rounded-lg border border-border"
           aria-label="Click to zoom"
@@ -22,6 +37,8 @@ export function ImageZoom({ src, alt = "", caption, className }: ImageZoomProps)
           <img
             src={src}
             alt={alt}
+            loading="lazy"
+            decoding="async"
             className="w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
           />
           <span className="absolute right-2 top-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
@@ -42,6 +59,7 @@ export function ImageZoom({ src, alt = "", caption, className }: ImageZoomProps)
           onClick={() => setOpen(false)}
         >
           <button
+            type="button"
             onClick={() => setOpen(false)}
             className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
             aria-label="Close"

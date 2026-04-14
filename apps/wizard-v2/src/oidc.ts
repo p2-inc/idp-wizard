@@ -14,6 +14,12 @@ bootstrapOidc(
     ? {
         implementation: "mock",
         isUserInitiallyLoggedIn: true,
+        decodedIdToken_mock: {
+          sub: "mock-user-id",
+          preferred_username: "wizard",
+          email: "wizard@example.com",
+          organizations: {} as Record<string, unknown>,
+        },
       }
     : {
         implementation: "real",

@@ -53,9 +53,9 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
       ssoUrl: (alias: string) => `${serverUrl}/realms/${realm}/broker/${alias}/endpoint`,
       samlMetadata: `${serverUrl}/realms/${realm}/protocol/saml/descriptor`,
       adminLinkSaml: (alias: string) =>
-        `${adminBase}/${realm}/console/#/identity-providers/saml/${alias}/settings`,
+        `${adminBase}/${realm}/console/#/${realm}/identity-providers/saml/${alias}/settings`,
       adminLinkOidc: (alias: string) =>
-        `${adminBase}/${realm}/console/#/identity-providers/oidc/${alias}/settings`,
+        `${adminBase}/${realm}/console/#/${realm}/identity-providers/oidc/${alias}/settings`,
       endpoints:
         apiMode === "cloud" && orgId
           ? {

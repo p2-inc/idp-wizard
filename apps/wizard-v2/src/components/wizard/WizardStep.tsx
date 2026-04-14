@@ -6,6 +6,7 @@
  * in WizardContext.
  */
 import { useState } from "react";
+import { CheckCircle2 } from "lucide-react";
 import type { WizardStep as WizardStepDef, WizardBlock, WizardForm, FormField } from "./types";
 import { resolveTemplate, buildTemplateContext } from "./resolveTemplate";
 import { useWizardContext } from "@/context/WizardContext";
@@ -18,7 +19,7 @@ import { cn } from "@/lib/utils";
 interface Props {
   step: WizardStepDef;
   forms: Record<string, WizardForm>;
-  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
+  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
 }
 
 export function WizardStep({ step, forms, onAction }: Props) {
@@ -49,7 +50,7 @@ interface BlockProps {
   block: WizardBlock;
   ctx: Record<string, unknown>;
   forms: Record<string, WizardForm>;
-  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
+  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
 }
 
 function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
@@ -72,6 +73,7 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
           src={resolveTemplate(block.src, ctx)}
           alt={block.alt}
           caption={block.caption}
+          fullWidth={block.fullWidth}
         />
       );
 
@@ -116,7 +118,7 @@ function FormGroupRenderer({
 }: {
   block: import("./types").FormGroupBlock;
   forms: Record<string, WizardForm>;
-  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
+  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
 }) {
   const validForms = block.forms.filter((k) => forms[k]);
 
@@ -159,15 +161,18 @@ function FormRenderer({
 }: {
   formKey: string;
   form: WizardForm;
-  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
+  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
 }) {
   const { state } = useWizardContext();
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [succeeded, setSucceeded] = useState(false);
 
-  const setValue = (id: string, v: unknown) =>
+  const setValue = (id: string, v: unknown) => {
+    setSucceeded(false);
     setValues((prev) => ({ ...prev, [id]: v }));
+  };
 
   const validate = (): boolean => {
     const next: Record<string, string> = {};
@@ -185,8 +190,10 @@ function FormRenderer({
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
+    setSucceeded(false);
     try {
-      await onAction(form.submit.action, values);
+      const ok = await onAction(form.submit.action, values);
+      if (ok) setSucceeded(true);
     } finally {
       setSubmitting(false);
     }
@@ -217,13 +224,20 @@ function FormRenderer({
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={submitting || state.submitting}
-          className="mt-1 w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-        >
-          {submitting || state.submitting ? "Working…" : form.submit.label}
-        </button>
+        {succeeded ? (
+          <div className="mt-1 flex items-center justify-center gap-2 rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-700 dark:bg-green-900/20 dark:text-green-300">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            Validated
+          </div>
+        ) : (
+          <button
+            type="submit"
+            disabled={submitting}
+            className="mt-1 w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {submitting ? "Working…" : form.submit.label}
+          </button>
+        )}
       </form>
     </div>
   );
@@ -334,10 +348,12 @@ function ConfirmBlockRenderer({
 }: {
   block: import("./types").ConfirmBlock;
   ctx: Record<string, unknown>;
-  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<void>;
+  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
 }) {
-  const { state } = useWizardContext();
-  const adminLink = block.adminLink ? resolveTemplate(block.adminLink, ctx) : "";
+  const { state, apiMode } = useWizardContext();
+  const adminLink = block.adminLink && apiMode === "onprem"
+    ? resolveTemplate(block.adminLink, ctx)
+    : "";
 
   return (
     <div className="flex flex-col gap-4">

@@ -86,7 +86,8 @@ export type WizardAction =
   | { type: "SUBMIT_START" }
   | { type: "SUBMIT_SUCCESS"; result: string; idpTestLink?: string }
   | { type: "SUBMIT_ERROR"; error: string }
-  | { type: "CLEAR_ERROR" };
+  | { type: "CLEAR_ERROR" }
+  | { type: "RESET_SUBMITTING" };
 
 export function wizardReducer(state: WizardState, action: WizardAction): WizardState {
   switch (action.type) {
@@ -125,6 +126,8 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       return { ...state, submitting: false, error: action.error };
     case "CLEAR_ERROR":
       return { ...state, error: null };
+    case "RESET_SUBMITTING":
+      return { ...state, submitting: false };
     default:
       return state;
   }

@@ -20,12 +20,23 @@ wizard-v2/
 │   ├── docker-compose.yml      # Dev Keycloak (Phase Two image, pre-configured)
 │   └── realm-export.json       # Auto-imported on first start: realm, client, test user
 ├── e2e/
+│   ├── .auth/                  # Saved login state (gitignored); .gitkeep tracks the dir
+│   ├── external-providers/
+│   │   ├── Auth0Page.ts        # POM for Auth0 Dashboard
+│   │   ├── OktaPage.ts         # POM for Okta Admin Console
+│   │   └── external-provider.spec.ts
 │   ├── fixtures/
-│   │   └── test.ts             # Playwright fixture with typed page objects
+│   │   ├── test.ts             # Playwright fixture with typed page objects
+│   │   └── test-saml-metadata.xml  # Minimal SAML metadata for file upload tests
 │   ├── pages/
+│   │   ├── KeycloakLoginPage.ts
 │   │   ├── ProviderSelectorPage.ts
 │   │   └── WizardPage.ts
-│   └── provider-selector.spec.ts
+│   ├── auth.setup.ts           # OIDC login setup — saves storage state
+│   ├── global-setup.ts         # Creates orgs + assigns users (integration mode)
+│   ├── organizations.spec.ts   # Org management + org-scoped wizard tests
+│   ├── provider-selector.spec.ts
+│   └── wizard-completion.spec.ts  # Full flow tests for all 21 wizards
 ├── openapi-codegen/
 │   └── gen.ts                  # Generates typed API clients from OpenAPI specs
 ├── public/
@@ -194,16 +205,15 @@ Keycloak data persists in a named Docker volume between restarts.
 > docker compose down -v && docker compose up
 > ```
 
-#### Dev test user
+#### Dev test users
 
-| Field     | Value      |
-| --------- | ---------- |
-| Username  | `wizard`   |
-| Password  | `password` |
-| Email     | `wizard@example.com` |
-| Roles     | `realm-admin` (via `realm-management` client) |
+| Username | Password | Email | Roles |
+|----------|----------|-------|-------|
+| `wizard` | `password` | `wizard@example.com` | `realm-admin` |
+| `org-admin` | `password` | `org-admin@example.com` | — |
+| `org-member` | `password` | `org-member@example.com` | — |
 
-This user has full `realm-admin` permissions, which the wizard requires in order to create identity providers via the Keycloak Admin API.
+`wizard` has full `realm-admin` permissions, which the wizard requires to create identity providers via the Keycloak Admin API. `org-admin` and `org-member` are plain users used by integration tests; `global-setup.ts` assigns them to test organizations at runtime.
 
 ### 3. Start the dev server
 
@@ -242,36 +252,153 @@ Example reference in a wizard JSON: `"/wizards/okta/saml/step1.png"`
 
 ## Testing
 
-E2E tests use [Playwright](https://playwright.dev/) and run against the Vite dev server with OIDC in mock mode — no live Keycloak required.
+E2E tests use [Playwright](https://playwright.dev/) and the Page Object Model pattern. There are two test modes — a fast mock mode for everyday development and a full integration mode that drives a real Keycloak server.
+
+### Intent
+
+The test suite is designed to verify the wizard at every layer:
+
+- **UI and navigation** — does the step sequencing work? Are copy blocks, forms, and attribute tables rendered correctly? Does search and help work on the provider selector?
+- **Wizard completion** — can each provider's wizard flow be driven from start to finish, including form submission and final IDP creation? This covers all 21 wizard files.
+- **API routing** — does the wizard call the right endpoints (org-scoped vs. realm-wide) depending on how it was launched?
+- **Organization context** — does the `?org_id=` launch mode work correctly? Are org memberships, roles, and API routes all correct?
+- **External provider loop** *(optional)* — can the browser automate the external provider setup (Auth0, Okta) and feed the resulting credentials directly into the wizard, end-to-end?
+
+### Running tests
 
 ```bash
-# Run all tests headlessly
+# Fast mock tests — no Keycloak required
 pnpm test:e2e
 
-# Open interactive Playwright UI (great for writing tests)
+# Interactive Playwright UI
 pnpm test:e2e:ui
 
 # View the last HTML report
 pnpm test:e2e:report
+
+# Integration tests — requires Keycloak running (see below)
+pnpm test:integration
+
+# External provider tests — requires provider credentials in env (see below)
+pnpm test:external
 ```
+
+### Test modes
+
+#### Mock mode (default)
+
+The Vite dev server runs with `VITE_OIDC_USE_MOCK=true` — oidc-spa returns a mock authenticated user and no real Keycloak is needed. Keycloak API calls (import-config, create IDP, add mappers, LDAP test) are intercepted with Playwright's `page.route()` so the full wizard UI flow can be exercised without any server.
+
+The `VITE_OIDC_ISSUER_URI` is still set so the wizard runner can resolve API URLs correctly — even though the calls are intercepted before they reach any real server.
+
+#### Integration mode (`PLAYWRIGHT_INTEGRATION=true`)
+
+Requires Keycloak to be running:
+
+```bash
+cd docker && docker compose up -d
+```
+
+The Playwright run has three phases:
+
+1. **`auth:setup` project** — opens a browser, follows the OIDC redirect to Keycloak, logs in as `wizard`/`password`, and saves the browser storage state to `e2e/.auth/admin.json`. Subsequent test contexts load this state instead of re-authenticating.
+2. **`global-setup.ts`** — runs once before the test suite. Uses the Keycloak admin API to create two test organizations (`test-org-alpha`, `test-org-beta`) and assign the `org-admin` and `org-member` test users to them. Org IDs are exposed via `process.env` so tests can reference them without hardcoding.
+3. **Test projects** — run with the saved auth state and real API endpoints.
 
 ### Test structure
 
 ```
 e2e/
+├── .auth/
+│   └── admin.json              # Saved browser state for integration tests (gitignored)
+├── external-providers/
+│   ├── Auth0Page.ts            # POM for Auth0 Dashboard (manage.auth0.com)
+│   ├── OktaPage.ts             # POM for Okta Admin Console
+│   └── external-provider.spec.ts  # Full-loop tests: configure provider, complete wizard
 ├── fixtures/
-│   └── test.ts               # Extended test fixture with typed page objects
+│   ├── test.ts                 # Extended Playwright fixture with typed page objects
+│   └── test-saml-metadata.xml  # Minimal SAML IdP metadata for file upload tests
 ├── pages/
-│   ├── ProviderSelectorPage.ts   # Selectors and actions for the landing page
-│   └── WizardPage.ts             # Selectors and actions for wizard/picker views
-└── provider-selector.spec.ts     # Smoke tests: navigation, search, help dialog
+│   ├── KeycloakLoginPage.ts    # POM for Keycloak login screen (theme-agnostic)
+│   ├── ProviderSelectorPage.ts # POM for the provider selector landing page
+│   └── WizardPage.ts           # POM for wizard runner — step nav, forms, confirmation
+├── auth.setup.ts               # Playwright setup project: OIDC login, save storage state
+├── global-setup.ts             # Pre-suite setup: create orgs, assign users via Orgs API
+├── organizations.spec.ts       # Organization membership, ?org_id routing, org-scoped completion
+├── provider-selector.spec.ts   # Smoke tests: provider list, search, help dialog, navigation
+└── wizard-completion.spec.ts   # Full flow tests for SAML, OIDC, and LDAP wizards
 ```
 
-Tests follow the [Page Object Model](https://playwright.dev/docs/pom) pattern. Add a new `*.spec.ts` alongside a matching page object in `e2e/pages/` as wizard steps are built out. Real wizard step tests should wait until the wizard JSON configuration format is settled.
+### Spec files
+
+#### `provider-selector.spec.ts`
+
+Smoke tests for the landing page and navigation. Runs in mock mode. Covers:
+
+- Provider list renders, fuzzy search works, clearing search restores grouped view
+- Help dialog opens and closes
+- Single-protocol providers navigate directly to the wizard; multi-protocol providers navigate to the protocol picker
+- Home link returns to the provider selector
+
+#### `wizard-completion.spec.ts`
+
+Full wizard flow tests. Runs in mock mode with API interception. Covers:
+
+- **Auth0 SAML** — file upload flow: upload test metadata XML, validate, advance through attribute mapping and user access steps, confirm IDP creation
+- **Auth0 OIDC** — credentials flow: fill domain, client ID, and secret, verify against the discovery endpoint, configure redirect URI, confirm
+- **Okta LDAP** — connection flow: fill LDAP host and base DN, test connection, fill bind credentials, test authentication, confirm user federation creation
+- **All 21 providers** — parametrized "loads without error" tests that navigate to every wizard and assert that at least one step renders. This ensures no wizard JSON has a syntax or schema error.
+
+Back-navigation and `enableNextWhen` gating (Next disabled until validation passes) are also tested.
+
+#### `organizations.spec.ts`
+
+Integration-mode tests (requires Keycloak). Covers:
+
+- Test organizations and memberships created by `global-setup.ts` exist and are correct
+- Navigating to `/?org_id=<id>` passes the org ID through to the wizard URL
+- Wizard launched with `?org_id=` routes API calls through org-scoped endpoints rather than admin endpoints
+- Org admin can complete a full SAML wizard for their organization
+
+#### `external-providers/external-provider.spec.ts`
+
+Full end-to-end tests that drive an external identity provider's admin UI and then complete the corresponding wizard. These are **skipped by default** — they run only when the relevant credential environment variables are set.
+
+Each test follows the same pattern:
+1. Open the provider's dashboard and create an application or integration
+2. Configure it with the SP values (ACS URL, Entity ID) read from the wizard
+3. Copy the resulting metadata URL or credentials
+4. Return to the wizard and complete it using those values
+5. Assert successful IDP creation
+
+| Test | Variables required |
+|------|--------------------|
+| Auth0 OIDC full loop | `AUTH0_DOMAIN`, `AUTH0_EMAIL`, `AUTH0_PASSWORD` |
+| Auth0 SAML full loop | `AUTH0_DOMAIN`, `AUTH0_EMAIL`, `AUTH0_PASSWORD` |
+| Okta SAML full loop | `OKTA_DOMAIN`, `OKTA_EMAIL`, `OKTA_PASSWORD` |
+
+> These tests create real applications in your provider accounts. Clean them up manually afterward.
+
+### Dev test users
+
+The `wizard` realm is pre-seeded with three test users (created from `docker/realm-export.json`):
+
+| Username | Password | Role | Purpose |
+|----------|----------|------|---------|
+| `wizard` | `password` | `realm-admin` | Main admin — can call any Keycloak admin API. Used by `auth:setup` and most tests. |
+| `org-admin` | `password` | — | Org-level admin. Assigned as admin of `test-org-alpha` by `global-setup.ts`. |
+| `org-member` | `password` | — | Regular org member. Assigned as member of `test-org-alpha` by `global-setup.ts`. |
+
+### Keycloak admin theme
+
+Both the `wizard` realm and the `master` realm are configured to use the `phasetwo.v2` admin theme. This is set via:
+
+- `adminTheme: "phasetwo.v2"` in `docker/realm-export.json` for the wizard realm
+- `docker/master-realm-export.json` (a minimal export mounted alongside the wizard realm) for the master realm — Keycloak merges it into the existing master realm on startup
 
 ### CI
 
-In CI (`CI=true`), the web server is always started fresh, tests are retried up to 2 times, and the reporter uses GitHub annotations.
+In CI (`CI=true`), the web server is always started fresh, tests are retried up to 2 times, and the reporter uses GitHub annotations. Integration tests are not run in CI by default — set `PLAYWRIGHT_INTEGRATION=true` and ensure a Keycloak service is available to enable them.
 
 ## Building
 
