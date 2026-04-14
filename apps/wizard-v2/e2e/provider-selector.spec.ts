@@ -25,7 +25,9 @@ test.describe("provider selector", () => {
     await providerSelector.search("okta");
     await providerSelector.clearSearch();
     await expect(providerSelector.page.getByText("Providers")).toBeVisible();
-    await expect(providerSelector.page.getByText("Generic")).toBeVisible();
+    const genericHeading = providerSelector.page.getByText("Generic", { exact: true });
+    await genericHeading.scrollIntoViewIfNeeded();
+    await expect(genericHeading).toBeVisible();
   });
 
   test("help dialog opens and closes", async ({ providerSelector }) => {
