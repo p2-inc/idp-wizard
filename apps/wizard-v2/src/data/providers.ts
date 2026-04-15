@@ -119,6 +119,66 @@ export const providers: Provider[] = [
     logo: "/wizards/salesforce/salesforce-logo.png",
     protocols: ["saml", "oidc"],
   },
+  {
+    id: "cas",
+    name: "CAS",
+    logo: "/provider-logos/saml_logo.svg",
+    protocols: ["saml"],
+  },
+  {
+    id: "classlink",
+    name: "ClassLink",
+    logo: "/provider-logos/saml_logo.svg",
+    protocols: ["saml"],
+  },
+  {
+    id: "keycloak",
+    name: "Keycloak",
+    logo: "/provider-logos/saml_logo.svg",
+    protocols: ["saml"],
+  },
+  {
+    id: "miniorange",
+    name: "miniOrange",
+    logo: "/provider-logos/saml_logo.svg",
+    protocols: ["saml"],
+  },
+  {
+    id: "netiq",
+    name: "NetIQ",
+    logo: "/provider-logos/saml_logo.svg",
+    protocols: ["saml"],
+  },
+  {
+    id: "pingfederate",
+    name: "PingFederate",
+    logo: "/provider-logos/ping_federate_logo.png",
+    protocols: ["saml"],
+  },
+  {
+    id: "rippling",
+    name: "Rippling",
+    logo: "/provider-logos/saml_logo.svg",
+    protocols: ["saml"],
+  },
+  {
+    id: "shibboleth",
+    name: "Shibboleth",
+    logo: "/provider-logos/saml_logo.svg",
+    protocols: ["saml"],
+  },
+  {
+    id: "simplesamlphp",
+    name: "SimpleSAMLphp",
+    logo: "/provider-logos/saml_logo.svg",
+    protocols: ["saml"],
+  },
+  {
+    id: "vmware",
+    name: "VMware Workspace ONE",
+    logo: "/provider-logos/vmware_logo.svg",
+    protocols: ["saml"],
+  },
 ];
 
 export const allProviders = [...genericProviders, ...providers];
