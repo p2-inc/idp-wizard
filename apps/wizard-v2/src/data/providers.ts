@@ -69,7 +69,7 @@ export const providers: Provider[] = [
     id: "google",
     name: "Google Workspace",
     logo: "/provider-logos/google-workspace-logo.svg",
-    protocols: ["saml"],
+    protocols: ["saml", "oidc"],
   },
   {
     id: "jumpcloud",
@@ -87,13 +87,13 @@ export const providers: Provider[] = [
     id: "entraid",
     name: "Microsoft Entra ID",
     logo: "/provider-logos/msft_entraid.svg",
-    protocols: ["saml"],
+    protocols: ["saml", "oidc"],
   },
   {
     id: "okta",
     name: "Okta",
     logo: "/provider-logos/okta_logo.png",
-    protocols: ["saml", "ldap"],
+    protocols: ["saml", "oidc", "ldap"],
   },
   {
     id: "onelogin",
@@ -120,16 +120,34 @@ export const providers: Provider[] = [
     protocols: ["saml", "oidc"],
   },
   {
+    id: "adp",
+    name: "ADP",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oidc"],
+  },
+  {
     id: "cas",
     name: "CAS",
     logo: "/provider-logos/saml_logo.svg",
     protocols: ["saml"],
   },
   {
+    id: "clever",
+    name: "Clever",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oidc"],
+  },
+  {
     id: "classlink",
     name: "ClassLink",
     logo: "/provider-logos/saml_logo.svg",
     protocols: ["saml"],
+  },
+  {
+    id: "logingov",
+    name: "Login.gov",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oidc"],
   },
   {
     id: "keycloak",
