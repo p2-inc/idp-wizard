@@ -1,0 +1,294 @@
+{
+  "schemaVersion": "1.0",
+  "id": "generic-saml",
+  "providerId": "saml",
+  "protocol": "saml",
+  "title": "Generic SAML",
+
+  "alias": {
+    "prefix": "generic-saml",
+    "sessionKey": "p2_saml_saml"
+  },
+
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a SAML Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In your identity provider, create a SAML application. You may need the information below — not all providers require every field."
+        },
+        {
+          "type": "copy",
+          "label": "ACS URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
+        },
+        {
+          "type": "copy",
+          "label": "Entity ID",
+          "value": "{{api.entityId}}",
+          "hint": "Sometimes called Audience URI or SP Entity ID"
+        },
+        {
+          "type": "copy",
+          "label": "SAML Metadata URL",
+          "value": "{{api.samlMetadata}}",
+          "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure Application Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Your identity provider will supply configuration as a metadata URL, a metadata XML file, or individual parameters. Use whichever option your provider supports."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": true,
+          "forms": ["metadataUrl", "metadataFile", "metadataManual"]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Configure Attribute Mapping",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "SAML attribute mapping connects user fields from your identity provider to Keycloak. Configure your identity provider to send these attribute names."
+        },
+        {
+          "type": "attributeTable",
+          "rows": [
+            { "idpAttribute": "username",  "keycloakAttribute": "username"  },
+            { "idpAttribute": "email",     "keycloakAttribute": "email"     },
+            { "idpAttribute": "firstName", "keycloakAttribute": "firstName" },
+            { "idpAttribute": "lastName",  "keycloakAttribute": "lastName"  }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Configure User Access",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Enable your SAML application in your identity provider and assign the users or groups who should be able to log in. Continue when access is configured."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create SAML Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create SAML Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+
+  "forms": {
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the SAML metadata URL provided by your identity provider.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://your-idp.example.com/metadata",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    },
+
+    "metadataFile": {
+      "title": "Metadata File",
+      "description": "Upload the SAML metadata XML file downloaded from your identity provider.",
+      "fields": [
+        {
+          "id": "file",
+          "type": "file",
+          "label": "Metadata File",
+          "accept": "text/xml,application/xml,.xml",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate File",
+        "action": "validateMetadataFile"
+      }
+    },
+
+    "metadataManual": {
+      "title": "Manual Configuration",
+      "description": "Enter the SSO URL, Entity ID, and signing certificate directly.",
+      "fields": [
+        {
+          "id": "ssoUrl",
+          "type": "url",
+          "label": "SSO URL",
+          "placeholder": "https://your-idp.example.com/sso",
+          "required": true
+        },
+        {
+          "id": "entityId",
+          "type": "text",
+          "label": "Entity ID",
+          "placeholder": "https://your-idp.example.com",
+          "required": true
+        },
+        {
+          "id": "certificate",
+          "type": "file",
+          "label": "Signing Certificate",
+          "accept": ".pem,.cer,.crt,.cert",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate Configuration",
+        "action": "validateMetadataManual"
+      }
+    }
+  },
+
+  "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["METADATA_VALIDATED"]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
+
+    "validateMetadataFile": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "multipart",
+      "body": {
+        "providerId": "saml",
+        "file": "{{form.file}}"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["METADATA_VALIDATED"]
+      },
+      "messages": {
+        "success": "Metadata file validated. Continue to the next step.",
+        "error": "Validation failed. Check the file and try again."
+      }
+    },
+
+    "validateMetadataManual": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "multipart",
+      "body": {
+        "providerId": "saml",
+        "file": "{{form.certificate}}",
+        "ssoUrl": "{{form.ssoUrl}}",
+        "entityId": "{{form.entityId}}"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["METADATA_VALIDATED"]
+      },
+      "messages": {
+        "success": "Configuration validated. Continue to the next step.",
+        "error": "Validation failed. Check the values and try again."
+      }
+    },
+
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          { "type": "SUBMIT_SUCCESS", "result": "SAML Identity Provider created successfully." }
+        ],
+        "then": ["addSamlMappers", "clearAlias"]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        { "attributeName": "username",  "friendlyName": "username",  "userAttribute": "username"  },
+        { "attributeName": "email",     "friendlyName": "email",     "userAttribute": "email"     },
+        { "attributeName": "firstName", "friendlyName": "firstName", "userAttribute": "firstName" },
+        { "attributeName": "lastName",  "friendlyName": "lastName",  "userAttribute": "lastName"  }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

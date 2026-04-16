@@ -1,0 +1,291 @@
+{
+  "schemaVersion": "1.0",
+  "id": "aws-saml",
+  "providerId": "aws",
+  "protocol": "saml",
+  "title": "AWS SSO SAML",
+  "alias": {
+    "prefix": "aws-saml",
+    "sessionKey": "p2_aws_saml"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "IMPORT",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a SAML Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the AWS SSO Console, select \"Applications\" from the menu. On this page, select the \"Add application\" button. add a new custom SAML 2.0 application. Enter the following service provider details."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "The next screen is an application catalog. Select \"Add custom SAML 2.0 application\" at the top of the list, and then scroll down to the bottom and click \"Next\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_2.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure Application Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Enter a \"Display Name\" and an optional \"Description\". Click the copy \"Box\" icon next to the \"IAM Identity Center SAML metadata file\" URL, and paste it into the field below. This will load the AWS SSO configuration."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_3.png"
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": ["metadataUrl"]
+        }
+      ]
+    },
+
+    {
+      "id": 3,
+      "title": "Enter Service Provider Details",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Enter the following values into \"Application metadata\"."
+        },
+        {
+          "type": "copy",
+          "label": "ACS URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
+        },
+        {
+          "type": "copy",
+          "label": "SAML Audience",
+          "value": "{{api.entityId}}",
+          "hint": "Sometimes called Audience URI or SP Entity ID"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_4.png"
+        }
+      ]
+    },
+
+    {
+      "id": 4,
+      "title": "Configure Attribute Mapping",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Navigate to the attribute mapping section by opening the \"Actions\" dropdown in the \"Details\" section. Select \"Edit attribute mappings\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_5a.png"
+        },
+        {
+          "type": "text",
+          "content": "In the \"Attribute mappings\" section, provide the following attribute mappings and select \"Save\". Note you may need to click \"+ Add new attribute mapping\" to configure each of the mappings. Format should be set to \"unspecified\" for each of the mappings. When you are finished, click \"Save changes\" before proceeding."
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "User attribute in the application",
+            "keycloakAttribute": "Maps to this string value or user attribute in IAM Identity Center"
+          },
+          "rows": [
+            {
+              "idpAttribute": "subject",
+              "keycloakAttribute": "${user:email}"
+            },
+            {
+              "idpAttribute": "email",
+              "keycloakAttribute": "${user:email}"
+            },
+            {
+              "idpAttribute": "firstName",
+              "keycloakAttribute": "${user:givenName}"
+            },
+            {
+              "idpAttribute": "lastName",
+              "keycloakAttribute": "${user:familyName}"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_5.png"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Configure User Access",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In order for your users to be able to access the application, you must assign users and/or groups. Start by opening the \"Assigned users\" page by selecting \"Assign users\" button."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_6.png"
+        },
+        {
+          "type": "text",
+          "content": "You can add individual users."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_7.png"
+        },
+        {
+          "type": "text",
+          "content": "You can also add groups of users. This is the preferred way to manage user access. Click the \"Assign users\" button when you have finished this step."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_8.png"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Create SAML Identity Provider",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "",
+          "description": "Configuration is complete. Click the button below to create the identity provider.",
+          "buttonText": "Create",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the SAML metadata URL provided by your identity provider.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://portal.sso.us-east-1.amazonaws.com/saml/metadata/abc123",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["METADATA_VALIDATED"]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
+        ],
+        "then": ["addSamlMappers", "clearAlias"]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "username",
+          "friendlyName": "username",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "email",
+          "friendlyName": "email",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "IMPORT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}
