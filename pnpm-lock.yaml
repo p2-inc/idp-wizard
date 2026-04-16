@@ -6,6 +6,8 @@ settings:
 
 importers:
 
+  .: {}
+
   apps/wizard-v1:
     dependencies:
       '@keycloak/keycloak-admin-client':
