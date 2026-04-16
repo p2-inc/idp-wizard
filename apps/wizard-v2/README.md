@@ -100,12 +100,12 @@ Wizard files live at `wizards/{providerId}/{protocol}.json`. The runtime loads t
 
 Each wizard JSON has four top-level keys:
 
-| Key | Description |
-|-----|-------------|
-| `steps` | Ordered list of wizard steps, each with an `id`, `title`, optional `enableNextWhen` expression, and a list of `blocks` |
-| `forms` | Named form definitions (fields, validation) rendered by `FormGroup` blocks |
-| `actions` | Named action definitions (HTTP calls, alias cleanup) invoked on form submit or confirm |
-| `alias` | Alias configuration — `sessionKey` for sessionStorage, `prefix` for generated alias strings |
+| Key       | Description                                                                                                            |
+| --------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `steps`   | Ordered list of wizard steps, each with an `id`, `title`, optional `enableNextWhen` expression, and a list of `blocks` |
+| `forms`   | Named form definitions (fields, validation) rendered by `FormGroup` blocks                                             |
+| `actions` | Named action definitions (HTTP calls, alias cleanup) invoked on form submit or confirm                                 |
+| `alias`   | Alias configuration — `sessionKey` for sessionStorage, `prefix` for generated alias strings                            |
 
 Template tokens in JSON values (`{{api.entityId}}`, `{{form.fieldId}}`, `{{state.metadata}}`, `{{alias}}`, `{{item.*}}`) are resolved at runtime from the wizard context.
 
@@ -120,6 +120,7 @@ npx tsx openapi-codegen/gen.ts
 ```
 
 This fetches the latest specs and writes:
+
 - `src/api/types/orgs.d.ts` — Phase Two Orgs API types
 - `src/api/types/admin.d.ts` — Keycloak Admin API types
 
@@ -127,20 +128,20 @@ This fetches the latest specs and writes:
 
 The wizard operates in one of two API modes depending on how it is launched:
 
-| Mode | Trigger | API used | Endpoint pattern |
-|------|---------|---------|-----------------|
-| **cloud** | `?org_id=<id>` present in URL | Phase Two Orgs API | `/{realm}/orgs/{orgId}/idps/...` |
-| **onprem** | No `org_id` param | Keycloak Admin API | `/admin/realms/{realm}/identity-provider/...` |
+| Mode       | Trigger                       | API used           | Endpoint pattern                              |
+| ---------- | ----------------------------- | ------------------ | --------------------------------------------- |
+| **cloud**  | `?org_id=<id>` present in URL | Phase Two Orgs API | `/{realm}/orgs/{orgId}/idps/...`              |
+| **onprem** | No `org_id` param             | Keycloak Admin API | `/admin/realms/{realm}/identity-provider/...` |
 
 `useWizardApi` (in `src/hooks/useWizardApi.ts`) inspects the `org_id` search param to set `apiMode` and resolves the correct endpoint URLs and typed client for each mode. The wizard JSON actions reference named endpoint slots (`importConfig`, `createIdp`, `addMappers`) rather than raw URLs — these are resolved to the correct mode-specific URLs at runtime.
 
 ### Endpoint reference
 
-| Slot | Cloud URL | On-prem URL |
-|------|-----------|-------------|
-| `importConfig` | `POST /{realm}/orgs/{orgId}/idps/import-config` | `POST /admin/realms/{realm}/identity-provider/import-config` |
-| `createIdp` | `POST /{realm}/orgs/{orgId}/idps` | `POST /admin/realms/{realm}/identity-provider/instances` |
-| `addMappers` | `POST /{realm}/orgs/{orgId}/idps/{alias}/mappers` | `POST /admin/realms/{realm}/identity-provider/instances/{alias}/mappers` |
+| Slot           | Cloud URL                                         | On-prem URL                                                              |
+| -------------- | ------------------------------------------------- | ------------------------------------------------------------------------ |
+| `importConfig` | `POST /{realm}/orgs/{orgId}/idps/import-config`   | `POST /admin/realms/{realm}/identity-provider/import-config`             |
+| `createIdp`    | `POST /{realm}/orgs/{orgId}/idps`                 | `POST /admin/realms/{realm}/identity-provider/instances`                 |
+| `addMappers`   | `POST /{realm}/orgs/{orgId}/idps/{alias}/mappers` | `POST /admin/realms/{realm}/identity-provider/instances/{alias}/mappers` |
 
 ### Realm and server URL
 
@@ -150,12 +151,12 @@ Both are parsed from `VITE_OIDC_ISSUER_URI` at startup. The parser handles both 
 
 `useWizardConfig` fetches `{issuerUri}/wizard/config.json` and exposes optional realm-level overrides:
 
-| Key | Description |
-|-----|-------------|
-| `logoUrl` | Replaces the Phase Two slash logo on the provider selector |
-| `appName` | Shown above the provider search card |
-| `apiMode` | Override the auto-detected mode (`"cloud"` or `"onprem"`) |
-| `emailAsUsername` | Adds an email→username mapper when creating the IDP |
+| Key               | Description                                                |
+| ----------------- | ---------------------------------------------------------- |
+| `logoUrl`         | Replaces the Phase Two slash logo on the provider selector |
+| `appName`         | Shown above the provider search card                       |
+| `apiMode`         | Override the auto-detected mode (`"cloud"` or `"onprem"`)  |
+| `emailAsUsername` | Adds an email→username mapper when creating the IDP        |
 
 If the file is missing or the fetch fails, defaults are used silently.
 
@@ -178,12 +179,12 @@ Copy the env sample. The defaults match the local Docker Keycloak setup:
 cp .env.local.sample .env.local
 ```
 
-| Variable               | Default                                     | Description                             |
-| ---------------------- | ------------------------------------------- | --------------------------------------- |
-| `VITE_OIDC_USE_MOCK`   | `false`                                     | Set to `true` to skip Keycloak entirely |
-| `VITE_OIDC_ISSUER_URI` | `http://localhost:8080/auth/realms/wizard`  | Keycloak realm URL                      |
-| `VITE_OIDC_CLIENT_ID`  | `wizard-v2-dev`                             | Keycloak client ID                      |
-| `VITE_OIDC_SPA_DEBUG`  | `false`                                     | Enable verbose oidc-spa logs            |
+| Variable               | Default                                    | Description                             |
+| ---------------------- | ------------------------------------------ | --------------------------------------- |
+| `VITE_OIDC_USE_MOCK`   | `false`                                    | Set to `true` to skip Keycloak entirely |
+| `VITE_OIDC_ISSUER_URI` | `http://localhost:8080/auth/realms/wizard` | Keycloak realm URL                      |
+| `VITE_OIDC_CLIENT_ID`  | `wizard-v2-dev`                            | Keycloak client ID                      |
+| `VITE_OIDC_SPA_DEBUG`  | `false`                                    | Enable verbose oidc-spa logs            |
 
 ### 2. Start Keycloak
 
@@ -201,17 +202,18 @@ On first run, Keycloak auto-imports `realm-export.json` which creates:
 Keycloak data persists in a named Docker volume between restarts.
 
 > If the volume already exists from a previous run with bad state, recreate it cleanly:
+>
 > ```bash
 > docker compose down -v && docker compose up
 > ```
 
 #### Dev test users
 
-| Username | Password | Email | Roles |
-|----------|----------|-------|-------|
-| `wizard` | `password` | `wizard@example.com` | `realm-admin` |
-| `org-admin` | `password` | `org-admin@example.com` | — |
-| `org-member` | `password` | `org-member@example.com` | — |
+| Username     | Password   | Email                    | Roles         |
+| ------------ | ---------- | ------------------------ | ------------- |
+| `wizard`     | `password` | `wizard@example.com`     | `realm-admin` |
+| `org-admin`  | `password` | `org-admin@example.com`  | —             |
+| `org-member` | `password` | `org-member@example.com` | —             |
 
 `wizard` has full `realm-admin` permissions, which the wizard requires to create identity providers via the Keycloak Admin API. `org-admin` and `org-member` are plain users used by integration tests; `global-setup.ts` assigns them to test organizations at runtime.
 
@@ -262,7 +264,7 @@ The test suite is designed to verify the wizard at every layer:
 - **Wizard completion** — can each provider's wizard flow be driven from start to finish, including form submission and final IDP creation? This covers all 21 wizard files.
 - **API routing** — does the wizard call the right endpoints (org-scoped vs. realm-wide) depending on how it was launched?
 - **Organization context** — does the `?org_id=` launch mode work correctly? Are org memberships, roles, and API routes all correct?
-- **External provider loop** *(optional)* — can the browser automate the external provider setup (Auth0, Okta) and feed the resulting credentials directly into the wizard, end-to-end?
+- **External provider loop** _(optional)_ — can the browser automate the external provider setup (Auth0, Okta) and feed the resulting credentials directly into the wizard, end-to-end?
 
 ### Running tests
 
@@ -365,17 +367,18 @@ Integration-mode tests (requires Keycloak). Covers:
 Full end-to-end tests that drive an external identity provider's admin UI and then complete the corresponding wizard. These are **skipped by default** — they run only when the relevant credential environment variables are set.
 
 Each test follows the same pattern:
+
 1. Open the provider's dashboard and create an application or integration
 2. Configure it with the SP values (ACS URL, Entity ID) read from the wizard
 3. Copy the resulting metadata URL or credentials
 4. Return to the wizard and complete it using those values
 5. Assert successful IDP creation
 
-| Test | Variables required |
-|------|--------------------|
+| Test                 | Variables required                              |
+| -------------------- | ----------------------------------------------- |
 | Auth0 OIDC full loop | `AUTH0_DOMAIN`, `AUTH0_EMAIL`, `AUTH0_PASSWORD` |
 | Auth0 SAML full loop | `AUTH0_DOMAIN`, `AUTH0_EMAIL`, `AUTH0_PASSWORD` |
-| Okta SAML full loop | `OKTA_DOMAIN`, `OKTA_EMAIL`, `OKTA_PASSWORD` |
+| Okta SAML full loop  | `OKTA_DOMAIN`, `OKTA_EMAIL`, `OKTA_PASSWORD`    |
 
 > These tests create real applications in your provider accounts. Clean them up manually afterward.
 
@@ -383,11 +386,11 @@ Each test follows the same pattern:
 
 The `wizard` realm is pre-seeded with three test users (created from `docker/realm-export.json`):
 
-| Username | Password | Role | Purpose |
-|----------|----------|------|---------|
-| `wizard` | `password` | `realm-admin` | Main admin — can call any Keycloak admin API. Used by `auth:setup` and most tests. |
-| `org-admin` | `password` | — | Org-level admin. Assigned as admin of `test-org-alpha` by `global-setup.ts`. |
-| `org-member` | `password` | — | Regular org member. Assigned as member of `test-org-alpha` by `global-setup.ts`. |
+| Username     | Password   | Role          | Purpose                                                                            |
+| ------------ | ---------- | ------------- | ---------------------------------------------------------------------------------- |
+| `wizard`     | `password` | `realm-admin` | Main admin — can call any Keycloak admin API. Used by `auth:setup` and most tests. |
+| `org-admin`  | `password` | —             | Org-level admin. Assigned as admin of `test-org-alpha` by `global-setup.ts`.       |
+| `org-member` | `password` | —             | Regular org member. Assigned as member of `test-org-alpha` by `global-setup.ts`.   |
 
 ### Keycloak admin theme
 
@@ -407,3 +410,13 @@ pnpm build
 ```
 
 Output goes to `dist/`. When wizard-v2 is ready for production, the root `pom.xml` `workingDirectory` will be updated to `apps/wizard-v2` and `mvn package` will bundle it into the Keycloak JAR.
+
+## Migration check
+
+- Existing provider setup is displayed
+- Ability to change organizations if you are not in organization mode (as in if you were sent a link generated for a specific org, you can only view that org)
+
+## Wizard Review
+
+- AWS
+  - Screenshots on app selection need to be updated
