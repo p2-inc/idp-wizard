@@ -16,11 +16,15 @@ function AuthenticatedLayout() {
 
   const isHome = pathname === "/";
   const providerId = params?.providerId;
+  const protocol = params?.protocol;
   const provider = providerId ? allProviders.find((p) => p.id === providerId) : null;
+
+  // On wizard step pages the sidebar owns the back button and provider identity
+  const showHeader = !isHome && !protocol;
 
   return (
     <div className="flex h-screen flex-col">
-      {!isHome && (
+      {showHeader && (
         <header className="border-border shrink-0 border-b">
           <div
             className={`mx-auto flex w-full items-center justify-between px-4 py-2 ${APP_SHELL_MAX_WIDTH}`}
@@ -46,7 +50,7 @@ function AuthenticatedLayout() {
           </div>
         </header>
       )}
-      <main className="flex min-h-0 flex-1 overflow-hidden">
+      <main className={`flex min-h-0 flex-1 ${protocol ? "overflow-hidden" : "overflow-auto"}`}>
         <div className={`mx-auto flex min-h-0 w-full flex-1 flex-col ${APP_SHELL_MAX_WIDTH}`}>
           <Outlet />
         </div>
