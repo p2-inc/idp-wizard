@@ -45,6 +45,7 @@ There are some reasonable defaults used for the configuration, but the behavior 
 | Realm attribute key                             | Default     | Description                                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `_providerConfig.wizard.apiMode`                | `onprem`    | `onprem` or `cloud`. `onprem` uses the Keycloak Admin APIs to set up an Identity Provider, so the user must have the correct `realm-management` roles. `cloud` uses the Phase Two Organizations API, so the user must have membership in an organization with the correct organization roles. A "picker" will be shown to the user if they have both and/or roles in more than one organization. |
+| `_providerConfig.wizard.auth-realm-override`   | realm name  | Override the realm used in the generated `keycloak.json`. If unset, the wizard uses the current realm name.                                                                                                                                                                                                                                                                                     |
 | `_providerConfig.wizard.emailAsUsername`        | `false`     | When building Identity Provider mappers, should the IdP email address be mapped to the Keycloak `username` field.                                                                                                                                                                                                                                                                                |
 | `_providerConfig.wizard.enableDashboard`        | `true`      | Show a minimal dashboard showing the state of the setup.                                                                                                                                                                                                                                                                                                                                         |
 | `_providerConfig.wizard.enableDirectorySync`    | `true`      | Show Directory Sync section.                                                                                                                                                                                                                                                                                                                                                                     |
@@ -53,6 +54,7 @@ There are some reasonable defaults used for the configuration, but the behavior 
 | `_providerConfig.wizard.enableLdap`             | `true`      | Allow LDAP config.                                                                                                                                                                                                                                                                                                                                                                               |
 | `_providerConfig.wizard.enableScim`             | `true`      | Allow SCIM config. (not currently used)                                                                                                                                                                                                                                                                                                                                                          |
 | `_providerConfig.wizard.trustEmail`             | `false`     | Toggle _trust email_ in the IdP config.                                                                                                                                                                                                                                                                                                                                                          |
+| `_providerConfig.wizard.usernameMapperImport`   | `true`      | When building Identity Provider mappers, use `IMPORT` sync mode for the username attribute instead of `INHERIT`.                                                                                                                                                                                                                                                                                 |
 | `_providerConfig.assets.logo.url`               | _none_      | URL for logo override. Inherited from `keycloak-orgs` config so we can use the same logo.                                                                                                                                                                                                                                                                                                        |
 | `_providerConfig.wizard.appName`                | `Phase Two` | App name to appear in the HTML title.                                                                                                                                                                                                                                                                                                                                                            |
 
@@ -77,19 +79,24 @@ Although it has been developed and working since Keycloak 14.0.0, the extensions
 
 Wizards are currently available for the following vendors.
 
-| Vendor    | SAML               | OIDC               | LDAP               | SCIM | Other |
-| --------- | ------------------ | ------------------ | ------------------ | ---- | ----- |
-| ADFS      | :white_check_mark: |                    | :white_check_mark: |      |       |
-| AWS       | :white_check_mark: |                    |                    |      |       |
-| Auth0     | :white_check_mark: | :white_check_mark: |                    |      |       |
-| Azure     | :white_check_mark: |                    |                    |      |       |
-| Duo       | :white_check_mark: |                    |                    |      |       |
-| Generic   | :white_check_mark: | :white_check_mark: | :white_check_mark: |      |       |
-| Google    | :white_check_mark: |                    |                    |      |       |
-| JumpCloud | :white_check_mark: |                    |                    |      |       |
-| Okta      | :white_check_mark: |                    | :white_check_mark: |      |       |
-| OneLogin  | :white_check_mark: |                    |                    |      |       |
-| PingOne   | :white_check_mark: |                    |                    |      |       |
+| Vendor               | SAML               | OIDC               | LDAP               | SCIM | Other |
+| -------------------- | ------------------ | ------------------ | ------------------ | ---- | ----- |
+| ADFS                 | :white_check_mark: |                    |                    |      |       |
+| AWS                  | :white_check_mark: |                    |                    |      |       |
+| Auth0                | :white_check_mark: | :white_check_mark: |                    |      |       |
+| Cloudflare           | :white_check_mark: |                    |                    |      |       |
+| CyberArk             | :white_check_mark: |                    |                    |      |       |
+| Duo                  | :white_check_mark: |                    |                    |      |       |
+| Entra Id             | :white_check_mark: |                    |                    |      |       |
+| Generic              | :white_check_mark: | :white_check_mark: | :white_check_mark: |      |       |
+| Google               | :white_check_mark: |                    |                    |      |       |
+| JumpCloud            | :white_check_mark: |                    |                    |      |       |
+| LastPass             | :white_check_mark: |                    |                    |      |       |
+| Okta                 | :white_check_mark: |                    | :white_check_mark: |      |       |
+| OneLogin             | :white_check_mark: |                    |                    |      |       |
+| Oracle               | :white_check_mark: |                    |                    |      |       |
+| PingOne              | :white_check_mark: |                    |                    |      |       |
+| Salesforce           | :white_check_mark: | :white_check_mark: |                    |      |       |
 
 ## Contributing
 
