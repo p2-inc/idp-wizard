@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "1.0",
+  "id": "apple-oauth",
+  "providerId": "apple",
+  "protocol": "oauth",
+  "title": "Apple OAuth",
+  "alias": {
+    "prefix": "apple-oauth",
+    "sessionKey": "p2_apple_oauth"
+  },
+  "idpConfig": {
+    "providerId": "apple",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Configure Sign in with Apple",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the Apple Developer Portal, create a new Services ID, enable Sign In with Apple, and configure the domain and return URL using the value below. You will also need a Key ID and Team ID — generate a new key with Sign In with Apple enabled."
+        },
+        {
+          "type": "copy",
+          "label": "Return URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Add this as the Return URL in your Services ID configuration"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Client Credentials",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Enter the Services ID as the Client ID. For the Client Secret, Keycloak generates it from your Team ID, Key ID, and the private key (.p8 file) — paste the contents of the .p8 key file below."
+        },
+        {
+          "type": "formGroup",
+          "id": "appleCreds",
+          "exclusive": false,
+          "forms": [
+            "clientCredentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create Apple Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak. You may need to configure the Team ID and Key ID in the Keycloak admin console after creation.",
+          "buttonText": "Create Apple Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSocial}}",
+          "adminButtonText": "Manage Apple Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "clientCredentials": {
+      "title": "Apple OAuth Credentials",
+      "description": "Enter your Services ID and private key.",
+      "fields": [
+        {
+          "id": "clientId",
+          "type": "text",
+          "label": "Services ID (Client ID)",
+          "placeholder": "com.yourcompany.yourapp",
+          "required": true
+        },
+        {
+          "id": "clientSecret",
+          "type": "password",
+          "label": "Private Key (.p8 contents)",
+          "placeholder": "Paste the contents of your .p8 private key file",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save Credentials",
+        "action": "saveCredentials"
+      }
+    }
+  },
+  "actions": {
+    "saveCredentials": {
+      "type": "saveForm",
+      "fields": ["clientId", "clientSecret"],
+      "dispatch": ["CREDENTIALS_PROVIDED"]
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "apple",
+        "hideOnLogin": true,
+        "config": {
+          "syncMode": "FORCE",
+          "clientId": "{{state.formValues.clientId}}",
+          "clientSecret": "{{state.formValues.clientSecret}}"
+        }
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "Apple Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

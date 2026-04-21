@@ -20,11 +20,12 @@ interface Props {
   step: WizardStepDef;
   forms: Record<string, WizardForm>;
   onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
+  idpProviderId?: string;
 }
 
-export function WizardStep({ step, forms, onAction }: Props) {
+export function WizardStep({ step, forms, onAction, idpProviderId }: Props) {
   const { state, api } = useWizardContext();
-  const ctx = buildTemplateContext({ alias: state.alias, api, state });
+  const ctx = buildTemplateContext({ alias: state.alias, api, state, idpProviderId });
 
   return (
     <div className="flex flex-col gap-6">

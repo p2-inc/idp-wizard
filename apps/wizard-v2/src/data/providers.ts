@@ -1,4 +1,4 @@
-export type Protocol = "saml" | "oidc" | "ldap";
+export type Protocol = "saml" | "oidc" | "ldap" | "oauth";
 
 export interface Provider {
   id: string;
@@ -69,7 +69,7 @@ export const providers: Provider[] = [
     id: "google",
     name: "Google Workspace",
     logo: "/provider-logos/google-workspace-logo.svg",
-    protocols: ["saml", "oidc"],
+    protocols: ["saml", "oidc", "oauth"],
   },
   {
     id: "jumpcloud",
@@ -196,6 +196,78 @@ export const providers: Provider[] = [
     name: "VMware Workspace ONE",
     logo: "/provider-logos/vmware_logo.svg",
     protocols: ["saml"],
+  },
+  {
+    id: "apple",
+    name: "Apple",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "bitbucket",
+    name: "Bitbucket",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "discord",
+    name: "Discord",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "github",
+    name: "GitHub",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "gitlab",
+    name: "GitLab",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "intuit",
+    name: "Intuit",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "microsoft",
+    name: "Microsoft",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "slack",
+    name: "Slack",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "vercel",
+    name: "Vercel",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "vercel-marketplace",
+    name: "Vercel Marketplace",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "xero",
+    name: "Xero",
+    logo: "/provider-logos/openid_logo.png",
+    protocols: ["oauth"],
   },
 ];
 

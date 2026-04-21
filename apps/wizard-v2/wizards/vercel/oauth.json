@@ -1,0 +1,143 @@
+{
+  "schemaVersion": "1.0",
+  "id": "vercel-oauth",
+  "providerId": "vercel",
+  "protocol": "oauth",
+  "title": "Vercel OAuth",
+  "alias": {
+    "prefix": "vercel-oauth",
+    "sessionKey": "p2_vercel_oauth"
+  },
+  "idpConfig": {
+    "providerId": "oidc",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "clientAuthMethod": "client_secret_post"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a Vercel Integration",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In your Vercel Dashboard, go to Integrations → Build New Integration. Set the Integration Type to 'Generic' and enable OAuth. Add the redirect URL below as the Redirect URL."
+        },
+        {
+          "type": "copy",
+          "label": "Redirect URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Add this as the Redirect URL in your Vercel integration"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Client Credentials",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "After creating the integration, copy the Client ID and Client Secret and paste them below. Because Vercel does not publish an OpenID discovery document, authorization and token endpoints are pre-configured."
+        },
+        {
+          "type": "formGroup",
+          "id": "vercelCreds",
+          "exclusive": false,
+          "forms": [
+            "clientCredentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create Vercel Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create Vercel Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkOidc}}",
+          "adminButtonText": "Manage Vercel Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "clientCredentials": {
+      "title": "Vercel OAuth Credentials",
+      "description": "Enter the Client ID and Client Secret from your Vercel integration.",
+      "fields": [
+        {
+          "id": "clientId",
+          "type": "text",
+          "label": "Client ID",
+          "placeholder": "your-client-id",
+          "required": true
+        },
+        {
+          "id": "clientSecret",
+          "type": "password",
+          "label": "Client Secret",
+          "placeholder": "your-client-secret",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save Credentials",
+        "action": "saveCredentials"
+      }
+    }
+  },
+  "actions": {
+    "saveCredentials": {
+      "type": "saveForm",
+      "fields": ["clientId", "clientSecret"],
+      "dispatch": ["CREDENTIALS_PROVIDED"]
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "oidc",
+        "hideOnLogin": true,
+        "config": {
+          "syncMode": "FORCE",
+          "clientAuthMethod": "client_secret_post",
+          "clientId": "{{state.formValues.clientId}}",
+          "clientSecret": "{{state.formValues.clientSecret}}",
+          "authorizationUrl": "https://vercel.com/oauth/authorize",
+          "tokenUrl": "https://api.vercel.com/v2/oauth/access_token",
+          "userInfoUrl": "https://api.vercel.com/v2/user",
+          "defaultScope": "read:user"
+        }
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "Vercel Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

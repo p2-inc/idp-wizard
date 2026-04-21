@@ -97,7 +97,9 @@ export function buildTemplateContext(params: {
     samlMetadata: string;
     adminLinkSaml: (alias: string) => string;
     adminLinkOidc: (alias: string) => string;
+    adminLinkSocial: (alias: string, providerId: string) => string;
   };
+  idpProviderId?: string;
   state: {
     metadata: Record<string, unknown> | null;
     [key: string]: unknown;
@@ -105,7 +107,7 @@ export function buildTemplateContext(params: {
   formValues?: Record<string, unknown>;
   foreachItem?: Record<string, unknown>;
 }): Record<string, unknown> {
-  const { alias, api, state, formValues = {}, foreachItem } = params;
+  const { alias, api, idpProviderId, state, formValues = {}, foreachItem } = params;
 
   const ctx: Record<string, unknown> = {
     alias,
@@ -114,6 +116,9 @@ export function buildTemplateContext(params: {
     "api.samlMetadata": api.samlMetadata,
     "api.adminLinkSaml": api.adminLinkSaml(alias),
     "api.adminLinkOidc": api.adminLinkOidc(alias),
+    "api.adminLinkSocial": idpProviderId
+      ? api.adminLinkSocial(alias, idpProviderId)
+      : "",
     "state.metadata": state.metadata,
   };
 

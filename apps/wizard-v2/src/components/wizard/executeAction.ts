@@ -49,11 +49,13 @@ export interface ExecuteActionParams {
     samlMetadata: string;
     adminLinkSaml: (alias: string) => string;
     adminLinkOidc: (alias: string) => string;
+    adminLinkSocial: (alias: string, providerId: string) => string;
     endpoints: WizardEndpoints;
   };
   formValues?: Record<string, unknown>;
   aliasSessionKey: string;
   config: WizardConfig;
+  idpProviderId?: string;
 }
 
 export interface ExecuteActionResult {
@@ -338,6 +340,7 @@ export async function executeAction(
       const ctx = buildTemplateContext({
         alias: currentState.alias,
         api: params.api,
+        idpProviderId: params.idpProviderId,
         state: currentState,
         formValues: currentState.formValues,
         foreachItem: httpAction.foreach ? item : undefined,

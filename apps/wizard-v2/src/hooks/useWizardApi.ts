@@ -56,6 +56,8 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
         `${adminBase}/${realm}/console/#/${realm}/identity-providers/saml/${alias}/settings`,
       adminLinkOidc: (alias: string) =>
         `${adminBase}/${realm}/console/#/${realm}/identity-providers/oidc/${alias}/settings`,
+      adminLinkSocial: (alias: string, providerId: string) =>
+        `${adminBase}/${realm}/console/#/${realm}/identity-providers/${providerId}/${alias}/settings`,
       endpoints:
         apiMode === "cloud" && orgId
           ? {
