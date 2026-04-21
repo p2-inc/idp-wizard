@@ -14,7 +14,8 @@
     "test:e2e:report": "playwright show-report",
     "test:integration": "PLAYWRIGHT_INTEGRATION=true playwright test",
     "test:integration:ui": "PLAYWRIGHT_INTEGRATION=true playwright test --ui",
-    "test:external": "PLAYWRIGHT_INTEGRATION=true playwright test e2e/external-providers/"
+    "test:external": "PLAYWRIGHT_INTEGRATION=true playwright test e2e/external-providers/",
+    "capture:aws:saml": "tsx wizards/aws/playwright/saml-capture.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",

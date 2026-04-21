@@ -25,37 +25,19 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the AWS SSO Console, add a new custom SAML 2.0 application. Enter the following service provider details."
-        },
-        {
-          "type": "copy",
-          "label": "ACS URL",
-          "value": "{{api.ssoUrl}}",
-          "hint": "Sometimes called SSO Service URL or Callback URL"
-        },
-        {
-          "type": "copy",
-          "label": "Entity ID",
-          "value": "{{api.entityId}}",
-          "hint": "Sometimes called Audience URI or SP Entity ID"
-        },
-        {
-          "type": "copy",
-          "label": "SAML Metadata URL",
-          "value": "{{api.samlMetadata}}",
-          "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+          "content": "In the AWS SSO Console, select \"Applications\" from the menu. On this page, select the \"Add application\" button. add a new custom SAML 2.0 application. Enter the following service provider details."
         },
         {
           "type": "image",
           "src": "/wizards/aws/awssso_saml_1.png"
         },
         {
-          "type": "image",
-          "src": "/wizards/aws/awssso_saml_2.png"
+          "type": "text",
+          "content": "The next screen is an application catalog. Select \"Add custom SAML 2.0 application\" at the top of the list, and then scroll down to the bottom and click \"Next\"."
         },
         {
           "type": "image",
-          "src": "/wizards/aws/awssso_saml_4.png"
+          "src": "/wizards/aws/awssso_saml_2.png"
         }
       ]
     },
@@ -66,7 +48,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Enter the metadata URL from the AWS SSO application configuration."
+          "content": "Enter a \"Display Name\" and an optional \"Description\". Click the copy \"Box\" icon next to the \"IAM Identity Center SAML metadata file\" URL, and paste it into the field below. This will load the AWS SSO configuration."
         },
         {
           "type": "image",
@@ -76,44 +58,78 @@
           "type": "formGroup",
           "id": "metadataInput",
           "exclusive": false,
-          "forms": [
-            "metadataUrl"
-          ]
+          "forms": ["metadataUrl"]
         }
       ]
     },
+
     {
       "id": 3,
+      "title": "Enter Service Provider Details",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Enter the following values into \"Application metadata\"."
+        },
+        {
+          "type": "copy",
+          "label": "ACS URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
+        },
+        {
+          "type": "copy",
+          "label": "SAML Audience",
+          "value": "{{api.entityId}}",
+          "hint": "Sometimes called Audience URI or SP Entity ID"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/aws/awssso_saml_4.png"
+        }
+      ]
+    },
+
+    {
+      "id": 4,
       "title": "Configure Attribute Mapping",
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
-        },
-        {
-          "type": "attributeTable",
-          "rows": [
-            {
-              "idpAttribute": "username",
-              "keycloakAttribute": "username"
-            },
-            {
-              "idpAttribute": "email",
-              "keycloakAttribute": "email"
-            },
-            {
-              "idpAttribute": "firstName",
-              "keycloakAttribute": "firstName"
-            },
-            {
-              "idpAttribute": "lastName",
-              "keycloakAttribute": "lastName"
-            }
-          ]
+          "content": "Navigate to the attribute mapping section by opening the \"Actions\" dropdown in the \"Details\" section. Select \"Edit attribute mappings\"."
         },
         {
           "type": "image",
           "src": "/wizards/aws/awssso_saml_5a.png"
+        },
+        {
+          "type": "text",
+          "content": "In the \"Attribute mappings\" section, provide the following attribute mappings and select \"Save\". Note you may need to click \"+ Add new attribute mapping\" to configure each of the mappings. Format should be set to \"unspecified\" for each of the mappings. When you are finished, click \"Save changes\" before proceeding."
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "User attribute in the application",
+            "keycloakAttribute": "Maps to this string value or user attribute in IAM Identity Center"
+          },
+          "rows": [
+            {
+              "idpAttribute": "subject",
+              "keycloakAttribute": "${user:email}"
+            },
+            {
+              "idpAttribute": "email",
+              "keycloakAttribute": "${user:email}"
+            },
+            {
+              "idpAttribute": "firstName",
+              "keycloakAttribute": "${user:givenName}"
+            },
+            {
+              "idpAttribute": "lastName",
+              "keycloakAttribute": "${user:familyName}"
+            }
+          ]
         },
         {
           "type": "image",
@@ -122,20 +138,28 @@
       ]
     },
     {
-      "id": 4,
+      "id": 5,
       "title": "Configure User Access",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "In order for your users to be able to access the application, you must assign users and/or groups. Start by opening the \"Assigned users\" page by selecting \"Assign users\" button."
         },
         {
           "type": "image",
           "src": "/wizards/aws/awssso_saml_6.png"
         },
         {
+          "type": "text",
+          "content": "You can add individual users."
+        },
+        {
           "type": "image",
           "src": "/wizards/aws/awssso_saml_7.png"
+        },
+        {
+          "type": "text",
+          "content": "You can also add groups of users. This is the preferred way to manage user access. Click the \"Assign users\" button when you have finished this step."
         },
         {
           "type": "image",
@@ -144,15 +168,15 @@
       ]
     },
     {
-      "id": 5,
-      "title": "Confirmation",
+      "id": 6,
+      "title": "Create SAML Identity Provider",
       "type": "confirm",
       "blocks": [
         {
           "type": "confirm",
-          "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
-          "buttonText": "Create SAML Identity Provider",
+          "title": "",
+          "description": "Configuration is complete. Click the button below to create the identity provider.",
+          "buttonText": "Create",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",
           "adminButtonText": "Manage SAML Identity Provider"
@@ -190,9 +214,7 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": [
-          "METADATA_VALIDATED"
-        ]
+        "dispatch": ["METADATA_VALIDATED"]
       },
       "messages": {
         "success": "Metadata URL validated. Continue to the next step.",
@@ -217,10 +239,7 @@
             "result": "SAML Identity Provider created successfully."
           }
         ],
-        "then": [
-          "addSamlMappers",
-          "clearAlias"
-        ]
+        "then": ["addSamlMappers", "clearAlias"]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."

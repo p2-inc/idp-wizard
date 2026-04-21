@@ -24,7 +24,7 @@ export function CopyField({ label, value, hint, className }: CopyFieldProps) {
       {label && (
         <span className="text-sm font-medium">{label}</span>
       )}
-      <div className="border-border bg-muted/40 flex items-center gap-2 rounded-md border px-3 py-2">
+      <div className="border-border bg-card flex items-center gap-2 rounded-md border px-3 py-2">
         <code className="flex-1 truncate font-mono text-xs">{value || "—"}</code>
         <button
           onClick={handleCopy}

@@ -9,6 +9,7 @@
     "_providerConfig.wizard.enableDashboard": "true",
     "_providerConfig.wizard.enableDirectorySync": "true",
     "_providerConfig.wizard.enableIdentityProvider": "true",
+    "_providerConfig.wizard.logoUrl": "",
     "_providerConfig.wizard.trustEmail": "false"
   },
   "clients": [
