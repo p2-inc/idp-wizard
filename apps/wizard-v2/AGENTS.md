@@ -32,16 +32,16 @@ All work described in this file is inside `apps/wizard-v2/`.
 
 ## Stack
 
-| Layer | Choice | Why |
-|---|---|---|
-| Build | Vite 8 | Fast, modern, ESM-native |
-| UI | React 19 + shadcn/ui (new-york) | Component library matching Phase Two dashboard-v2 |
-| Styling | Tailwind CSS v4 | CSS-first, no separate config file; OKLCH color tokens |
-| Routing | TanStack Router (file-based) | Full type-safe routing with `validateSearch`, `beforeLoad` |
-| Auth | oidc-spa v10 | OIDC against Keycloak; `withAutoLogin()`, no token schema |
-| API types | openapi-typescript + openapi-fetch | Typed clients from OpenAPI specs, no Redux needed |
-| State | useReducer (local to wizard runner) | Lightweight; no Redux, no global store |
-| Testing | Playwright | E2E, Page Object Model |
+| Layer     | Choice                              | Why                                                        |
+| --------- | ----------------------------------- | ---------------------------------------------------------- |
+| Build     | Vite 8                              | Fast, modern, ESM-native                                   |
+| UI        | React 19 + shadcn/ui (new-york)     | Component library matching Phase Two dashboard-v2          |
+| Styling   | Tailwind CSS v4                     | CSS-first, no separate config file; OKLCH color tokens     |
+| Routing   | TanStack Router (file-based)        | Full type-safe routing with `validateSearch`, `beforeLoad` |
+| Auth      | oidc-spa v10                        | OIDC against Keycloak; `withAutoLogin()`, no token schema  |
+| API types | openapi-typescript + openapi-fetch  | Typed clients from OpenAPI specs, no Redux needed          |
+| State     | useReducer (local to wizard runner) | Lightweight; no Redux, no global store                     |
+| Testing   | Playwright                          | E2E, Page Object Model                                     |
 
 ---
 
@@ -112,7 +112,7 @@ apps/wizard-v2/
 
 ```
 VITE_OIDC_USE_MOCK=true              # Skip Keycloak entirely (UI-only dev)
-VITE_OIDC_ISSUER_URI=http://localhost:8080/realms/wizard
+VITE_OIDC_ISSUER_URI=http://localhost:8180/realms/wizard
 VITE_OIDC_CLIENT_ID=wizard-v2-dev
 VITE_OIDC_SPA_DEBUG=false
 ```
@@ -128,12 +128,12 @@ Test user: `wizard` / `password` with `realm-admin` role.
 
 TanStack Router file-based routing. The flat file naming convention uses dots for path segments:
 
-| File | Route |
-|---|---|
-| `_authenticated.tsx` | Layout wrapper (no path segment, pathless) |
-| `_authenticated.index.tsx` | `/` |
-| `_authenticated.wizard.$providerId.tsx` | `/wizard/:providerId` |
-| `_authenticated.wizard.$providerId.$protocol.tsx` | `/wizard/:providerId/:protocol` |
+| File                                              | Route                                      |
+| ------------------------------------------------- | ------------------------------------------ |
+| `_authenticated.tsx`                              | Layout wrapper (no path segment, pathless) |
+| `_authenticated.index.tsx`                        | `/`                                        |
+| `_authenticated.wizard.$providerId.tsx`           | `/wizard/:providerId`                      |
+| `_authenticated.wizard.$providerId.$protocol.tsx` | `/wizard/:providerId/:protocol`            |
 
 **Critical gotcha — parent `beforeLoad` runs for child routes.** `$protocol` is a child of `$providerId` in the route tree. So the `$providerId` route's `beforeLoad` runs when navigating to `/wizard/adfs/saml`. Do not add redirects in `$providerId`'s `beforeLoad` that could target child routes — this causes infinite redirect loops. The `$providerId` route's `beforeLoad` only validates that the provider exists.
 
@@ -159,7 +159,8 @@ Both endpoint sets are fully typed via the generated OpenAPI clients.
 Two typed clients are available on `WizardContext`:
 
 ```ts
-const { orgsClient, adminClient, activeClient, realm, orgId } = useWizardContext();
+const { orgsClient, adminClient, activeClient, realm, orgId } =
+  useWizardContext();
 
 // Cloud (org-scoped) — Phase Two Orgs API
 const { data, error } = await orgsClient.POST("/{realm}/orgs/{orgId}/idps", {
@@ -173,7 +174,7 @@ const { data, error } = await adminClient.POST(
   {
     params: { path: { realm } },
     body: { alias, providerId: "saml", hideOnLogin: true, config: metadata },
-  }
+  },
 );
 ```
 
@@ -181,11 +182,11 @@ Types are generated from the OpenAPI specs. Regenerate with `pnpm gen-api` when 
 
 Key endpoints:
 
-| Action | Cloud path | Onprem path |
-|---|---|---|
-| Validate metadata | `POST /{realm}/orgs/{orgId}/idps/import-config` | `POST /admin/realms/{realm}/identity-provider/import-config` |
-| Create IDP | `POST /{realm}/orgs/{orgId}/idps` | `POST /admin/realms/{realm}/identity-provider/instances` |
-| Add mapper | `POST /{realm}/orgs/{orgId}/idps/{alias}/mappers` | `POST /admin/realms/{realm}/identity-provider/instances/{alias}/mappers` |
+| Action            | Cloud path                                        | Onprem path                                                              |
+| ----------------- | ------------------------------------------------- | ------------------------------------------------------------------------ |
+| Validate metadata | `POST /{realm}/orgs/{orgId}/idps/import-config`   | `POST /admin/realms/{realm}/identity-provider/import-config`             |
+| Create IDP        | `POST /{realm}/orgs/{orgId}/idps`                 | `POST /admin/realms/{realm}/identity-provider/instances`                 |
+| Add mapper        | `POST /{realm}/orgs/{orgId}/idps/{alias}/mappers` | `POST /admin/realms/{realm}/identity-provider/instances/{alias}/mappers` |
 
 ---
 
@@ -223,6 +224,7 @@ This is the canonical reference. All wizard JSON files follow this schema.
 ### Steps
 
 Each step has:
+
 - `id` (number) — 1-indexed, sequential
 - `title` (string)
 - `type` (optional) — omit for normal steps; `"confirm"` for the final step
@@ -230,6 +232,7 @@ Each step has:
 - `blocks` — array of UI blocks
 
 Block types:
+
 - `text` — `{ type: "text", content: "..." }`
 - `copy` — copyable value: `{ type: "copy", label: "ACS URL", value: "{{api.ssoUrl}}", hint: "..." }`
 - `formGroup` — renders a tabbed/exclusive set of forms: `{ type: "formGroup", id: "metadataInput", exclusive: true, forms: ["metadataUrl", "metadataFile", "metadataManual"] }`
@@ -238,21 +241,22 @@ Block types:
 
 ### Template variables available in blocks and actions
 
-| Variable | Resolves to |
-|---|---|
-| `{{api.entityId}}` | `{serverUrl}/realms/{realm}` |
-| `{{api.ssoUrl}}` | `{serverUrl}/realms/{realm}/broker/{alias}/endpoint` |
-| `{{api.samlMetadata}}` | `{serverUrl}/realms/{realm}/protocol/saml/descriptor` |
-| `{{api.adminLinkSaml}}` | Keycloak admin console link for the SAML IDP |
-| `{{api.adminLinkOidc}}` | Keycloak admin console link for the OIDC IDP |
-| `{{alias}}` | The generated alias for this wizard session |
-| `{{state.metadata}}` | The validated IDP config object from `import-config` |
-| `{{form.fieldId}}` | A field value from the currently active form |
-| `{{item.*}}` | Current item in a `foreach` action iteration |
+| Variable                | Resolves to                                           |
+| ----------------------- | ----------------------------------------------------- |
+| `{{api.entityId}}`      | `{serverUrl}/realms/{realm}`                          |
+| `{{api.ssoUrl}}`        | `{serverUrl}/realms/{realm}/broker/{alias}/endpoint`  |
+| `{{api.samlMetadata}}`  | `{serverUrl}/realms/{realm}/protocol/saml/descriptor` |
+| `{{api.adminLinkSaml}}` | Keycloak admin console link for the SAML IDP          |
+| `{{api.adminLinkOidc}}` | Keycloak admin console link for the OIDC IDP          |
+| `{{alias}}`             | The generated alias for this wizard session           |
+| `{{state.metadata}}`    | The validated IDP config object from `import-config`  |
+| `{{form.fieldId}}`      | A field value from the currently active form          |
+| `{{item.*}}`            | Current item in a `foreach` action iteration          |
 
 ### Forms
 
 Each form in the `forms` dictionary has:
+
 - `title`, `description`
 - `fields` — array of `{ id, type, label, required, placeholder?, accept?, ... }`
   - Field types: `text`, `url`, `file`
@@ -282,11 +286,13 @@ Each action in the `actions` dictionary:
 ```
 
 Named endpoint slots (`endpoint` key):
+
 - `importConfig` — validates metadata; returns raw IDP config object
 - `createIdp` — creates the identity provider
 - `addMappers` — adds attribute mapper to an existing IDP
 
 Special action types (no `endpoint`):
+
 - `{ "type": "clearAlias" }` — removes alias from sessionStorage
 
 ---
@@ -297,10 +303,10 @@ State lives in `WizardContext` and is managed by `wizardReducer` in `src/context
 
 ```ts
 interface WizardState {
-  alias: string;             // stable for the session
-  currentStep: number;       // the step currently displayed
-  stepIdReached: number;     // furthest step reached (controls canJumpTo)
-  metadata: Record<string, unknown> | null;  // from import-config response
+  alias: string; // stable for the session
+  currentStep: number; // the step currently displayed
+  stepIdReached: number; // furthest step reached (controls canJumpTo)
+  metadata: Record<string, unknown> | null; // from import-config response
   metadataValidated: boolean;
   submitting: boolean;
   submitted: boolean;
@@ -339,15 +345,15 @@ Session key format: `p2_{providerId}_{protocol}` — e.g. `p2_saml_saml`, `p2_ok
 
 ```ts
 interface WizardConfig {
-  appName: string | null;      // displayed above the provider selector card
-  logoUrl: string | null;      // displayed above the provider selector card
+  appName: string | null; // displayed above the provider selector card
+  logoUrl: string | null; // displayed above the provider selector card
   displayName: string;
   apiMode: "cloud" | "onprem" | "";
-  emailAsUsername: boolean;    // affects SAML attribute mapper creation
+  emailAsUsername: boolean; // affects SAML attribute mapper creation
   enableDashboard: boolean;
   enableLdap: boolean;
   enableGroupMapping: boolean;
-  trustEmail: boolean;         // passed to IDP creation payload
+  trustEmail: boolean; // passed to IDP creation payload
 }
 ```
 
@@ -372,18 +378,18 @@ If the endpoint is unreachable (local dev without the extension), all values fal
 
 ## v1 → v2 patterns reference
 
-| v1 pattern | v2 equivalent |
-|---|---|
-| Redux store + `state.settings.currentOrg` | `?org_id` URL search param |
-| Redux `state.settings.apiMode` | Derived in `useWizardApi` from `org_id` + config |
-| Keycloak JS adapter (`keycloak.token`) | `oidc-spa` `getOidc().getAccessToken()` |
-| `Axios` interceptor with Bearer token | `openapi-fetch` middleware (same pattern) |
-| `getAlias()` in `localStorage` | `getOrCreateAlias()` in `sessionStorage` |
+| v1 pattern                                                | v2 equivalent                                                |
+| --------------------------------------------------------- | ------------------------------------------------------------ |
+| Redux store + `state.settings.currentOrg`                 | `?org_id` URL search param                                   |
+| Redux `state.settings.apiMode`                            | Derived in `useWizardApi` from `org_id` + config             |
+| Keycloak JS adapter (`keycloak.token`)                    | `oidc-spa` `getOidc().getAccessToken()`                      |
+| `Axios` interceptor with Bearer token                     | `openapi-fetch` middleware (same pattern)                    |
+| `getAlias()` in `localStorage`                            | `getOrCreateAlias()` in `sessionStorage`                     |
 | `CreateIdp()` / `SamlAttributeMapper()` utility functions | `orgsClient.POST(...)` / `adminClient.POST(...)` typed calls |
-| Per-provider React component trees | Single `WizardRunner` + JSON wizard definition |
-| RTK Query hooks for feature flags | `useWizardConfig()` hook |
-| `usePrompt` for leave warning | Not yet implemented in v2 |
-| `useCreateTestIdpLink` | Not yet implemented in v2 |
+| Per-provider React component trees                        | Single `WizardRunner` + JSON wizard definition               |
+| RTK Query hooks for feature flags                         | `useWizardConfig()` hook                                     |
+| `usePrompt` for leave warning                             | Not yet implemented in v2                                    |
+| `useCreateTestIdpLink`                                    | Not yet implemented in v2                                    |
 
 ---
 

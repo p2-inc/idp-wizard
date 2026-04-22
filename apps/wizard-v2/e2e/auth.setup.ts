@@ -14,7 +14,7 @@ import path from "path";
  *
  * Prerequisites:
  *   cd docker && docker compose up -d
- *   Wait for Keycloak to be healthy at http://localhost:8080/auth/realms/wizard
+ *   Wait for Keycloak to be healthy at http://localhost:8180/auth/realms/wizard
  */
 
 const AUTH_STATE_PATH = path.join("e2e", ".auth", "admin.json");
@@ -24,7 +24,7 @@ setup("authenticate as realm admin", async ({ page }) => {
   await page.goto("/");
 
   // Wait for Keycloak login page
-  await page.waitForURL(/localhost:8080/, { timeout: 15_000 });
+  await page.waitForURL(/localhost:8180/, { timeout: 15_000 });
 
   await expect(
     page.locator("input[name='username'], #username"),

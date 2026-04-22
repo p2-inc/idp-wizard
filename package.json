@@ -1,5 +1,12 @@
 {
   "name": "idp-wizard-workspace",
   "private": true,
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "docker:up": "pnpm --filter wizard-v2 docker:up",
+    "docker:down": "pnpm --filter wizard-v2 docker:down",
+    "docker:logs": "pnpm --filter wizard-v2 docker:logs",
+    "docker:restart": "pnpm --filter wizard-v2 docker:restart",
+    "docker:reset": "pnpm --filter wizard-v2 docker:reset"
+  }
 }
