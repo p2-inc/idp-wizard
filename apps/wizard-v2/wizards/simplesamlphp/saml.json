@@ -76,6 +76,10 @@
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "LDAP Attribute",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "uid",
