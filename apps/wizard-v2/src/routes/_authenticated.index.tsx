@@ -92,17 +92,18 @@ function ProviderRow({
     <button
       onClick={() => onSelect(provider)}
       className={cn(
-        "flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-accent",
+        "flex w-full items-center gap-4 px-4 py-3 text-left transition-colors hover:bg-accent",
         !isLast && "border-border border-b",
       )}
     >
-      <div className="flex-1 p-1">
+      <div className="flex flex-1 flex-col gap-1">
         <img
           src={provider.logo}
           alt={provider.name}
-          className="h-10 w-full object-contain object-left"
+          className="h-7 w-auto max-w-35 object-contain object-left"
           title={provider.name}
         />
+        <span className="text-muted-foreground text-xs">{provider.name}</span>
       </div>
       <div className="flex gap-1">
         {provider.protocols.map((p) => (
