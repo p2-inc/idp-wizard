@@ -16,7 +16,7 @@ import { KeycloakLoginPage } from "../pages/KeycloakLoginPage";
  *                        Use this in tests that need real API responses.
  */
 
-const KC_BASE = process.env.KC_BASE_URL ?? "http://localhost:8180/auth";
+const KC_BASE = process.env.KC_BASE_URL ?? "http://localhost:8080/auth";
 const KC_REALM = "wizard";
 const KC_CLIENT_ID = process.env.VITE_OIDC_CLIENT_ID ?? "wizard-v2-dev";
 const KC_USERNAME = process.env.KC_WIZARD_USER ?? "wizard";

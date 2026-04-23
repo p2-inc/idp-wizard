@@ -20,7 +20,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 const isIntegration = !!process.env.PLAYWRIGHT_INTEGRATION;
 
-const KC_BASE = process.env.KC_BASE_URL ?? "http://localhost:8180/auth";
+const KC_BASE = process.env.KC_BASE_URL ?? "http://localhost:8080/auth";
 const ISSUER_URI = `${KC_BASE}/realms/wizard`;
 
 export default defineConfig({

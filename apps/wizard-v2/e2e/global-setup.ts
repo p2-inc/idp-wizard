@@ -17,7 +17,7 @@ import type { FullConfig } from "@playwright/test";
  * Only runs when PLAYWRIGHT_INTEGRATION=true (see playwright.config.ts).
  */
 
-const KC_BASE = process.env.KC_BASE_URL ?? "http://localhost:8180/auth";
+const KC_BASE = process.env.KC_BASE_URL ?? "http://localhost:8080/auth";
 const REALM = "wizard";
 const ADMIN_USER = process.env.KC_ADMIN_USER ?? "admin";
 const ADMIN_PASS = process.env.KC_ADMIN_PASS ?? "admin";

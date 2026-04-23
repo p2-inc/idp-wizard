@@ -15,7 +15,7 @@ export class KeycloakLoginPage {
 
   /** Wait until the Keycloak login page is visible. */
   async waitForReady() {
-    await this.page.waitForURL(/localhost:8180/, { timeout: 15_000 });
+    await this.page.waitForURL(/localhost:8080/, { timeout: 15_000 });
     await this.page
       .locator("input[name='username'], #username")
       .waitFor({ timeout: 10_000 });
