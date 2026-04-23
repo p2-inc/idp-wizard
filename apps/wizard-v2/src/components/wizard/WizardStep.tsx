@@ -6,12 +6,25 @@
  * in WizardContext.
  */
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
-import type { WizardStep as WizardStepDef, WizardBlock, WizardForm, FormField } from "./types";
+import { CheckCircle2, Copy, Check } from "lucide-react";
+import type {
+  WizardStep as WizardStepDef,
+  WizardBlock,
+  WizardForm,
+  FormField,
+} from "./types";
 import { resolveTemplate, buildTemplateContext } from "./resolveTemplate";
 import { useWizardContext } from "@/context/WizardContext";
 import { CopyField } from "@/components/ui/copy-field";
 import { FileInput } from "@/components/ui/file-input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ImageZoom } from "./ImageZoom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -29,7 +42,7 @@ export function WizardStep({ step, forms, onAction, idpProviderId }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h2 className="text-lg font-semibold">{step.title}</h2>
+      <h2 className="text-xl font-semibold">{step.title}</h2>
       {step.blocks.map((block, i) => (
         <BlockRenderer
           key={i}
@@ -51,7 +64,10 @@ interface BlockProps {
   block: WizardBlock;
   ctx: Record<string, unknown>;
   forms: Record<string, WizardForm>;
-  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
+  onAction: (
+    actionKey: string,
+    formValues?: Record<string, unknown>,
+  ) => Promise<boolean>;
 }
 
 function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
@@ -80,23 +96,15 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
 
     case "formGroup":
       return (
-        <FormGroupRenderer
-          block={block}
-          forms={forms}
-          onAction={onAction}
-        />
+        <FormGroupRenderer block={block} forms={forms} onAction={onAction} />
       );
 
     case "attributeTable":
-      return <AttributeTableRenderer rows={block.rows} />;
+      return <AttributeTableRenderer columns={block.columns} rows={block.rows} />;
 
     case "confirm":
       return (
-        <ConfirmBlockRenderer
-          block={block}
-          ctx={ctx}
-          onAction={onAction}
-        />
+        <ConfirmBlockRenderer block={block} ctx={ctx} onAction={onAction} />
       );
 
     default:
@@ -109,7 +117,9 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
 // ---------------------------------------------------------------------------
 
 function TextBlockRenderer({ content }: { content: string }) {
-  return <p className="text-muted-foreground text-sm leading-relaxed">{content}</p>;
+  return (
+    <p className="text-base leading-relaxed">{content}</p>
+  );
 }
 
 function FormGroupRenderer({
@@ -119,7 +129,10 @@ function FormGroupRenderer({
 }: {
   block: import("./types").FormGroupBlock;
   forms: Record<string, WizardForm>;
-  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
+  onAction: (
+    actionKey: string,
+    formValues?: Record<string, unknown>,
+  ) => Promise<boolean>;
 }) {
   const validForms = block.forms.filter((k) => forms[k]);
 
@@ -135,7 +148,11 @@ function FormGroupRenderer({
         </TabsList>
         {validForms.map((formKey) => (
           <TabsContent key={formKey} value={formKey} className="mt-4">
-            <FormRenderer formKey={formKey} form={forms[formKey]} onAction={onAction} />
+            <FormRenderer
+              formKey={formKey}
+              form={forms[formKey]}
+              onAction={onAction}
+            />
           </TabsContent>
         ))}
       </Tabs>
@@ -145,7 +162,12 @@ function FormGroupRenderer({
   return (
     <div className="flex flex-col gap-4">
       {validForms.map((formKey) => (
-        <FormRenderer key={formKey} formKey={formKey} form={forms[formKey]} onAction={onAction} />
+        <FormRenderer
+          key={formKey}
+          formKey={formKey}
+          form={forms[formKey]}
+          onAction={onAction}
+        />
       ))}
     </div>
   );
@@ -162,13 +184,22 @@ function FormRenderer({
 }: {
   formKey: string;
   form: WizardForm;
-  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
+  onAction: (
+    actionKey: string,
+    formValues?: Record<string, unknown>,
+  ) => Promise<boolean>;
 }) {
-  const { state } = useWizardContext();
-  const [values, setValues] = useState<Record<string, unknown>>({});
+  const { state, dispatch } = useWizardContext();
+
+  const savedValues = form.fields.reduce<Record<string, unknown>>((acc, f) => {
+    if (f.id in state.formValues) acc[f.id] = state.formValues[f.id];
+    return acc;
+  }, {});
+
+  const [values, setValues] = useState<Record<string, unknown>>(savedValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [succeeded, setSucceeded] = useState(false);
+  const [succeeded, setSucceeded] = useState(() => Boolean(state.succeededForms[formKey]));
 
   const setValue = (id: string, v: unknown) => {
     setSucceeded(false);
@@ -194,7 +225,11 @@ function FormRenderer({
     setSucceeded(false);
     try {
       const ok = await onAction(form.submit.action, values);
-      if (ok) setSucceeded(true);
+      if (ok) {
+        setSucceeded(true);
+        dispatch({ type: "SAVE_FORM_VALUES", values });
+        dispatch({ type: "FORM_SUCCEEDED", formKey });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -203,7 +238,7 @@ function FormRenderer({
   return (
     <div className="bg-card rounded-lg border p-5">
       {form.description && (
-        <p className="text-muted-foreground mb-4 text-sm">{form.description}</p>
+        <p className="text-muted-foreground mb-4 text-base">{form.description}</p>
       )}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
         {form.fields.map((field) => (
@@ -214,19 +249,24 @@ function FormRenderer({
             error={errors[field.id]}
             onChange={(v) => {
               setValue(field.id, v);
-              if (errors[field.id]) setErrors((prev) => { const n = { ...prev }; delete n[field.id]; return n; });
+              if (errors[field.id])
+                setErrors((prev) => {
+                  const n = { ...prev };
+                  delete n[field.id];
+                  return n;
+                });
             }}
           />
         ))}
 
         {state.error && (
-          <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          <p className="w-fit rounded-md bg-destructive/10 px-3 py-2 text-base text-destructive">
             {state.error}
           </p>
         )}
 
         {succeeded ? (
-          <div className="mt-1 flex items-center justify-center gap-2 rounded-md bg-green-50 px-4 py-2 text-sm font-medium text-green-700 dark:bg-green-900/20 dark:text-green-300">
+          <div className="mt-1 flex w-fit items-center gap-2 rounded-md bg-green-200 px-4 py-2 text-base font-medium text-green-900 dark:bg-green-800/50 dark:text-green-100">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             Validated
           </div>
@@ -234,7 +274,7 @@ function FormRenderer({
           <button
             type="submit"
             disabled={submitting}
-            className="mt-1 w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="mt-1 self-start rounded-md bg-primary px-6 py-2 text-base font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? "Working…" : form.submit.label}
           </button>
@@ -263,7 +303,7 @@ function FieldRenderer({
   onChange: (v: unknown) => void;
 }) {
   const baseInput = cn(
-    "border-border w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition-colors",
+    "border-border w-full rounded-md border bg-card px-3 py-2 text-base outline-none transition-colors",
     "placeholder:text-muted-foreground",
     "focus:ring-2 focus:ring-ring focus:ring-offset-1",
     error && "border-destructive focus:ring-destructive",
@@ -271,7 +311,7 @@ function FieldRenderer({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium">
+      <label className="text-base font-medium">
         {field.label}
         {field.required && <span className="text-destructive ml-0.5">*</span>}
       </label>
@@ -306,38 +346,119 @@ function FieldRenderer({
           value={(value as string) ?? ""}
           onChange={(e) => onChange(e.target.value)}
           className={baseInput}
-          autoComplete={field.type === "password" ? "current-password" : undefined}
+          autoComplete={
+            field.type === "password" ? "current-password" : undefined
+          }
         />
       )}
 
-      {error && <p className="text-destructive text-xs">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
     </div>
   );
 }
 
+const DEFAULT_COLUMNS: Record<string, string> = {
+  idpAttribute: "Identity Provider Attribute",
+  keycloakAttribute: "Keycloak Attribute",
+};
+
+const ATTRIBUTE_COLUMN_CLASSES: Record<string, string> = {
+  name: "w-44 min-w-44",
+  namespace: "min-w-[38rem]",
+  value: "w-72 min-w-72",
+  idpAttribute: "min-w-[28rem]",
+  keycloakAttribute: "min-w-[18rem]",
+};
+
+function InlineCopyValue({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  const hasValue = Boolean(value);
+  const displayValue = value || "—";
+
+  const handleCopy = async () => {
+    if (!hasValue) return;
+    await navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      disabled={!hasValue}
+      className={cn(
+        "group inline-flex max-w-full items-center gap-1.5 rounded-sm px-1 text-left transition-colors",
+        hasValue
+          ? "cursor-copy hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          : "cursor-default",
+      )}
+      aria-label={hasValue ? `Copy ${value}` : displayValue}
+    >
+      <span>{displayValue}</span>
+      <span
+        className={cn(
+          "shrink-0 rounded p-0.5 opacity-0 transition-all group-hover:opacity-100 group-focus-visible:opacity-100",
+          copied
+            ? "text-green-600 dark:text-green-400 opacity-100"
+            : "text-muted-foreground",
+        )}
+        aria-hidden="true"
+      >
+        {copied ? (
+          <Check className="h-3 w-3" />
+        ) : (
+          <Copy className="h-3 w-3" />
+        )}
+      </span>
+    </button>
+  );
+}
+
 function AttributeTableRenderer({
+  columns,
   rows,
 }: {
+  columns?: Record<string, string>;
   rows: import("./types").AttributeRow[];
 }) {
+  const colDef = columns ?? DEFAULT_COLUMNS;
+  const colKeys = Object.keys(colDef);
+
   return (
     <div className="border-border overflow-hidden rounded-lg border">
-      <div className="border-border grid grid-cols-2 border-b bg-muted/40 px-4 py-2 text-xs font-semibold text-muted-foreground">
-        <span>Identity Provider Attribute</span>
-        <span>Keycloak Attribute</span>
-      </div>
-      {rows.map((row, i) => (
-        <div
-          key={i}
-          className={cn(
-            "grid grid-cols-2 px-4 py-2.5 font-mono text-xs",
-            i !== rows.length - 1 && "border-border border-b",
-          )}
-        >
-          <span>{row.idpAttribute}</span>
-          <span className="text-muted-foreground">{row.keycloakAttribute}</span>
-        </div>
-      ))}
+      <Table className="w-max min-w-full">
+        <TableHeader className="bg-muted">
+          <TableRow className="hover:bg-muted">
+            {colKeys.map((key) => (
+              <TableHead
+                key={key}
+                className={ATTRIBUTE_COLUMN_CLASSES[key] ?? "min-w-[12rem]"}
+              >
+                {colDef[key]}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row, i) => (
+            <TableRow key={i} className="bg-card hover:bg-card">
+              {colKeys.map((key, j) => (
+                <TableCell
+                  key={key}
+                  className={cn(
+                    "font-mono text-sm",
+                    ATTRIBUTE_COLUMN_CLASSES[key] ?? "min-w-[12rem]",
+                    j > 0 && "text-muted-foreground",
+                  )}
+                >
+                  <InlineCopyValue value={row[key] ?? ""} />
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -349,28 +470,34 @@ function ConfirmBlockRenderer({
 }: {
   block: import("./types").ConfirmBlock;
   ctx: Record<string, unknown>;
-  onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
+  onAction: (
+    actionKey: string,
+    formValues?: Record<string, unknown>,
+  ) => Promise<boolean>;
 }) {
   const { state, apiMode } = useWizardContext();
-  const adminLink = block.adminLink && apiMode === "onprem"
-    ? resolveTemplate(block.adminLink, ctx)
-    : "";
+  const adminLink =
+    block.adminLink && apiMode === "onprem"
+      ? resolveTemplate(block.adminLink, ctx)
+      : "";
 
   return (
     <div className="flex flex-col gap-4">
       <div>
         <p className="font-medium">{block.title}</p>
-        <p className="text-muted-foreground mt-1 text-sm">{block.description}</p>
+        <p className="text-muted-foreground mt-1 text-base">
+          {block.description}
+        </p>
       </div>
 
       {state.error && (
-        <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <p className="rounded-md bg-destructive/10 px-3 py-2 text-base text-destructive">
           {state.error}
         </p>
       )}
 
       {state.result && (
-        <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-300">
+        <p className="w-fit rounded-md bg-green-50 px-3 py-2 text-base text-green-700 dark:bg-green-900/20 dark:text-green-300">
           {state.result}
         </p>
       )}
@@ -379,21 +506,38 @@ function ConfirmBlockRenderer({
         <button
           onClick={() => onAction(block.action)}
           disabled={state.submitting}
-          className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="self-start rounded-md bg-primary px-6 py-2.5 text-base font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {state.submitting ? "Creating…" : block.buttonText}
         </button>
       )}
 
-      {state.submitted && adminLink && (
-        <a
-          href={adminLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block w-full rounded-md border px-4 py-2.5 text-center text-sm transition-colors hover:bg-accent"
-        >
-          {block.adminButtonText}
-        </a>
+      {state.submitted && (
+        <div className="flex flex-col gap-3">
+          {state.idpTestLink && (
+            <a
+              href={state.idpTestLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="self-start rounded-md bg-primary px-6 py-2.5 text-center text-base font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Test your login
+            </a>
+          )}
+          {adminLink && (
+            <a
+              href={adminLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="self-start rounded-md border px-6 py-2.5 text-center text-base transition-colors hover:bg-accent"
+            >
+              {block.adminButtonText}
+            </a>
+          )}
+          <p className="text-muted-foreground text-sm">
+            Setup is complete — you can close this window.
+          </p>
+        </div>
       )}
     </div>
   );

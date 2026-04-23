@@ -14,7 +14,13 @@
     "test:e2e:report": "playwright show-report",
     "test:integration": "PLAYWRIGHT_INTEGRATION=true playwright test",
     "test:integration:ui": "PLAYWRIGHT_INTEGRATION=true playwright test --ui",
-    "test:external": "PLAYWRIGHT_INTEGRATION=true playwright test e2e/external-providers/"
+    "test:external": "PLAYWRIGHT_INTEGRATION=true playwright test e2e/external-providers/",
+    "capture:aws:saml": "tsx wizards/aws/playwright/saml-capture.ts",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d && until curl -sf http://localhost:8080/auth/realms/wizard > /dev/null; do sleep 2; done && open http://localhost:8080/auth/admin/master/console/#/wizard",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:logs": "docker compose -f docker/docker-compose.yml logs -f",
+    "docker:restart": "docker compose -f docker/docker-compose.yml restart",
+    "docker:reset": "docker compose -f docker/docker-compose.yml down -v"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",

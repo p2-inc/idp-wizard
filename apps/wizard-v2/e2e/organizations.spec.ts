@@ -20,7 +20,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  *   - Org admin can complete a wizard for their organization
  */
 
-const KC_BASE = process.env.KC_BASE_URL ?? "http://localhost:8080/auth";
+const KC_BASE = process.env.KC_BASE_URL ?? "http://localhost:8180/auth";
 const REALM = "wizard";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ async function getToken(username: string, password: string): Promise<string> {
         password,
         grant_type: "password",
       }),
-    }
+    },
   );
   if (!res.ok) {
     throw new Error(`Failed to get token for ${username}: ${res.status}`);
@@ -69,7 +69,7 @@ test.describe("organization listing", () => {
 
     const res = await fetch(
       `${KC_BASE}/realms/${REALM}/orgs/${orgId}/members`,
-      { headers: { Authorization: `Bearer ${adminToken}` } }
+      { headers: { Authorization: `Bearer ${adminToken}` } },
     );
     expect(res.ok).toBe(true);
 
@@ -81,9 +81,7 @@ test.describe("organization listing", () => {
 // ── Wizard in org context ────────────────────────────────────────────────────
 
 test.describe("wizard with org context", () => {
-  test("wizard URL with ?org_id renders in cloud mode", async ({
-    page,
-  }) => {
+  test("wizard URL with ?org_id renders in cloud mode", async ({ page }) => {
     const orgId = process.env.TEST_ORG_ALPHA_ID ?? "unknown";
     await page.goto(`/?org_id=${orgId}`);
 
@@ -95,9 +93,7 @@ test.describe("wizard with org context", () => {
     await expect(page).toHaveURL(new RegExp(`org_id=${orgId}`));
   });
 
-  test("wizard uses orgs API endpoints in cloud mode", async ({
-    page,
-  }) => {
+  test("wizard uses orgs API endpoints in cloud mode", async ({ page }) => {
     const orgId = process.env.TEST_ORG_ALPHA_ID ?? "unknown";
 
     // Intercept to verify the org-scoped endpoint is called
@@ -112,10 +108,10 @@ test.describe("wizard with org context", () => {
           entityId: "https://test-idp.example.com",
           singleSignOnServiceUrl: "https://test-idp.example.com/sso/saml",
         },
-      })
+      }),
     );
     await page.route("**/identity-provider/instances", (route) =>
-      route.fulfill({ status: 201, json: { id: "mock-id" } })
+      route.fulfill({ status: 201, json: { id: "mock-id" } }),
     );
 
     await page.goto(`/wizard/adfs/saml?org_id=${orgId}`);
@@ -137,27 +133,24 @@ test.describe("org-scoped SAML wizard completion", () => {
     const orgId = process.env.TEST_ORG_ALPHA_ID ?? "unknown";
 
     // Mock org-scoped API endpoints
-    await page.route(
-      `**/${REALM}/orgs/${orgId}/idps/import-config`,
-      (route) => route.fulfill({ json: { entityId: "https://test-idp.example.com" } })
+    await page.route(`**/${REALM}/orgs/${orgId}/idps/import-config`, (route) =>
+      route.fulfill({ json: { entityId: "https://test-idp.example.com" } }),
     );
-    await page.route(
-      `**/${REALM}/orgs/${orgId}/idps`,
-      (route) => route.fulfill({ status: 201, json: { id: "mock-idp" } })
+    await page.route(`**/${REALM}/orgs/${orgId}/idps`, (route) =>
+      route.fulfill({ status: 201, json: { id: "mock-idp" } }),
     );
-    await page.route(
-      `**/${REALM}/orgs/${orgId}/idps/*/mappers`,
-      (route) => route.fulfill({ status: 201, json: {} })
+    await page.route(`**/${REALM}/orgs/${orgId}/idps/*/mappers`, (route) =>
+      route.fulfill({ status: 201, json: {} }),
     );
     // Also mock the onprem fallback
     await page.route("**/identity-provider/import-config", (route) =>
-      route.fulfill({ json: { entityId: "https://test-idp.example.com" } })
+      route.fulfill({ json: { entityId: "https://test-idp.example.com" } }),
     );
     await page.route("**/identity-provider/instances", (route) =>
-      route.fulfill({ status: 201, json: { id: "mock-idp" } })
+      route.fulfill({ status: 201, json: { id: "mock-idp" } }),
     );
     await page.route("**/identity-provider/instances/*/mappers", (route) =>
-      route.fulfill({ status: 201, json: {} })
+      route.fulfill({ status: 201, json: {} }),
     );
 
     await page.goto(`/wizard/adfs/saml?org_id=${orgId}`);
@@ -167,7 +160,11 @@ test.describe("org-scoped SAML wizard completion", () => {
     await wizard.clickNext();
 
     // ADFS SAML Step 2 — metadata upload
-    const metadataFile = path.join(__dirname, "fixtures", "test-saml-metadata.xml");
+    const metadataFile = path.join(
+      __dirname,
+      "fixtures",
+      "test-saml-metadata.xml",
+    );
     await wizard.uploadFile(/Metadata/i, metadataFile);
     await wizard.submitForm(/Validate/i);
     await wizard.clickNext();

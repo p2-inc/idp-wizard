@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
+import { Route as AuthenticatedStyleGuideRouteImport } from './routes/_authenticated.style-guide'
 import { Route as AuthenticatedWizardProviderIdRouteImport } from './routes/_authenticated.wizard.$providerId'
 import { Route as AuthenticatedWizardProviderIdIndexRouteImport } from './routes/_authenticated.wizard.$providerId.index'
 import { Route as AuthenticatedWizardProviderIdProtocolRouteImport } from './routes/_authenticated.wizard.$providerId.$protocol'
@@ -22,6 +23,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedStyleGuideRoute = AuthenticatedStyleGuideRouteImport.update({
+  id: '/style-guide',
+  path: '/style-guide',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedWizardProviderIdRoute =
@@ -45,11 +51,13 @@ const AuthenticatedWizardProviderIdProtocolRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
+  '/style-guide': typeof AuthenticatedStyleGuideRoute
   '/wizard/$providerId': typeof AuthenticatedWizardProviderIdRouteWithChildren
   '/wizard/$providerId/$protocol': typeof AuthenticatedWizardProviderIdProtocolRoute
   '/wizard/$providerId/': typeof AuthenticatedWizardProviderIdIndexRoute
 }
 export interface FileRoutesByTo {
+  '/style-guide': typeof AuthenticatedStyleGuideRoute
   '/': typeof AuthenticatedIndexRoute
   '/wizard/$providerId/$protocol': typeof AuthenticatedWizardProviderIdProtocolRoute
   '/wizard/$providerId': typeof AuthenticatedWizardProviderIdIndexRoute
@@ -57,6 +65,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated/style-guide': typeof AuthenticatedStyleGuideRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/wizard/$providerId': typeof AuthenticatedWizardProviderIdRouteWithChildren
   '/_authenticated/wizard/$providerId/$protocol': typeof AuthenticatedWizardProviderIdProtocolRoute
@@ -66,14 +75,20 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/style-guide'
     | '/wizard/$providerId'
     | '/wizard/$providerId/$protocol'
     | '/wizard/$providerId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/wizard/$providerId/$protocol' | '/wizard/$providerId'
+  to:
+    | '/style-guide'
+    | '/'
+    | '/wizard/$providerId/$protocol'
+    | '/wizard/$providerId'
   id:
     | '__root__'
     | '/_authenticated'
+    | '/_authenticated/style-guide'
     | '/_authenticated/'
     | '/_authenticated/wizard/$providerId'
     | '/_authenticated/wizard/$providerId/$protocol'
@@ -98,6 +113,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/style-guide': {
+      id: '/_authenticated/style-guide'
+      path: '/style-guide'
+      fullPath: '/style-guide'
+      preLoaderRoute: typeof AuthenticatedStyleGuideRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/wizard/$providerId': {
@@ -143,11 +165,13 @@ const AuthenticatedWizardProviderIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedStyleGuideRoute: typeof AuthenticatedStyleGuideRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedWizardProviderIdRoute: typeof AuthenticatedWizardProviderIdRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedStyleGuideRoute: AuthenticatedStyleGuideRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedWizardProviderIdRoute:
     AuthenticatedWizardProviderIdRouteWithChildren,

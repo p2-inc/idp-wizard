@@ -29,13 +29,15 @@ export interface FormGroupBlock {
   forms: string[];
 }
 
-export interface AttributeRow {
-  idpAttribute: string;
-  keycloakAttribute: string;
-}
+export type AttributeRow = Record<string, string>;
 
 export interface AttributeTableBlock {
   type: "attributeTable";
+  /**
+   * Maps row key → column header label, also determines column order.
+   * When omitted, defaults to idpAttribute / keycloakAttribute with generic headers.
+   */
+  columns?: Record<string, string>;
   rows: AttributeRow[];
 }
 
