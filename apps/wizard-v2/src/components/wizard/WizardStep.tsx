@@ -514,15 +514,32 @@ function ConfirmBlockRenderer({
         </button>
       )}
 
-      {state.submitted && adminLink && (
-        <a
-          href={adminLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="self-start rounded-md border px-6 py-2.5 text-center text-base transition-colors hover:bg-accent"
-        >
-          {block.adminButtonText}
-        </a>
+      {state.submitted && (
+        <div className="flex flex-col gap-3">
+          {state.idpTestLink && (
+            <a
+              href={state.idpTestLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="self-start rounded-md bg-primary px-6 py-2.5 text-center text-base font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Test your login
+            </a>
+          )}
+          {adminLink && (
+            <a
+              href={adminLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="self-start rounded-md border px-6 py-2.5 text-center text-base transition-colors hover:bg-accent"
+            >
+              {block.adminButtonText}
+            </a>
+          )}
+          <p className="text-muted-foreground text-sm">
+            Setup is complete — you can close this window.
+          </p>
+        </div>
       )}
     </div>
   );

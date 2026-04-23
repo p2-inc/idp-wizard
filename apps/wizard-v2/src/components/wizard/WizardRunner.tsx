@@ -261,7 +261,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
 
           {/* Navigation buttons */}
           <div className="mt-8 flex justify-end gap-3">
-            {state.currentStep > 1 && (
+            {state.currentStep > 1 && !isLastStep && (
               <button
                 onClick={() =>
                   dispatch({
