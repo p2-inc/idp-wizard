@@ -68,6 +68,8 @@ export interface WizardState {
   idpTestLink: string | null;
   /** Accumulated form values from saveForm actions, keyed by field id */
   formValues: Record<string, unknown>;
+  /** Tracks which forms have been successfully submitted, keyed by formKey */
+  succeededForms: Record<string, boolean>;
   /** Client ID saved from credentials step (OIDC) */
   clientId: string | null;
   /** Client secret saved from credentials step (OIDC) */
@@ -83,6 +85,7 @@ export type WizardAction =
   | { type: "AUTH_TESTED" }
   | { type: "SCHEMA_SAVED" }
   | { type: "SAVE_FORM_VALUES"; values: Record<string, unknown> }
+  | { type: "FORM_SUCCEEDED"; formKey: string }
   | { type: "SUBMIT_START" }
   | { type: "SUBMIT_SUCCESS"; result: string; idpTestLink?: string }
   | { type: "SUBMIT_ERROR"; error: string }
@@ -112,6 +115,8 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       return state;
     case "SAVE_FORM_VALUES":
       return { ...state, formValues: { ...state.formValues, ...action.values } };
+    case "FORM_SUCCEEDED":
+      return { ...state, succeededForms: { ...state.succeededForms, [action.formKey]: true } };
     case "SUBMIT_START":
       return { ...state, submitting: true, error: null };
     case "SUBMIT_SUCCESS":
@@ -149,6 +154,7 @@ export function makeInitialWizardState(alias: string): WizardState {
     result: null,
     idpTestLink: null,
     formValues: {},
+    succeededForms: {},
     clientId: null,
     clientSecret: null,
   };

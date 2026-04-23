@@ -17,8 +17,8 @@ const protocolLabels: Record<Protocol, { label: string; description: string }> =
     description: "Security Assertion Markup Language — XML-based federation standard.",
   },
   oidc: {
-    label: "OpenID Connect",
-    description: "OAuth 2.0 identity layer — JSON-based, commonly used for modern apps.",
+    label: "OIDC",
+    description: "OpenID Connect — OAuth 2.0 identity layer, JSON-based, commonly used for modern apps.",
   },
   ldap: {
     label: "LDAP",
@@ -34,18 +34,16 @@ function ProtocolPicker() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-10">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col items-center gap-3 text-center">
         <img
           src={provider.logo}
           alt={provider.name}
-          className="h-10 w-10 object-contain"
+          className="h-16 max-w-[200px] object-contain"
         />
-        <div>
-          <h1 className="text-2xl font-semibold">{provider.name}</h1>
-          <p className="text-muted-foreground text-sm">
-            Choose a protocol to configure.
-          </p>
-        </div>
+        <h1 className="text-2xl font-semibold">{provider.name}</h1>
+        <p className="text-muted-foreground text-sm">
+          Choose a protocol to configure.
+        </p>
       </div>
 
       <div className="border-border rounded-lg border">

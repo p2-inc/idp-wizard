@@ -418,5 +418,5 @@ Output goes to `dist/`. When wizard-v2 is ready for production, the root `pom.xm
 
 ## Wizard Review
 
-- AWS
-  - Screenshots on app selection need to be updated
+- AWS: complete
+- Microsoft Entra ID: complete

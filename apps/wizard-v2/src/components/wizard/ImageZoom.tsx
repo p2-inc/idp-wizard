@@ -22,16 +22,12 @@ export function ImageZoom({
   return (
     <>
       <figure
-        className={cn(
-          "w-full",
-          fullWidth ? null : "max-w-[760px]",
-          className,
-        )}
+        className={cn("w-fit", fullWidth ? "w-full" : null, className)}
       >
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="group relative block w-full overflow-hidden rounded-lg border border-border"
+          className="group relative block overflow-hidden rounded-lg border border-border"
           aria-label="Click to zoom"
         >
           <img
@@ -39,7 +35,7 @@ export function ImageZoom({
             alt={alt}
             loading="lazy"
             decoding="async"
-            className="w-full object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+            className="block max-h-75 w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
           />
           <span className="absolute right-2 top-2 flex items-center gap-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white opacity-0 transition-opacity group-hover:opacity-100">
             <ZoomIn className="h-3 w-3" />

@@ -96,7 +96,7 @@ function ProviderRow({
         !isLast && "border-border border-b",
       )}
     >
-      <div className="flex-1">
+      <div className="flex-1 p-1">
         <img
           src={provider.logo}
           alt={provider.name}

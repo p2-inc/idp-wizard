@@ -25,13 +25,66 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Microsoft Entra admin center, create an Enterprise Application and set up SAML-based SSO. Enter the following values in the Basic SAML Configuration."
+          "content": "Select \"Enterprise applications\" from your Entra Id dashboard."
         },
         {
-          "type": "copy",
-          "label": "ACS URL",
-          "value": "{{api.ssoUrl}}",
-          "hint": "Sometimes called SSO Service URL or Callback URL"
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"New application\" and continue."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-2.png"
+        },
+        {
+          "type": "text",
+          "content": "Select \"Create your own application\", which will open a dialog that will allow you to enter a name."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-3a.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter an App name that describes this application. Under \"What are you looking to do with your application?\", select \"Integrate any other application you dont find in the gallery (Non-gallery)\", then select \"Create\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-3.png"
+        },
+        {
+          "type": "text",
+          "content": "Next, select \"Single Sign On\" from the \"Manage\" section in the left sidebar navigation menu, and then \"SAML\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-4.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure SAML Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Click the Edit icon in the top right of the first step."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-5.png"
+        },
+        {
+          "type": "text",
+          "content": "Click the \"Add identifier\" and \"Add reply URL\" links to open the fields for editing."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-5a.png"
         },
         {
           "type": "copy",
@@ -41,49 +94,18 @@
         },
         {
           "type": "copy",
-          "label": "SAML Metadata URL",
-          "value": "{{api.samlMetadata}}",
-          "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+          "label": "Reply URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
         },
         {
-          "type": "image",
-          "src": "/wizards/msft_entra_id/saml/azure-1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/msft_entra_id/saml/azure-2.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/msft_entra_id/saml/azure-3a.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/msft_entra_id/saml/azure-3.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/msft_entra_id/saml/azure-4.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/msft_entra_id/saml/azure-5.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/msft_entra_id/saml/azure-5a.png"
+          "type": "text",
+          "content": "Submit the identifier and the Reply URL in the Basic SAML Configuration. Click the \"Save\" button when you have pasted both values."
         },
         {
           "type": "image",
           "src": "/wizards/msft_entra_id/saml/azure-6.png"
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "title": "Configure Application Metadata",
-      "enableNextWhen": "state.metadataValidated",
-      "blocks": [
+        },
         {
           "type": "text",
           "content": "Copy the App Federation Metadata URL from the SAML Signing Certificate section of your Entra application."
@@ -96,9 +118,7 @@
           "type": "formGroup",
           "id": "metadataInput",
           "exclusive": false,
-          "forms": [
-            "metadataUrl"
-          ]
+          "forms": ["metadataUrl"]
         }
       ]
     },
@@ -108,62 +128,95 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
-        },
-        {
-          "type": "attributeTable",
-          "rows": [
-            {
-              "idpAttribute": "username",
-              "keycloakAttribute": "username"
-            },
-            {
-              "idpAttribute": "email",
-              "keycloakAttribute": "email"
-            },
-            {
-              "idpAttribute": "firstName",
-              "keycloakAttribute": "firstName"
-            },
-            {
-              "idpAttribute": "lastName",
-              "keycloakAttribute": "lastName"
-            }
-          ]
+          "content": "To configure your identity provider to send the following SAML attributes, click the \"Edit\" icon in the top right of the second section."
         },
         {
           "type": "image",
           "src": "/wizards/msft_entra_id/saml/azure-7.png"
         },
         {
+          "type": "text",
+          "content": "If the claims are as shown in the image, you can accept these default and move on to the next step. If not, click each Claim name in the Additional claims section to open an edit page."
+        },
+        {
           "type": "image",
           "src": "/wizards/msft_entra_id/saml/azure-8.png"
         },
         {
+          "type": "text",
+          "content": "In the edit page for each claim, paste the following values in the Name, Namespace and Source Attribute."
+        },
+        {
           "type": "image",
           "src": "/wizards/msft_entra_id/saml/entraid-1.png"
+        },
+        {
+          "type": "text",
+          "content": "Copy the following Name, Namespace and Source Attribute values for each item. Paste and save each to a claim in your Entra ID application."
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "name": "Name",
+            "namespace": "Namespace",
+            "value": "Source Attribute"
+          },
+          "rows": [
+            {
+              "name": "emailaddress",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+              "value": "user.mail"
+            },
+            {
+              "name": "givenname",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+              "value": "user.givenname"
+            },
+            {
+              "name": "name",
+              "namespace": "http://schemas.microsoft.com/identity/claims/name",
+              "value": "user.userprincipalname"
+            },
+            {
+              "name": "surname",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+              "value": "user.surname"
+            }
+          ]
         }
       ]
     },
     {
       "id": 4,
-      "title": "Configure User Access",
+      "title": "Assign Users and Groups",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "In order for your users and groups of users to be synced to your application, you will need to assign them to your Azure AD SAML Application. Select \"Users and groups\" from the \"Manage\" section of the navigation menu."
         },
         {
           "type": "image",
           "src": "/wizards/msft_entra_id/saml/azure-9.png"
         },
         {
+          "type": "text",
+          "content": "Select \"Add user/group\" from the top menu."
+        },
+        {
           "type": "image",
           "src": "/wizards/msft_entra_id/saml/azure-10.png"
         },
         {
+          "type": "text",
+          "content": "Select \"None selected\" under the \"Users and Groups\". In the menu, select the users and groups of users that you want to add to the SAML application, and click \"Select\"."
+        },
+        {
           "type": "image",
           "src": "/wizards/msft_entra_id/saml/azure-11.png"
+        },
+        {
+          "type": "text",
+          "content": "Select \"Assign\" to add the selected users and groups of users to your SAML application."
         },
         {
           "type": "image",
@@ -218,9 +271,7 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": [
-          "METADATA_VALIDATED"
-        ]
+        "dispatch": ["METADATA_VALIDATED"]
       },
       "messages": {
         "success": "Metadata URL validated. Continue to the next step.",
@@ -245,10 +296,7 @@
             "result": "SAML Identity Provider created successfully."
           }
         ],
-        "then": [
-          "addSamlMappers",
-          "clearAlias"
-        ]
+        "then": ["addSamlMappers", "clearAlias"]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."

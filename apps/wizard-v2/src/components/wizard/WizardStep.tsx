@@ -17,6 +17,14 @@ import { resolveTemplate, buildTemplateContext } from "./resolveTemplate";
 import { useWizardContext } from "@/context/WizardContext";
 import { CopyField } from "@/components/ui/copy-field";
 import { FileInput } from "@/components/ui/file-input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ImageZoom } from "./ImageZoom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -183,11 +191,17 @@ function FormRenderer({
     formValues?: Record<string, unknown>,
   ) => Promise<boolean>;
 }) {
-  const { state } = useWizardContext();
-  const [values, setValues] = useState<Record<string, unknown>>({});
+  const { state, dispatch } = useWizardContext();
+
+  const savedValues = form.fields.reduce<Record<string, unknown>>((acc, f) => {
+    if (f.id in state.formValues) acc[f.id] = state.formValues[f.id];
+    return acc;
+  }, {});
+
+  const [values, setValues] = useState<Record<string, unknown>>(savedValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [succeeded, setSucceeded] = useState(false);
+  const [succeeded, setSucceeded] = useState(() => Boolean(state.succeededForms[formKey]));
 
   const setValue = (id: string, v: unknown) => {
     setSucceeded(false);
@@ -213,7 +227,11 @@ function FormRenderer({
     setSucceeded(false);
     try {
       const ok = await onAction(form.submit.action, values);
-      if (ok) setSucceeded(true);
+      if (ok) {
+        setSucceeded(true);
+        dispatch({ type: "SAVE_FORM_VALUES", values });
+        dispatch({ type: "FORM_SUCCEEDED", formKey });
+      }
     } finally {
       setSubmitting(false);
     }
@@ -244,13 +262,13 @@ function FormRenderer({
         ))}
 
         {state.error && (
-          <p className="rounded-md bg-destructive/10 px-3 py-2 text-base text-destructive">
+          <p className="w-fit rounded-md bg-destructive/10 px-3 py-2 text-base text-destructive">
             {state.error}
           </p>
         )}
 
         {succeeded ? (
-          <div className="mt-1 flex items-center justify-center gap-2 rounded-md bg-green-50 px-4 py-2 text-base font-medium text-green-700 dark:bg-green-900/20 dark:text-green-300">
+          <div className="mt-1 flex w-fit items-center gap-2 rounded-md bg-green-200 px-4 py-2 text-base font-medium text-green-900 dark:bg-green-800/50 dark:text-green-100">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             Validated
           </div>
@@ -258,7 +276,7 @@ function FormRenderer({
           <button
             type="submit"
             disabled={submitting}
-            className="mt-1 w-full rounded-md bg-primary px-4 py-2 text-base font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="mt-1 self-start rounded-md bg-primary px-6 py-2 text-base font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? "Working…" : form.submit.label}
           </button>
@@ -346,11 +364,21 @@ const DEFAULT_COLUMNS: Record<string, string> = {
   keycloakAttribute: "Keycloak Attribute",
 };
 
-function InlineCopyButton({ value }: { value: string }) {
+const ATTRIBUTE_COLUMN_CLASSES: Record<string, string> = {
+  name: "w-44 min-w-44",
+  namespace: "min-w-[38rem]",
+  value: "w-72 min-w-72",
+  idpAttribute: "min-w-[28rem]",
+  keycloakAttribute: "min-w-[18rem]",
+};
+
+function InlineCopyValue({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
+  const hasValue = Boolean(value);
+  const displayValue = value || "—";
 
   const handleCopy = async () => {
-    if (!value) return;
+    if (!hasValue) return;
     await navigator.clipboard.writeText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -358,21 +386,33 @@ function InlineCopyButton({ value }: { value: string }) {
 
   return (
     <button
+      type="button"
       onClick={handleCopy}
-      disabled={!value}
+      disabled={!hasValue}
       className={cn(
-        "ml-1.5 shrink-0 rounded p-0.5 opacity-0 transition-all group-hover:opacity-100",
-        copied
-          ? "text-green-600 dark:text-green-400"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted",
+        "group inline-flex max-w-full items-center gap-1.5 rounded-sm px-1 text-left transition-colors",
+        hasValue
+          ? "cursor-copy hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          : "cursor-default",
       )}
-      aria-label="Copy to clipboard"
+      aria-label={hasValue ? `Copy ${value}` : displayValue}
     >
-      {copied ? (
-        <Check className="h-3 w-3" />
-      ) : (
-        <Copy className="h-3 w-3" />
-      )}
+      <span>{displayValue}</span>
+      <span
+        className={cn(
+          "shrink-0 rounded p-0.5 opacity-0 transition-all group-hover:opacity-100 group-focus-visible:opacity-100",
+          copied
+            ? "text-green-600 dark:text-green-400 opacity-100"
+            : "text-muted-foreground",
+        )}
+        aria-hidden="true"
+      >
+        {copied ? (
+          <Check className="h-3 w-3" />
+        ) : (
+          <Copy className="h-3 w-3" />
+        )}
+      </span>
     </button>
   );
 }
@@ -389,31 +429,38 @@ function AttributeTableRenderer({
 
   return (
     <div className="border-border overflow-hidden rounded-lg border">
-      <div
-        className="border-border grid border-b bg-muted px-4 py-2 text-sm font-semibold text-muted-foreground"
-        style={{ gridTemplateColumns: `repeat(${colKeys.length}, 1fr)` }}
-      >
-        {colKeys.map((key) => (
-          <span key={key}>{colDef[key]}</span>
-        ))}
-      </div>
-      {rows.map((row, i) => (
-        <div
-          key={i}
-          className={cn(
-            "grid bg-card px-4 py-2.5 font-mono text-sm",
-            i !== rows.length - 1 && "border-border border-b",
-          )}
-          style={{ gridTemplateColumns: `repeat(${colKeys.length}, 1fr)` }}
-        >
-          {colKeys.map((key, j) => (
-            <span key={key} className={cn("group flex items-center", j > 0 && "text-muted-foreground")}>
-              {row[key] ?? "—"}
-              <InlineCopyButton value={row[key] ?? ""} />
-            </span>
+      <Table className="w-max min-w-full">
+        <TableHeader className="bg-muted">
+          <TableRow className="hover:bg-muted">
+            {colKeys.map((key) => (
+              <TableHead
+                key={key}
+                className={ATTRIBUTE_COLUMN_CLASSES[key] ?? "min-w-[12rem]"}
+              >
+                {colDef[key]}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row, i) => (
+            <TableRow key={i} className="bg-card hover:bg-card">
+              {colKeys.map((key, j) => (
+                <TableCell
+                  key={key}
+                  className={cn(
+                    "font-mono text-sm",
+                    ATTRIBUTE_COLUMN_CLASSES[key] ?? "min-w-[12rem]",
+                    j > 0 && "text-muted-foreground",
+                  )}
+                >
+                  <InlineCopyValue value={row[key] ?? ""} />
+                </TableCell>
+              ))}
+            </TableRow>
           ))}
-        </div>
-      ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -452,7 +499,7 @@ function ConfirmBlockRenderer({
       )}
 
       {state.result && (
-        <p className="rounded-md bg-green-50 px-3 py-2 text-base text-green-700 dark:bg-green-900/20 dark:text-green-300">
+        <p className="w-fit rounded-md bg-green-50 px-3 py-2 text-base text-green-700 dark:bg-green-900/20 dark:text-green-300">
           {state.result}
         </p>
       )}
@@ -461,7 +508,7 @@ function ConfirmBlockRenderer({
         <button
           onClick={() => onAction(block.action)}
           disabled={state.submitting}
-          className="w-full rounded-md bg-primary px-4 py-2.5 text-base font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="self-start rounded-md bg-primary px-6 py-2.5 text-base font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {state.submitting ? "Creating…" : block.buttonText}
         </button>
@@ -472,7 +519,7 @@ function ConfirmBlockRenderer({
           href={adminLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="block w-full rounded-md border px-4 py-2.5 text-center text-base transition-colors hover:bg-accent"
+          className="self-start rounded-md border px-6 py-2.5 text-center text-base transition-colors hover:bg-accent"
         >
           {block.adminButtonText}
         </a>
