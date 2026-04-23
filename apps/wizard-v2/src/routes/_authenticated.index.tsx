@@ -2,7 +2,13 @@ import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import Fuse from "fuse.js";
-import { Search, HelpCircle, Building2, ChevronDown, Check } from "lucide-react";
+import {
+  Search,
+  HelpCircle,
+  Building2,
+  ChevronDown,
+  Check,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -86,16 +92,18 @@ function ProviderRow({
     <button
       onClick={() => onSelect(provider)}
       className={cn(
-        "flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-accent",
+        "flex w-full items-center gap-4 px-4 py-3.5 text-left transition-colors hover:bg-accent",
         !isLast && "border-border border-b",
       )}
     >
-      <img
-        src={provider.logo}
-        alt={provider.name}
-        className="h-7 w-7 shrink-0 object-contain"
-      />
-      <span className="flex-1 text-sm font-medium">{provider.name}</span>
+      <div className="flex-1">
+        <img
+          src={provider.logo}
+          alt={provider.name}
+          className="h-10 w-full object-contain object-left"
+          title={provider.name}
+        />
+      </div>
       <div className="flex gap-1">
         {provider.protocols.map((p) => (
           <ProtocolBadge key={p} protocol={p} />
@@ -123,9 +131,7 @@ function OrgPicker({
   if (eligibleOrgs.length === 0) return null;
 
   const currentName =
-    orgId && orgs[orgId]
-      ? (orgs[orgId].name ?? orgId)
-      : "Global (realm-wide)";
+    orgId && orgs[orgId] ? (orgs[orgId].name ?? orgId) : "Global (realm-wide)";
 
   return (
     <div className="w-full max-w-sm">
@@ -148,7 +154,10 @@ function OrgPicker({
           <div className="flex flex-col gap-1 py-2">
             {/* Realm-wide option */}
             <button
-              onClick={() => { onChange(null); setOpen(false); }}
+              onClick={() => {
+                onChange(null);
+                setOpen(false);
+              }}
               className={cn(
                 "flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent",
                 !orgId && "bg-accent",
@@ -156,7 +165,9 @@ function OrgPicker({
             >
               <div>
                 <p className="font-medium">Global</p>
-                <p className="text-muted-foreground text-xs">Realm-wide configuration</p>
+                <p className="text-muted-foreground text-xs">
+                  Realm-wide configuration
+                </p>
               </div>
               {!orgId && <Check className="h-4 w-4 text-primary" />}
             </button>
@@ -168,7 +179,10 @@ function OrgPicker({
             {eligibleOrgs.map(([id, org]) => (
               <button
                 key={id}
-                onClick={() => { onChange(id); setOpen(false); }}
+                onClick={() => {
+                  onChange(id);
+                  setOpen(false);
+                }}
                 className={cn(
                   "flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent",
                   orgId === id && "bg-accent",
@@ -176,7 +190,9 @@ function OrgPicker({
               >
                 <div>
                   <p className="font-medium">{org.name ?? id}</p>
-                  <p className="text-muted-foreground font-mono text-xs">{id}</p>
+                  <p className="text-muted-foreground font-mono text-xs">
+                    {id}
+                  </p>
                 </div>
                 {orgId === id && <Check className="h-4 w-4 text-primary" />}
               </button>
@@ -314,7 +330,9 @@ function ProviderSelector() {
           }}
         />
         {config.appName && (
-          <p className="text-sm font-medium text-foreground">{config.appName}</p>
+          <p className="text-sm font-medium text-foreground">
+            {config.appName}
+          </p>
         )}
       </div>
 
