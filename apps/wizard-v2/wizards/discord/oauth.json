@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "1.0",
+  "id": "discord-oauth",
+  "providerId": "discord",
+  "protocol": "oauth",
+  "title": "Discord OAuth",
+  "alias": {
+    "prefix": "discord-oauth",
+    "sessionKey": "p2_discord_oauth"
+  },
+  "idpConfig": {
+    "providerId": "discord",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a Discord Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the Discord Developer Portal, create a new application. Go to OAuth2 → General and add the redirect URL below under Redirects."
+        },
+        {
+          "type": "copy",
+          "label": "Redirect URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Add this to Redirects in Discord OAuth2 settings"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Client Credentials",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Copy the Client ID from the General Information page and reset/copy the Client Secret from OAuth2 → General. Paste both values below."
+        },
+        {
+          "type": "formGroup",
+          "id": "discordCreds",
+          "exclusive": false,
+          "forms": [
+            "clientCredentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create Discord Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create Discord Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSocial}}",
+          "adminButtonText": "Manage Discord Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "clientCredentials": {
+      "title": "Discord OAuth Credentials",
+      "description": "Enter the Client ID and Client Secret from your Discord application.",
+      "fields": [
+        {
+          "id": "clientId",
+          "type": "text",
+          "label": "Client ID",
+          "placeholder": "your-client-id",
+          "required": true
+        },
+        {
+          "id": "clientSecret",
+          "type": "password",
+          "label": "Client Secret",
+          "placeholder": "your-client-secret",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save Credentials",
+        "action": "saveCredentials"
+      }
+    }
+  },
+  "actions": {
+    "saveCredentials": {
+      "type": "saveForm",
+      "fields": ["clientId", "clientSecret"],
+      "dispatch": ["CREDENTIALS_PROVIDED"]
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "discord",
+        "hideOnLogin": true,
+        "config": {
+          "syncMode": "FORCE",
+          "clientId": "{{state.formValues.clientId}}",
+          "clientSecret": "{{state.formValues.clientSecret}}"
+        }
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "Discord Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "schemaVersion": "1.0",
+  "id": "vercel-marketplace-oauth",
+  "providerId": "vercel-marketplace",
+  "protocol": "oauth",
+  "title": "Vercel Marketplace OAuth",
+  "alias": {
+    "prefix": "vercel-marketplace-oauth",
+    "sessionKey": "p2_vercel_marketplace_oauth"
+  },
+  "idpConfig": {
+    "providerId": "oidc",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "clientAuthMethod": "client_secret_post"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a Marketplace Integration",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the Vercel Dashboard, create a new Marketplace Integration with OAuth enabled. Add the redirect URL below to the integration's OAuth configuration."
+        },
+        {
+          "type": "copy",
+          "label": "Redirect URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Add this as the Redirect URL in your Vercel Marketplace integration"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Client Credentials",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Copy the Integration Client ID and Client Secret from the Vercel Marketplace integration settings and paste them below."
+        },
+        {
+          "type": "formGroup",
+          "id": "vercelMarketCreds",
+          "exclusive": false,
+          "forms": [
+            "clientCredentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create Vercel Marketplace Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create Vercel Marketplace Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkOidc}}",
+          "adminButtonText": "Manage Vercel Marketplace Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "clientCredentials": {
+      "title": "Vercel Marketplace OAuth Credentials",
+      "description": "Enter the Client ID and Client Secret from your Vercel Marketplace integration.",
+      "fields": [
+        {
+          "id": "clientId",
+          "type": "text",
+          "label": "Client ID",
+          "placeholder": "your-client-id",
+          "required": true
+        },
+        {
+          "id": "clientSecret",
+          "type": "password",
+          "label": "Client Secret",
+          "placeholder": "your-client-secret",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save Credentials",
+        "action": "saveCredentials"
+      }
+    }
+  },
+  "actions": {
+    "saveCredentials": {
+      "type": "saveForm",
+      "fields": ["clientId", "clientSecret"],
+      "dispatch": ["CREDENTIALS_PROVIDED"]
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "oidc",
+        "hideOnLogin": true,
+        "config": {
+          "syncMode": "FORCE",
+          "clientAuthMethod": "client_secret_post",
+          "clientId": "{{state.formValues.clientId}}",
+          "clientSecret": "{{state.formValues.clientSecret}}",
+          "authorizationUrl": "https://vercel.com/oauth/authorize",
+          "tokenUrl": "https://api.vercel.com/v2/oauth/access_token",
+          "userInfoUrl": "https://api.vercel.com/v2/user",
+          "defaultScope": "read:user"
+        }
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "Vercel Marketplace Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

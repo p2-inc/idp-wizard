@@ -1,4 +1,4 @@
-export type Protocol = "saml" | "oidc" | "ldap";
+export type Protocol = "saml" | "oidc" | "ldap" | "oauth";
 
 export interface Provider {
   id: string;
@@ -69,7 +69,7 @@ export const providers: Provider[] = [
     id: "google",
     name: "Google Workspace",
     logo: "/provider-logos/google-workspace-logo.svg",
-    protocols: ["saml", "oidc"],
+    protocols: ["saml", "oidc", "oauth"],
   },
   {
     id: "jumpcloud",
@@ -164,7 +164,7 @@ export const providers: Provider[] = [
   {
     id: "netiq",
     name: "NetIQ",
-    logo: "/provider-logos/saml_logo.svg",
+    logo: "/provider-logos/NetIQ.png",
     protocols: ["saml"],
   },
   {
@@ -196,6 +196,78 @@ export const providers: Provider[] = [
     name: "VMware Workspace ONE",
     logo: "/provider-logos/vmware_logo.svg",
     protocols: ["saml"],
+  },
+  {
+    id: "apple",
+    name: "Apple",
+    logo: "/provider-logos/Apple_logo_black.svg",
+    protocols: ["oauth"],
+  },
+  {
+    id: "bitbucket",
+    name: "Bitbucket",
+    logo: "/provider-logos/bitbucket-icon.webp",
+    protocols: ["oauth"],
+  },
+  {
+    id: "discord",
+    name: "Discord",
+    logo: "/provider-logos/discord-round-color-icon.webp",
+    protocols: ["oauth"],
+  },
+  {
+    id: "github",
+    name: "GitHub",
+    logo: "/provider-logos/Octicons-mark-github.svg",
+    protocols: ["oauth"],
+  },
+  {
+    id: "gitlab",
+    name: "GitLab",
+    logo: "/provider-logos/GitLab_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "intuit",
+    name: "Intuit",
+    logo: "/provider-logos/Intuit_Logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn",
+    logo: "/provider-logos/LinkedIn_logo_initials.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "microsoft",
+    name: "Microsoft",
+    logo: "/provider-logos/Microsoft_logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "slack",
+    name: "Slack",
+    logo: "/provider-logos/Slack-logo.png",
+    protocols: ["oauth"],
+  },
+  {
+    id: "vercel",
+    name: "Vercel",
+    logo: "/provider-logos/Vercel_logo_2025.svg",
+    protocols: ["oauth"],
+  },
+  {
+    id: "vercel-marketplace",
+    name: "Vercel Marketplace",
+    logo: "/provider-logos/Vercel_logo_2025.svg",
+    protocols: ["oauth"],
+  },
+  {
+    id: "xero",
+    name: "Xero",
+    logo: "/provider-logos/xero.svg",
+    protocols: ["oauth"],
   },
 ];
 

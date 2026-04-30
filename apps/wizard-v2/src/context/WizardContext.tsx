@@ -24,6 +24,7 @@ export interface WizardApi {
   samlMetadata: string;
   adminLinkSaml: (alias: string) => string;
   adminLinkOidc: (alias: string) => string;
+  adminLinkSocial: (alias: string, providerId: string) => string;
   endpoints: WizardEndpoints;
 }
 

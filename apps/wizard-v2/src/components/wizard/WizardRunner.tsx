@@ -99,6 +99,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
       formValues,
       aliasSessionKey: definition.alias.sessionKey,
       config,
+      idpProviderId: definition.idpConfig.providerId,
     });
 
     // Ensure submitting is cleared if the action didn't dispatch SUBMIT_SUCCESS
@@ -257,6 +258,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
             step={currentStep}
             forms={definition.forms}
             onAction={handleAction}
+            idpProviderId={definition.idpConfig.providerId}
           />
 
           {/* Navigation buttons */}

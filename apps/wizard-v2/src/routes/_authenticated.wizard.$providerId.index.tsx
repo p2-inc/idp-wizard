@@ -24,6 +24,10 @@ const protocolLabels: Record<Protocol, { label: string; description: string }> =
     label: "LDAP",
     description: "Lightweight Directory Access Protocol — directory sync and authentication.",
   },
+  oauth: {
+    label: "OAuth / Social Login",
+    description: "OAuth 2.0 social identity provider — simplified setup for common platforms.",
+  },
 };
 
 function ProtocolPicker() {
