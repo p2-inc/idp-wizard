@@ -21,11 +21,41 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Enable Identity Provider in LastPass",
       "blocks": [
         {
           "type": "text",
-          "content": "In the LastPass Admin Console, enable the Identity Provider and create a new SAML application. Enter the following values."
+          "content": "Sign in to the LastPass Admin Console and open Applications → SSO apps."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_0.png"
+        },
+        {
+          "type": "text",
+          "content": "If you haven't already, enable Single Sign-On for your account from the Settings → SSO menu."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_1.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Add a SAML Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "From the SSO apps page, click \"Add app\" and search for or select \"Custom SAML\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a Display name and the following service provider values into the SAML configuration fields."
         },
         {
           "type": "copy",
@@ -47,38 +77,34 @@
         },
         {
           "type": "image",
-          "src": "/wizards/lastpass/lastpass_saml_0.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/lastpass/lastpass_saml_1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/lastpass/lastpass_saml_2.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/lastpass/lastpass_saml_4.png"
         }
       ]
     },
     {
-      "id": 2,
-      "title": "Upload Identity Provider Metadata",
+      "id": 3,
+      "title": "Download LastPass IdP Metadata",
       "enableNextWhen": "state.metadataValidated",
       "blocks": [
         {
           "type": "text",
-          "content": "Download the LastPass IdP metadata file and upload it here."
+          "content": "On the LastPass SSO settings page, locate the \"Identity Provider Information\" section."
         },
         {
           "type": "image",
           "src": "/wizards/lastpass/lastpass_saml_5.png"
         },
         {
+          "type": "text",
+          "content": "Click \"Download Metadata\" to save the IdP metadata XML file."
+        },
+        {
           "type": "image",
           "src": "/wizards/lastpass/lastpass_saml_6.png"
+        },
+        {
+          "type": "text",
+          "content": "Upload the downloaded file below to import the LastPass IdP configuration into Keycloak."
         },
         {
           "type": "formGroup",
@@ -91,15 +117,27 @@
       ]
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "Configure Attribute Mapping",
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "Back in the LastPass app settings, scroll to the Attributes section."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_7.png"
+        },
+        {
+          "type": "text",
+          "content": "Add the following SAML attribute mappings so user information is included in the assertion."
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "SAML Attribute Name",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "username",
@@ -121,21 +159,17 @@
         },
         {
           "type": "image",
-          "src": "/wizards/lastpass/lastpass_saml_7.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/lastpass/lastpass_saml_8.png"
         }
       ]
     },
     {
-      "id": 4,
-      "title": "Configure User Access",
+      "id": 5,
+      "title": "Assign User Access",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "Open the application's \"Assigned Users\" tab and add the users or groups who should have access."
         },
         {
           "type": "image",
@@ -144,7 +178,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [

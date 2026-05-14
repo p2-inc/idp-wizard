@@ -420,3 +420,13 @@ Output goes to `dist/`. When wizard-v2 is ready for production, the root `pom.xm
 
 - AWS: complete
 - Microsoft Entra ID: complete
+- ADFS: complete
+- Oracle: complete
+- Salesforce (SAML): complete
+- JumpCloud: complete
+- Okta (SAML): complete
+- Cloudflare: complete
+- LastPass: complete
+- OneLogin: complete
+- CyberArk: complete
+- Google Workspace (SAML): complete

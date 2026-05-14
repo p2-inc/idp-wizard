@@ -21,21 +21,51 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Add a SAML Web App in CyberArk Identity",
       "blocks": [
         {
           "type": "text",
-          "content": "In the CyberArk Identity Admin Portal, create a new SAML application. Enter the following service provider details."
+          "content": "Sign in to the CyberArk Identity Admin Portal and open Apps → Web Apps."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cyberark/SAML/cyberark_saml_0.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Add Web Apps\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cyberark/SAML/cyberark_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Switch to the \"Custom\" tab, locate \"SAML\", and click \"Add\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cyberark/SAML/cyberark_saml_2.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure the SAML Trust",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Open the \"Trust\" tab on the new app and enter the following service provider values."
         },
         {
           "type": "copy",
-          "label": "ACS URL",
+          "label": "ACS URL (Assertion Consumer Service URL)",
           "value": "{{api.ssoUrl}}",
           "hint": "Sometimes called SSO Service URL or Callback URL"
         },
         {
           "type": "copy",
-          "label": "Entity ID",
+          "label": "Entity ID (SP Entity ID)",
           "value": "{{api.entityId}}",
           "hint": "Sometimes called Audience URI or SP Entity ID"
         },
@@ -47,34 +77,26 @@
         },
         {
           "type": "image",
-          "src": "/wizards/cyberark/SAML/cyberark_saml_0.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/cyberark/SAML/cyberark_saml_1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/cyberark/SAML/cyberark_saml_2.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/cyberark/SAML/cyberark_saml_4.png"
         }
       ]
     },
     {
-      "id": 2,
-      "title": "Configure Application Metadata",
+      "id": 3,
+      "title": "Import CyberArk IdP Metadata",
       "enableNextWhen": "state.metadataValidated",
       "blocks": [
         {
           "type": "text",
-          "content": "Enter the SAML metadata URL from CyberArk."
+          "content": "In the same Trust tab, scroll to the Identity Provider Configuration section and copy the metadata URL."
         },
         {
           "type": "image",
           "src": "/wizards/cyberark/SAML/cyberark_saml_3.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste the metadata URL below to import the CyberArk IdP configuration into Keycloak."
         },
         {
           "type": "formGroup",
@@ -87,15 +109,19 @@
       ]
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "Configure Attribute Mapping",
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "Open the \"SAML Response\" tab and add the following Attribute statements so user details are included in the assertion."
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "SAML Attribute Name",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "username",
@@ -122,16 +148,20 @@
       ]
     },
     {
-      "id": 4,
-      "title": "Configure User Access",
+      "id": 5,
+      "title": "Assign Permissions",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "Open the \"Permissions\" tab and click \"Add\" to grant Run and View access to the appropriate users or roles."
         },
         {
           "type": "image",
           "src": "/wizards/cyberark/SAML/cyberark_saml_6.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Save\" to commit the permission assignments."
         },
         {
           "type": "image",
@@ -140,7 +170,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [

@@ -21,11 +21,49 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Enable Identity Provider and Create a Connected App",
       "blocks": [
         {
           "type": "text",
-          "content": "In Salesforce, enable the Identity Provider under Setup → Identity → Identity Provider. Then create a Connected App with SAML enabled."
+          "content": "In Salesforce Setup, navigate to Identity → Identity Provider and click \"Enable Identity Provider\". Accept the default certificate."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/SAML/salesforce_saml_0.png"
+        },
+        {
+          "type": "text",
+          "content": "Go to Setup → Apps → App Manager and click \"New Connected App\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/COMMON/salesforce-0.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a Connected App Name, API Name, and Contact Email in the Basic Information section."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/COMMON/salesforce-1.png"
+        },
+        {
+          "type": "text",
+          "content": "Scroll to the Web App Settings section to begin configuring SAML."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/salesforce/COMMON/salesforce-2.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure SAML Settings",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Check \"Enable SAML\" in the Web App Settings section and enter the following service provider values."
         },
         {
           "type": "copy",
@@ -47,34 +85,22 @@
         },
         {
           "type": "image",
-          "src": "/wizards/salesforce/SAML/salesforce_saml_0.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/salesforce/COMMON/salesforce-0.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/salesforce/COMMON/salesforce-1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/salesforce/COMMON/salesforce-2.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/salesforce/SAML/salesforce_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Save\" to create the Connected App. Salesforce may take a few minutes to provision it."
         }
       ]
     },
     {
-      "id": 2,
-      "title": "Configure Application Metadata",
+      "id": 3,
+      "title": "Import Salesforce IdP Metadata",
       "enableNextWhen": "state.metadataValidated",
       "blocks": [
         {
           "type": "text",
-          "content": "Enter the metadata URL from your Salesforce Identity Provider settings."
+          "content": "Return to Setup → Identity → Identity Provider and click \"Download Metadata\". Alternatively, copy the metadata URL directly."
         },
         {
           "type": "image",
@@ -83,6 +109,10 @@
         {
           "type": "image",
           "src": "/wizards/salesforce/SAML/salesforce_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste the metadata URL below to import the Salesforce IdP configuration into Keycloak."
         },
         {
           "type": "formGroup",
@@ -95,15 +125,19 @@
       ]
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "Configure Attribute Mapping",
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "Back in the Connected App, scroll to the Custom Attributes section and click \"New\" to add the following SAML attributes."
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "SAML Attribute Name",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "username",
@@ -128,22 +162,30 @@
           "src": "/wizards/salesforce/SAML/salesforce_saml_3.png"
         },
         {
+          "type": "text",
+          "content": "Map each attribute to the corresponding User field (User.Username, User.Email, etc.) and click \"Save\"."
+        },
+        {
           "type": "image",
           "src": "/wizards/salesforce/SAML/salesforce_saml_4.png"
         }
       ]
     },
     {
-      "id": 4,
-      "title": "Configure User Access",
+      "id": 5,
+      "title": "Assign Profiles and Permission Sets",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "Click \"Manage Profiles\" or \"Manage Permission Sets\" on the Connected App and assign the users who should have access."
         },
         {
           "type": "image",
           "src": "/wizards/salesforce/COMMON/salesforce-4.png"
+        },
+        {
+          "type": "text",
+          "content": "Verify the assigned users, then return here to finish."
         },
         {
           "type": "image",
@@ -152,7 +194,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [

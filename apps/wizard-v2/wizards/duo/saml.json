@@ -88,6 +88,10 @@
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "SAML Attribute Name",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "username",

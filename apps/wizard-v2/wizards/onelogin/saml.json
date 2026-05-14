@@ -21,21 +21,51 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Add a SAML Application",
       "blocks": [
         {
           "type": "text",
-          "content": "In OneLogin, create a new SAML application. Enter the following service provider details."
+          "content": "Sign in to the OneLogin Administration portal and navigate to Applications → Applications."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Add App\" and search for \"SAML Custom Connector (Advanced)\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_2.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure SAML Service Provider Settings",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Enter a Display name, then click \"Save\". Switch to the \"Configuration\" tab."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_3.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter the following service provider values into the Configuration fields."
         },
         {
           "type": "copy",
-          "label": "ACS URL",
+          "label": "ACS (Consumer) URL",
           "value": "{{api.ssoUrl}}",
           "hint": "Sometimes called SSO Service URL or Callback URL"
         },
         {
           "type": "copy",
-          "label": "Entity ID",
+          "label": "Audience (EntityID)",
           "value": "{{api.entityId}}",
           "hint": "Sometimes called Audience URI or SP Entity ID"
         },
@@ -47,34 +77,26 @@
         },
         {
           "type": "image",
-          "src": "/wizards/onelogin/saml/onelogin_saml_1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/onelogin/saml/onelogin_saml_2.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/onelogin/saml/onelogin_saml_3.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/onelogin/saml/onelogin_saml_4.png"
         }
       ]
     },
     {
-      "id": 2,
-      "title": "Configure Application Metadata",
+      "id": 3,
+      "title": "Import OneLogin IdP Metadata",
       "enableNextWhen": "state.metadataValidated",
       "blocks": [
         {
           "type": "text",
-          "content": "Enter the metadata URL from OneLogin's SSO settings."
+          "content": "On the application's \"SSO\" tab, click \"More Actions\" → \"SAML Metadata\" to copy the metadata URL."
         },
         {
           "type": "image",
           "src": "/wizards/onelogin/saml/onelogin_saml_6a.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste the metadata URL below to import the OneLogin IdP configuration into Keycloak."
         },
         {
           "type": "formGroup",
@@ -87,15 +109,27 @@
       ]
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "Configure Attribute Mapping",
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "Open the \"Parameters\" tab and click the \"+\" icon to add each of the following SAML attribute parameters."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_5.png"
+        },
+        {
+          "type": "text",
+          "content": "For each parameter, enable \"Include in SAML assertion\" and map it to the corresponding user attribute."
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "LDAP Attribute",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "uid",
@@ -117,21 +151,17 @@
         },
         {
           "type": "image",
-          "src": "/wizards/onelogin/saml/onelogin_saml_5.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/onelogin/saml/onelogin_saml_5a.png"
         }
       ]
     },
     {
-      "id": 4,
-      "title": "Configure User Access",
+      "id": 5,
+      "title": "Assign User Access",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "Switch to the \"Access\" tab and choose the Roles that should have access to this application, then click \"Save\"."
         },
         {
           "type": "image",
@@ -140,7 +170,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [
