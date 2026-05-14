@@ -21,11 +21,68 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Add a Custom SAML App",
       "blocks": [
         {
           "type": "text",
-          "content": "In the Google Admin console, navigate to Apps → Web and mobile apps → Add App → Add custom SAML app. Enter the following values."
+          "content": "Sign in to the Google Admin Console and navigate to Apps → Web and mobile apps."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_1a.png"
+        },
+        {
+          "type": "text",
+          "content": "Click the \"Add app\" dropdown and select \"Add custom SAML app\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_1b.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter an App name (and optional description and logo), then click \"Continue\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_2.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Download Google IdP Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the \"Google Identity Provider details\" step, click \"DOWNLOAD METADATA\" to save the IdP metadata XML file."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_3.png"
+        },
+        {
+          "type": "text",
+          "content": "Upload the downloaded file below to import the Google IdP configuration into Keycloak, then click \"Continue\" in Google."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": [
+            "metadataFile"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Configure Service Provider Details",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the \"Service provider details\" step, enter the following values from Keycloak."
         },
         {
           "type": "copy",
@@ -47,55 +104,28 @@
         },
         {
           "type": "image",
-          "src": "/wizards/google/google_saml_1a.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/google/google_saml_1b.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/google/google_saml_2.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/google/google_saml_4.png"
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "title": "Upload Identity Provider Metadata",
-      "enableNextWhen": "state.metadataValidated",
-      "blocks": [
+        },
         {
           "type": "text",
-          "content": "Download the IdP metadata XML file from Google and upload it here."
-        },
-        {
-          "type": "image",
-          "src": "/wizards/google/google_saml_3.png"
-        },
-        {
-          "type": "formGroup",
-          "id": "metadataInput",
-          "exclusive": false,
-          "forms": [
-            "metadataFile"
-          ]
+          "content": "Leave the Name ID format set to UNSPECIFIED and Name ID set to \"Basic Information > Primary email\". Click \"Continue\"."
         }
       ]
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "Configure Attribute Mapping",
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "On the \"Attribute mapping\" step, click \"Add mapping\" for each of the following entries."
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "LDAP Attribute",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "uid",
@@ -118,20 +148,28 @@
         {
           "type": "image",
           "src": "/wizards/google/google_saml_5.png"
+        },
+        {
+          "type": "text",
+          "content": "Map each Google Directory attribute (Primary email, First name, Last name) to its corresponding App attribute, then click \"Finish\"."
         }
       ]
     },
     {
-      "id": 4,
-      "title": "Configure User Access",
+      "id": 5,
+      "title": "Enable Service for Users",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "On the new app's page, click the \"User access\" panel."
         },
         {
           "type": "image",
           "src": "/wizards/google/google_saml_6a.png"
+        },
+        {
+          "type": "text",
+          "content": "Choose \"ON for everyone\" or scope access to specific organizational units, then click \"Save\"."
         },
         {
           "type": "image",
@@ -140,7 +178,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [

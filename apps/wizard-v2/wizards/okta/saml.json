@@ -21,21 +21,51 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Create a New SAML Application",
       "blocks": [
         {
           "type": "text",
-          "content": "In Okta, create a new SAML 2.0 application. Enter the following service provider details in the SAML settings."
+          "content": "Sign in to the Okta Admin Console and navigate to Applications → Applications."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Create App Integration\" to start adding a new application."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Select \"SAML 2.0\" as the Sign-in method and click \"Next\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_3.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure SAML Service Provider Settings",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the \"General Settings\" step, enter an App name and click \"Next\". Then, on the \"Configure SAML\" step, enter the following service provider values."
         },
         {
           "type": "copy",
-          "label": "ACS URL",
+          "label": "Single sign-on URL (ACS URL)",
           "value": "{{api.ssoUrl}}",
           "hint": "Sometimes called SSO Service URL or Callback URL"
         },
         {
           "type": "copy",
-          "label": "Entity ID",
+          "label": "Audience URI (SP Entity ID)",
           "value": "{{api.entityId}}",
           "hint": "Sometimes called Audience URI or SP Entity ID"
         },
@@ -47,50 +77,15 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/saml/okta_saml_1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/okta/saml/okta_saml_2.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/okta/saml/okta_saml_3.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/okta/saml/okta_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Leave the remaining defaults and scroll to the Attribute Statements section in the next step."
         },
         {
           "type": "image",
           "src": "/wizards/okta/saml/okta_saml_6.png"
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "title": "Upload Identity Provider Metadata",
-      "enableNextWhen": "state.metadataValidated",
-      "blocks": [
-        {
-          "type": "text",
-          "content": "Download the Okta IdP metadata XML from the Sign On tab and upload it here."
-        },
-        {
-          "type": "image",
-          "src": "/wizards/okta/saml/okta_saml_8.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/okta/saml/okta_saml_9.png"
-        },
-        {
-          "type": "formGroup",
-          "id": "metadataInput",
-          "exclusive": false,
-          "forms": [
-            "metadataFile"
-          ]
         }
       ]
     },
@@ -100,10 +95,14 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "In the \"Attribute Statements\" section, add the following entries so Okta sends user attributes in the SAML assertion."
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "Okta Attribute",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "id",
@@ -126,20 +125,63 @@
         {
           "type": "image",
           "src": "/wizards/okta/saml/okta_saml_5.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Next\", choose \"I'm an Okta customer adding an internal app\" on the Feedback step, then click \"Finish\"."
         }
       ]
     },
     {
       "id": 4,
-      "title": "Configure User Access",
+      "title": "Download Okta IdP Metadata",
+      "enableNextWhen": "state.metadataValidated",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "After saving the application, open the \"Sign On\" tab."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_8.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"View SAML setup instructions\" or right-click \"Identity Provider metadata\" and copy/save the metadata XML."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_9.png"
+        },
+        {
+          "type": "text",
+          "content": "Upload the metadata file below to import the Okta IdP configuration into Keycloak."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": [
+            "metadataFile"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Assign Users and Groups",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Switch to the \"Assignments\" tab and click \"Assign\" → \"Assign to People\" or \"Assign to Groups\"."
         },
         {
           "type": "image",
           "src": "/wizards/okta/saml/okta_saml_7.png"
+        },
+        {
+          "type": "text",
+          "content": "Select the users or groups who should have access, then click \"Done\"."
         },
         {
           "type": "image",
@@ -148,7 +190,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [

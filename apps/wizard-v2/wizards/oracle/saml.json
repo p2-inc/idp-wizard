@@ -21,15 +21,96 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Add a SAML Application in Oracle IdCS",
       "blocks": [
         {
           "type": "text",
-          "content": "In Oracle Identity Cloud Service, create a new SAML application. Enter the following service provider details."
+          "content": "Sign in to your Oracle Identity Cloud Service admin console."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/oracle/SAML/oracle_saml_0.png"
+        },
+        {
+          "type": "text",
+          "content": "In the navigation menu, select \"Applications\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/oracle/SAML/oracle_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Add\" to open the application catalog."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/oracle/SAML/oracle_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Select \"SAML Application\" as the application type."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/oracle/SAML/oracle_saml_3.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Download Identity Provider Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Enter a name and description for the application on the Details tab, then save and activate it."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/oracle/SAML/oracle_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "From the application page, click \"Download Identity Provider Metadata\" to save the IdP metadata XML file."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/oracle/SAML/oracle_saml_5.png"
+        },
+        {
+          "type": "text",
+          "content": "Upload the downloaded XML file below to import the Oracle IdP configuration into Keycloak."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": [
+            "metadataFile"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Configure Service Provider Settings",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Back in the Oracle IdCS application, open the \"SSO Configuration\" tab and expand the \"Service Provider Configuration\" section."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/oracle/SAML/oracle_saml_6.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter the following values into the Service Provider fields."
         },
         {
           "type": "copy",
-          "label": "ACS URL",
+          "label": "ACS URL (Assertion Consumer URL)",
           "value": "{{api.ssoUrl}}",
           "hint": "Sometimes called SSO Service URL or Callback URL"
         },
@@ -47,67 +128,32 @@
         },
         {
           "type": "image",
-          "src": "/wizards/oracle/SAML/oracle_saml_0.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/oracle/SAML/oracle_saml_1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/oracle/SAML/oracle_saml_2.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/oracle/SAML/oracle_saml_3.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/oracle/SAML/oracle_saml_4.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/oracle/SAML/oracle_saml_6.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/oracle/SAML/oracle_saml_7.png"
         }
       ]
     },
     {
-      "id": 2,
-      "title": "Upload Identity Provider Metadata",
-      "enableNextWhen": "state.metadataValidated",
-      "blocks": [
-        {
-          "type": "text",
-          "content": "Download the Oracle IdP metadata XML file and upload it here."
-        },
-        {
-          "type": "image",
-          "src": "/wizards/oracle/SAML/oracle_saml_5.png"
-        },
-        {
-          "type": "formGroup",
-          "id": "metadataInput",
-          "exclusive": false,
-          "forms": [
-            "metadataFile"
-          ]
-        }
-      ]
-    },
-    {
-      "id": 3,
+      "id": 4,
       "title": "Configure Attribute Mapping",
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "Still on the SSO Configuration page, expand the \"Attribute Configuration\" section."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/oracle/SAML/oracle_saml_8.png"
+        },
+        {
+          "type": "text",
+          "content": "Add the following attribute mappings so Oracle IdCS sends user attributes in the SAML assertion. Click \"Save\" when done."
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "LDAP Attribute",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "uid",
@@ -129,25 +175,25 @@
         },
         {
           "type": "image",
-          "src": "/wizards/oracle/SAML/oracle_saml_8.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/oracle/SAML/oracle_saml_9.png"
         }
       ]
     },
     {
-      "id": 4,
-      "title": "Configure User Access",
+      "id": 5,
+      "title": "Assign User Access",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "Open the \"Application Roles\" tab and grant access to the users or groups who should be able to sign in."
         },
         {
           "type": "image",
           "src": "/wizards/oracle/SAML/oracle_saml_10.png"
+        },
+        {
+          "type": "text",
+          "content": "Confirm the assignments, then return here to finish."
         },
         {
           "type": "image",
@@ -156,7 +202,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [

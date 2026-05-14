@@ -21,11 +21,41 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Add a Custom SAML Application",
       "blocks": [
         {
           "type": "text",
-          "content": "In JumpCloud, create a new custom SAML application. Enter the following values in the SSO configuration."
+          "content": "Sign in to the JumpCloud admin console and navigate to \"SSO Applications\" in the left sidebar."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/jumpcloud/jumpcloud_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click the \"+ Add New Application\" button at the top of the page."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/jumpcloud/jumpcloud_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Search for or scroll to find \"Custom SAML App\" and click \"Configure\" to add it."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/jumpcloud/jumpcloud_saml_3.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure SAML Service Provider Settings",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Open the \"SSO\" tab and enter the following service provider values."
         },
         {
           "type": "copy",
@@ -35,7 +65,7 @@
         },
         {
           "type": "copy",
-          "label": "Entity ID",
+          "label": "Entity ID (SP Entity ID)",
           "value": "{{api.entityId}}",
           "hint": "Sometimes called Audience URI or SP Entity ID"
         },
@@ -47,19 +77,11 @@
         },
         {
           "type": "image",
-          "src": "/wizards/jumpcloud/jumpcloud_saml_1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/jumpcloud/jumpcloud_saml_2.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/jumpcloud/jumpcloud_saml_3.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/jumpcloud/jumpcloud_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Scroll down and click \"Activate\" to save the application."
         },
         {
           "type": "image",
@@ -68,17 +90,21 @@
       ]
     },
     {
-      "id": 2,
-      "title": "Upload Identity Provider Metadata",
+      "id": 3,
+      "title": "Download Identity Provider Metadata",
       "enableNextWhen": "state.metadataValidated",
       "blocks": [
         {
           "type": "text",
-          "content": "Download the JumpCloud IdP metadata XML file and upload it here."
+          "content": "Open the application in JumpCloud, switch to the \"SSO\" tab, and click \"Export Metadata\" to download the JumpCloud IdP metadata XML."
         },
         {
           "type": "image",
           "src": "/wizards/jumpcloud/jumpcloud_saml_10.png"
+        },
+        {
+          "type": "text",
+          "content": "Upload the downloaded file below to import the JumpCloud IdP configuration into Keycloak."
         },
         {
           "type": "formGroup",
@@ -91,15 +117,27 @@
       ]
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "Configure Attribute Mapping",
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "Back in the JumpCloud application, scroll to the \"Attributes\" section in the SSO tab and click \"add attribute\" for each mapping."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/jumpcloud/jumpcloud_saml_6.png"
+        },
+        {
+          "type": "text",
+          "content": "Configure the following Service Provider Attribute names so they match what Keycloak expects:"
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "LDAP Attribute",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "uid",
@@ -121,29 +159,33 @@
         },
         {
           "type": "image",
-          "src": "/wizards/jumpcloud/jumpcloud_saml_6.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/jumpcloud/jumpcloud_saml_7.png"
         }
       ]
     },
     {
-      "id": 4,
-      "title": "Configure User Access",
+      "id": 5,
+      "title": "Assign User Access",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "Switch to the \"User Groups\" tab and select the groups that should have access to this application."
         },
         {
           "type": "image",
           "src": "/wizards/jumpcloud/jumpcloud_saml_8.png"
         },
         {
+          "type": "text",
+          "content": "Alternatively, open the \"Users\" tab and assign individual users."
+        },
+        {
           "type": "image",
           "src": "/wizards/jumpcloud/jumpcloud_saml_9.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Save\" to confirm the assignments."
         },
         {
           "type": "image",
@@ -152,7 +194,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [

@@ -21,11 +21,41 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Open Cloudflare Zero Trust",
       "blocks": [
         {
           "type": "text",
-          "content": "In Cloudflare Zero Trust, create a new SAML application. Enter the following values in the SAML settings."
+          "content": "Sign in to the Cloudflare dashboard and open the Zero Trust dashboard."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_0.png"
+        },
+        {
+          "type": "text",
+          "content": "Navigate to Settings → Authentication."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_1.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Add a SAML Login Method",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Under \"Login methods\", click \"Add new\" and select \"SAML\" as the identity provider type."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a name for the login method, then fill in the following service provider values."
         },
         {
           "type": "copy",
@@ -47,34 +77,26 @@
         },
         {
           "type": "image",
-          "src": "/wizards/cloudflare/saml/cloudflare_saml_0.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/cloudflare/saml/cloudflare_saml_1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/cloudflare/saml/cloudflare_saml_2.png"
-        },
-        {
-          "type": "image",
           "src": "/wizards/cloudflare/saml/cloudflare_saml_3.png"
         }
       ]
     },
     {
-      "id": 2,
-      "title": "Configure Application Metadata",
+      "id": 3,
+      "title": "Import Cloudflare Metadata",
       "enableNextWhen": "state.metadataValidated",
       "blocks": [
         {
           "type": "text",
-          "content": "Enter the metadata URL provided by Cloudflare after saving the application."
+          "content": "After saving, Cloudflare displays the IdP metadata URL on the login method page. Copy it from the integration details."
         },
         {
           "type": "image",
           "src": "/wizards/cloudflare/saml/cloudflare_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste the metadata URL below to import the Cloudflare IdP configuration into Keycloak."
         },
         {
           "type": "formGroup",
@@ -87,15 +109,19 @@
       ]
     },
     {
-      "id": 3,
-      "title": "Configure Attribute Mapping",
+      "id": 4,
+      "title": "Configure SAML Attributes",
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "In the Cloudflare SAML login method settings, configure the SAML attribute mappings so the following claims are included in the assertion."
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "SAML Attribute Name",
+            "keycloakAttribute": "Keycloak User Field"
+          },
           "rows": [
             {
               "idpAttribute": "username",
@@ -122,20 +148,28 @@
       ]
     },
     {
-      "id": 4,
-      "title": "Configure User Access",
+      "id": 5,
+      "title": "Configure Access Policies",
       "blocks": [
         {
           "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
+          "content": "In Zero Trust, open Access → Applications and create or edit an application that uses this login method."
         },
         {
           "type": "image",
           "src": "/wizards/cloudflare/saml/cloudflare_saml_6.png"
         },
         {
+          "type": "text",
+          "content": "Define the access policy rules that determine which users can authenticate through this SAML login method."
+        },
+        {
           "type": "image",
           "src": "/wizards/cloudflare/saml/cloudflare_saml_7.png"
+        },
+        {
+          "type": "text",
+          "content": "Save the policy. Cloudflare will now route authentication requests through this SAML connection."
         },
         {
           "type": "image",
@@ -144,7 +178,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [
