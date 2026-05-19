@@ -15,8 +15,21 @@
 import { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Construction } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useWizardContext } from "@/context/WizardContext";
+import { useWizardContext, isWizardDirty } from "@/context/WizardContext";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
+import { clearAlias } from "@/lib/alias";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { useWizardConfig } from "@/hooks/useWizardConfig";
+import { useProviderLogo } from "@/hooks/useProviderLogo";
+import { useAppLogo } from "@/hooks/useAppLogo";
 import { WizardStep } from "./WizardStep";
 import { executeAction } from "./executeAction";
 import type { WizardDefinition } from "./types";
@@ -29,7 +42,6 @@ interface Props {
   provider: Provider;
 }
 
-const FALLBACK_LOGO = "/phasetwo-logos/logo_phase_slash.svg";
 
 export function WizardRunner({ providerId, protocol, provider }: Props) {
   const ctx = useWizardContext();
@@ -47,6 +59,15 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
 
   const [definition, setDefinition] = useState<WizardDefinition | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const { src: sidebarLogo, fallback: fallbackLogo } = useAppLogo();
+  const providerLogo = useProviderLogo(provider.logo);
+
+  const dirty = isWizardDirty(state);
+  const guard = useUnsavedChangesGuard(dirty);
+  const handleConfirmLeave = () => {
+    if (definition) clearAlias(definition.alias.sessionKey);
+    guard.confirm();
+  };
 
   // ---------------------------------------------------------------------------
   // Load the wizard JSON definition
@@ -143,10 +164,28 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
     ? evaluateExpression(currentStep.enableNextWhen, state)
     : true;
 
-  const sidebarLogo = config.logoUrl ?? FALLBACK_LOGO;
 
   return (
     <div className="flex h-full min-h-0">
+      <Dialog open={guard.isOpen} onOpenChange={(o) => !o && guard.cancel()}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Leave this wizard?</DialogTitle>
+            <DialogDescription>
+              Your progress will be lost. You will need to restart the wizard
+              from step 1.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={guard.cancel}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmLeave}>
+              Leave
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       {/* ------------------------------------------------------------------ */}
       {/* Left sidebar                                                        */}
       {/* ------------------------------------------------------------------ */}
@@ -154,7 +193,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
         {/* Provider identity */}
         <div className="border-border flex flex-col gap-2 border-b px-4 py-4 items-start">
           <img
-            src={provider.logo}
+            src={providerLogo}
             alt={provider.name}
             title={provider.name}
             className="max-h-16 w-auto object-contain"
@@ -179,8 +218,8 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
                       isActive
                         ? "bg-accent font-medium text-foreground"
                         : isReached
-                          ? "text-muted-foreground hover:text-foreground"
-                          : "cursor-default text-muted-foreground/40",
+                          ? "text-foreground/80 hover:text-foreground"
+                          : "cursor-default text-foreground/55",
                     )}
                   >
                     <span
@@ -189,8 +228,8 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
                         isActive
                           ? "bg-primary text-primary-foreground"
                           : isReached
-                            ? "bg-muted text-muted-foreground"
-                            : "bg-muted/40 text-muted-foreground/40",
+                            ? "bg-muted text-foreground"
+                            : "bg-muted/60 text-foreground/60",
                       )}
                     >
                       {step.id}
@@ -227,8 +266,20 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
             <span className="bg-muted border-border text-muted-foreground inline-flex w-fit rounded border px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wide">
               {protocol}
             </span>
+            {provider.protocols.length > 1 && (
+              <Link
+                to="/wizard/$providerId"
+                params={{ providerId }}
+                search={(prev) => prev}
+                className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm transition-colors"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Change protocol
+              </Link>
+            )}
             <Link
               to="/"
+              search={(prev) => prev}
               className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm transition-colors"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -241,7 +292,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
               alt={config.appName ?? "Phase Two"}
               className="h-6 object-contain opacity-90"
               onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = FALLBACK_LOGO;
+                (e.currentTarget as HTMLImageElement).src = fallbackLogo;
               }}
             />
           </div>

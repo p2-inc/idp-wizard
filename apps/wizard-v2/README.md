@@ -151,14 +151,26 @@ Both are parsed from `VITE_OIDC_ISSUER_URI` at startup. The parser handles both 
 
 `useWizardConfig` fetches `{issuerUri}/wizard/config.json` and exposes optional realm-level overrides:
 
-| Key               | Description                                                |
-| ----------------- | ---------------------------------------------------------- |
-| `logoUrl`         | Replaces the Phase Two slash logo on the provider selector |
-| `appName`         | Shown above the provider search card                       |
-| `apiMode`         | Override the auto-detected mode (`"cloud"` or `"onprem"`)  |
-| `emailAsUsername` | Adds an email→username mapper when creating the IDP        |
+| Key               | Description                                                                   |
+| ----------------- | ----------------------------------------------------------------------------- |
+| `logoUrl`         | Replaces the Phase Two slash logo on the provider selector and wizard sidebar |
+| `logoUrlLight`    | Optional theme-specific override used when the UI is in light mode            |
+| `logoUrlDark`     | Optional theme-specific override used when the UI is in dark mode             |
+| `appName`         | Shown above the provider search card                                          |
+| `apiMode`         | Override the auto-detected mode (`"cloud"` or `"onprem"`)                     |
+| `emailAsUsername` | Adds an email→username mapper when creating the IDP                           |
 
 If the file is missing or the fetch fails, defaults are used silently.
+
+#### Logo resolution
+
+Logos cascade through three levels (first match wins):
+
+1. **Theme-specific override** — `logoUrlDark` in dark mode, `logoUrlLight` in light mode
+2. **Single tenant override** — `logoUrl` (used for both themes)
+3. **Phase Two fallback** — `/phasetwo-logos/{light|dark}/logo_phase_slash.svg`, served from `public/`
+
+Set `logoUrlLight` / `logoUrlDark` only if your brand logo doesn't render well across both backgrounds. Tenants that don't care about dark mode can keep using `logoUrl` alone — it's still honored.
 
 ## IDP alias
 

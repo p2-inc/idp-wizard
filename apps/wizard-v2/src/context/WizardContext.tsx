@@ -139,6 +139,25 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
   }
 }
 
+/**
+ * Returns true when the user has made meaningful progress in the wizard
+ * that would be lost on navigation. Once the wizard has been successfully
+ * submitted, it's no longer considered dirty.
+ */
+export function isWizardDirty(state: WizardState): boolean {
+  if (state.submitted) return false;
+  return (
+    state.currentStep > 1 ||
+    state.stepIdReached > 1 ||
+    state.metadataValidated ||
+    state.credentialsProvided ||
+    state.connectionTested ||
+    state.authTested ||
+    Object.keys(state.formValues).length > 0 ||
+    Object.keys(state.succeededForms).length > 0
+  );
+}
+
 export function makeInitialWizardState(alias: string): WizardState {
   return {
     alias,

@@ -4,6 +4,8 @@ import { fetchWithAuth } from "@/oidc";
 export interface WizardConfig {
   appName: string | null;
   logoUrl: string | null;
+  logoUrlLight: string | null;
+  logoUrlDark: string | null;
   displayName: string;
   // spell-checker: disable-next-line
   apiMode: "cloud" | "onprem" | "";
@@ -18,6 +20,8 @@ export interface WizardConfig {
 const DEFAULT_CONFIG: WizardConfig = {
   appName: null,
   logoUrl: null,
+  logoUrlLight: null,
+  logoUrlDark: null,
   displayName: "Identity Provider",
   apiMode: "",
   emailAsUsername: false,

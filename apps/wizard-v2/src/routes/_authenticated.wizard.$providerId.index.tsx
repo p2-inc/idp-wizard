@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { allProviders, type Protocol } from "@/data/providers";
+import { useProviderLogo } from "@/hooks/useProviderLogo";
 
 const searchSchema = z.object({
   org_id: z.string().optional(),
@@ -35,12 +36,13 @@ function ProtocolPicker() {
   const { org_id: orgId } = Route.useSearch();
   const navigate = useNavigate();
   const provider = allProviders.find((p) => p.id === providerId)!;
+  const logo = useProviderLogo(provider.logo);
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-10">
       <div className="flex flex-col items-center gap-3 text-center">
         <img
-          src={provider.logo}
+          src={logo}
           alt={provider.name}
           className="h-16 max-w-[200px] object-contain"
         />
@@ -50,7 +52,7 @@ function ProtocolPicker() {
         </p>
       </div>
 
-      <div className="border-border rounded-lg border">
+      <div className="border-border bg-card overflow-hidden rounded-lg border shadow-sm">
         {provider.protocols.map((protocol, i) => {
           const meta = protocolLabels[protocol];
           return (

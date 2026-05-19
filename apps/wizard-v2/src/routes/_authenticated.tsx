@@ -1,6 +1,21 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
-import { allProviders } from "@/data/providers";
+import { allProviders, type Provider } from "@/data/providers";
+import { useProviderLogo } from "@/hooks/useProviderLogo";
+
+function ProviderBadge({ provider }: { provider: Provider }) {
+  const logo = useProviderLogo(provider.logo);
+  return (
+    <div className="flex items-center gap-2">
+      <img
+        src={logo}
+        alt={provider.name}
+        className="h-5 w-5 object-contain"
+      />
+      <span className="text-sm font-medium">{provider.name}</span>
+    </div>
+  );
+}
 
 const APP_SHELL_MAX_WIDTH = "max-w-[1440px]";
 
@@ -37,16 +52,7 @@ function AuthenticatedLayout() {
               Providers
             </Link>
 
-            {provider && (
-              <div className="flex items-center gap-2">
-                <img
-                  src={provider.logo}
-                  alt={provider.name}
-                  className="h-5 w-5 object-contain"
-                />
-                <span className="text-sm font-medium">{provider.name}</span>
-              </div>
-            )}
+            {provider && <ProviderBadge provider={provider} />}
           </div>
         </header>
       )}

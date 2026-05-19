@@ -10,6 +10,9 @@ import {
   Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { useProviderLogo } from "@/hooks/useProviderLogo";
+import { useAppLogo } from "@/hooks/useAppLogo";
 import {
   Dialog,
   DialogContent,
@@ -37,8 +40,6 @@ export const Route = createFileRoute("/_authenticated/")({
   component: ProviderSelector,
 });
 
-const FALLBACK_LOGO = "/phasetwo-logos/logo_phase_slash.svg";
-
 // ---------------------------------------------------------------------------
 // Required roles to manage identity providers in an org
 // ---------------------------------------------------------------------------
@@ -65,7 +66,8 @@ const protocolBadgeClass: Record<Protocol, string> = {
   saml: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
   oidc: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
   ldap: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  oauth: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
+  oauth:
+    "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
 };
 
 function ProtocolBadge({ protocol }: { protocol: Protocol }) {
@@ -100,7 +102,7 @@ function ProviderRow({
     >
       <div className="flex flex-1 items-center gap-3">
         <img
-          src={provider.logo}
+          src={useProviderLogo(provider.logo)}
           alt={provider.name}
           className="h-12 w-12 shrink-0 object-contain"
           title={provider.name}
@@ -279,7 +281,7 @@ function ProviderSelector() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ((oidc.decodedIdToken as any)?.organizations as OrgClaims) ?? {};
 
-  const logoSrc = config.logoUrl ?? FALLBACK_LOGO;
+  const { src: logoSrc, fallback: fallbackLogo } = useAppLogo();
 
   const fuse = useMemo(
     () =>
@@ -321,7 +323,8 @@ function ProviderSelector() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 p-6">
+    <div className="relative flex flex-1 flex-col items-center justify-center gap-6 p-6">
+      <ThemeToggle className="fixed bottom-4 right-4 z-10" />
       {/* Branding */}
       <div className="flex flex-col items-center gap-3">
         <img
@@ -329,7 +332,7 @@ function ProviderSelector() {
           alt={config.appName ?? "Phase Two"}
           className="h-14 object-contain"
           onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = FALLBACK_LOGO;
+            (e.currentTarget as HTMLImageElement).src = fallbackLogo;
           }}
         />
         {config.appName && (
