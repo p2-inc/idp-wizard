@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import {
   genericProviders,
+  popularProviders,
   providers,
   type Protocol,
   type Provider,
@@ -97,14 +98,14 @@ function ProviderRow({
         !isLast && "border-border border-b",
       )}
     >
-      <div className="flex flex-1 flex-col gap-1">
+      <div className="flex flex-1 items-center gap-3">
         <img
           src={provider.logo}
           alt={provider.name}
-          className="h-7 w-auto max-w-35 object-contain object-left"
+          className="h-12 w-12 shrink-0 object-contain"
           title={provider.name}
         />
-        <span className="text-muted-foreground text-xs">{provider.name}</span>
+        <span className="text-sm font-medium">{provider.name}</span>
       </div>
       <div className="flex gap-1">
         {provider.protocols.map((p) => (
@@ -282,7 +283,7 @@ function ProviderSelector() {
 
   const fuse = useMemo(
     () =>
-      new Fuse([...providers, ...genericProviders], {
+      new Fuse([...popularProviders, ...providers, ...genericProviders], {
         keys: ["name"],
         threshold: 0.4,
       }),
@@ -378,6 +379,19 @@ function ProviderSelector() {
             )
           ) : (
             <>
+              <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
+                Popular
+              </div>
+              {popularProviders.map((provider) => (
+                <ProviderRow
+                  key={provider.id}
+                  provider={provider}
+                  onSelect={handleSelect}
+                  isLast={false}
+                />
+              ))}
+
+              <div className="border-border border-t" />
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Providers
               </div>
