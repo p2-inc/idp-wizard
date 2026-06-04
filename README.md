@@ -114,6 +114,18 @@ cd idp-wizard
 pnpm install && pnpm start:dev
 ```
 
+### Code formatting
+
+The build enforces Google Java formatting standards via [Spotless](https://github.com/diffplug/spotless). Use `mvn spotless:check` to verify formatting and `mvn spotless:apply` to fix it.
+
+To enforce formatting automatically before every push, install the provided git pre-push hook:
+
+```
+mvn spotless:install-git-pre-push-hook
+```
+
+When you push, the hook runs `spotless:check`. If violations are found, it automatically runs `spotless:apply`, aborts the push, and lets you review and commit the formatted files before retrying.
+
 ## License
 
 The extensions herein are used in the [Phase Two](https://phasetwo.io) cloud offering, and are released here as part of its commitment to making its [core extensions](https://phasetwo.io/docs/introduction/open-source) open source. Please consult the [license](COPYING) for information regarding use.
