@@ -232,6 +232,8 @@ Keycloak data persists in a named Docker volume between restarts.
 
 Enable SCIM on the Organizations > Gear icon > Select SCIM checkbox.
 
+More SCIM details: https://github.com/p2-inc/keycloak-orgs/blob/main/docs/scim.md
+
 ### 3. Start the dev server
 
 ```bash
