@@ -1,6 +1,6 @@
 services:
   keycloak:
-    image: quay.io/phasetwo/phasetwo-keycloak:latest
+    image: quay.io/phasetwo/phasetwo-keycloak:26.6.2.1780081975
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin

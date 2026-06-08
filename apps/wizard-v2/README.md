@@ -228,6 +228,10 @@ Keycloak data persists in a named Docker volume between restarts.
 
 `wizard` has full `realm-admin` permissions, which the wizard requires to create identity providers via the Keycloak Admin API. `org-admin` and `org-member` are plain users used by integration tests; `global-setup.ts` assigns them to test organizations at runtime.
 
+#### SCIM
+
+Enable SCIM on the Organizations > Gear icon > Select SCIM checkbox.
+
 ### 3. Start the dev server
 
 ```bash
