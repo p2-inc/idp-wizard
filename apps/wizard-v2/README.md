@@ -191,12 +191,11 @@ Copy the env sample. The defaults match the local Docker Keycloak setup:
 cp .env.local.sample .env.local
 ```
 
-| Variable               | Default                                    | Description                             |
-| ---------------------- | ------------------------------------------ | --------------------------------------- |
-| `VITE_OIDC_USE_MOCK`   | `false`                                    | Set to `true` to skip Keycloak entirely |
-| `VITE_OIDC_ISSUER_URI` | `http://localhost:8180/auth/realms/wizard` | Keycloak realm URL                      |
-| `VITE_OIDC_CLIENT_ID`  | `wizard-v2-dev`                            | Keycloak client ID                      |
-| `VITE_OIDC_SPA_DEBUG`  | `false`                                    | Enable verbose oidc-spa logs            |
+| Variable               | Default                                    | Description                  |
+| ---------------------- | ------------------------------------------ | ---------------------------- |
+| `VITE_OIDC_ISSUER_URI` | `http://localhost:8080/auth/realms/wizard` | Keycloak realm URL           |
+| `VITE_OIDC_CLIENT_ID`  | `wizard-v2-dev`                            | Keycloak client ID           |
+| `VITE_OIDC_SPA_DEBUG`  | `false`                                    | Enable verbose oidc-spa logs |
 
 ### 2. Start Keycloak
 
