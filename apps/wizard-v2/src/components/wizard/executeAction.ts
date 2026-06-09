@@ -50,6 +50,7 @@ export interface ExecuteActionParams {
     adminLinkSaml: (alias: string) => string;
     adminLinkOidc: (alias: string) => string;
     adminLinkSocial: (alias: string, providerId: string) => string;
+    scimEndpoint: string;
     endpoints: WizardEndpoints;
   };
   formValues?: Record<string, unknown>;
@@ -138,6 +139,10 @@ function resolveEndpoint(
       const id = (state.metadata?.id as string) ?? "";
       return endpoints.triggerSync(id);
     }
+    case "getOrgConfig":
+      return endpoints.getOrgConfig;
+    case "setOrgScim":
+      return endpoints.setOrgScim;
     default:
       return "";
   }
@@ -298,6 +303,48 @@ export async function executeAction(
     if (saveAction.dispatch) {
       for (const d of saveAction.dispatch) {
         localDispatch({ type: d } as ReducerAction);
+      }
+    }
+
+    return { ok: true };
+  }
+
+  // --- generateSecret ----------------------------------------------------
+  if ("type" in action && action.type === "generateSecret") {
+    const genAction = action as {
+      type: "generateSecret";
+      fieldId: string;
+      bytes?: number;
+      then?: string[];
+    };
+    const bytes = genAction.bytes ?? 32;
+    const arr = new Uint8Array(bytes);
+    crypto.getRandomValues(arr);
+    // base64url encoding (URL-safe, no padding) — suitable for Bearer tokens
+    let bin = "";
+    for (let i = 0; i < arr.length; i++) bin += String.fromCharCode(arr[i]);
+    const value = btoa(bin)
+      .replaceAll("+", "-")
+      .replaceAll("/", "_")
+      .replaceAll("=", "");
+    localDispatch({ type: "SAVE_FORM_VALUES", values: { [genAction.fieldId]: value } });
+
+    // Chain follow-up actions — typically the HTTP write that needs the secret
+    if (genAction.then) {
+      for (const nextKey of genAction.then) {
+        const nextAction = allActions[nextKey];
+        if (!nextAction) {
+          console.warn(`executeAction: unknown chained action "${nextKey}"`);
+          continue;
+        }
+        const chainResult = await executeAction({
+          ...params,
+          actionKey: nextKey,
+          action: nextAction,
+          state: currentState,
+          formValues: undefined,
+        });
+        if (!chainResult.ok) return chainResult;
       }
     }
 

@@ -58,6 +58,14 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
         `${adminBase}/${realm}/console/#/${realm}/identity-providers/oidc/${alias}/settings`,
       adminLinkSocial: (alias: string, providerId: string) =>
         `${adminBase}/${realm}/console/#/${realm}/identity-providers/${providerId}/${alias}/settings`,
+      /**
+       * Inbound SCIM endpoint URL the upstream IdP pushes to.
+       * Empty when there is no org context — SCIM wizards are cloud-only and
+       * the route-level gate (`ScimRequiresOrgGate`) blocks before this is read.
+       */
+      scimEndpoint: orgId
+        ? `${serverUrl}/realms/${realm}/scim/v2/organizations/${orgId}/`
+        : "",
       endpoints:
         apiMode === "cloud" && orgId
           ? {
@@ -70,6 +78,9 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
               createComponent: `${adminBase}/realms/${realm}/components`,
               triggerSync: (componentId: string) =>
                 `${adminBase}/realms/${realm}/user-storage/${componentId}/sync`,
+              // SCIM endpoints — cloud (org-scoped) only
+              getOrgConfig: `${serverUrl}/realms/${realm}/orgs/config`,
+              setOrgScim: `${serverUrl}/realms/${realm}/orgs/${orgId}/scim`,
             }
           : {
               importConfig: `${adminBase}/realms/${realm}/identity-provider/import-config`,
@@ -80,6 +91,9 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
               createComponent: `${adminBase}/realms/${realm}/components`,
               triggerSync: (componentId: string) =>
                 `${adminBase}/realms/${realm}/user-storage/${componentId}/sync`,
+              // SCIM is per-org only — wizard is gated before these are reached
+              getOrgConfig: "",
+              setOrgScim: "",
             },
     };
 

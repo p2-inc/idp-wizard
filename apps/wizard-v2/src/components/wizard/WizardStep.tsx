@@ -107,6 +107,16 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
         <ConfirmBlockRenderer block={block} ctx={ctx} onAction={onAction} />
       );
 
+    case "secretReveal":
+      return (
+        <SecretRevealRenderer
+          label={block.label}
+          value={resolveTemplate(block.value, ctx)}
+          warning={block.warning}
+          hint={block.hint}
+        />
+      );
+
     default:
       return null;
   }
@@ -119,6 +129,76 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
 function TextBlockRenderer({ content }: { content: string }) {
   return (
     <p className="text-base leading-relaxed">{content}</p>
+  );
+}
+
+/**
+ * Displays a one-time-visible secret in a destructive-color container.
+ * After the user copies the value once we dim the warning, but the value
+ * stays visible until the step changes — losing the clipboard mid-paste
+ * would otherwise leave the user stuck.
+ */
+function SecretRevealRenderer({
+  label,
+  value,
+  warning,
+  hint,
+}: {
+  label: string;
+  value: string;
+  warning: string;
+  hint?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  const [hasCopiedOnce, setHasCopiedOnce] = useState(false);
+
+  const handleCopy = async () => {
+    if (!value) return;
+    await navigator.clipboard.writeText(value);
+    setCopied(true);
+    setHasCopiedOnce(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="border-destructive bg-destructive/5 flex flex-col gap-2 rounded-md border p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-sm font-semibold">{label}</span>
+        <button
+          onClick={handleCopy}
+          disabled={!value}
+          className={cn(
+            "flex shrink-0 items-center gap-1.5 rounded px-2 py-1 text-xs font-medium transition-colors",
+            copied
+              ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+              : "bg-card hover:bg-muted",
+          )}
+          aria-label="Copy secret to clipboard"
+        >
+          {copied ? (
+            <>
+              <CheckCircle2 className="h-3.5 w-3.5" /> Copied
+            </>
+          ) : (
+            <>
+              <Copy className="h-3.5 w-3.5" /> Copy
+            </>
+          )}
+        </button>
+      </div>
+      <code className="bg-card block break-all rounded border p-2 font-mono text-xs">
+        {value || "—"}
+      </code>
+      <p
+        className={cn(
+          "text-destructive text-xs leading-relaxed",
+          hasCopiedOnce && "opacity-60",
+        )}
+      >
+        {warning}
+      </p>
+      {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+    </div>
   );
 }
 
