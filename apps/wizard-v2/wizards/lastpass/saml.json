@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "If you haven't already, enable Single Sign-On for your account from the Settings → SSO menu."
+          "content": "If you haven't already, enable Single Sign-On for your account from the Settings → SSO menu. When searching the catalog, look for \"Custom Service\"."
         },
         {
           "type": "image",
@@ -47,7 +47,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "From the SSO apps page, click \"Add app\" and search for or select \"Custom SAML\"."
+          "content": "From the Custom service view, click \"Add new domain\"."
         },
         {
           "type": "image",
@@ -55,19 +55,19 @@
         },
         {
           "type": "text",
-          "content": "Enter a Display name and the following service provider values into the SAML configuration fields."
-        },
-        {
-          "type": "copy",
-          "label": "ACS URL",
-          "value": "{{api.ssoUrl}}",
-          "hint": "Sometimes called SSO Service URL or Callback URL"
+          "content": "Enter the following service provider values into the SAML configuration fields."
         },
         {
           "type": "copy",
           "label": "Entity ID",
           "value": "{{api.entityId}}",
           "hint": "Sometimes called Audience URI or SP Entity ID"
+        },
+        {
+          "type": "copy",
+          "label": "ACS (assertion consumer service) URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
         },
         {
           "type": "copy",
@@ -88,7 +88,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the LastPass SSO settings page, locate the \"Identity Provider Information\" section."
+          "content": "Under the \"Configuration\" title, locate the \"Export SAML IdP Metadata\" link."
         },
         {
           "type": "image",
@@ -96,7 +96,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Download Metadata\" to save the IdP metadata XML file."
+          "content": "Click \"Export SAML IdP Metadata\" link then \"Download\" to save the IdP metadata XML file."
         },
         {
           "type": "image",
@@ -110,9 +110,7 @@
           "type": "formGroup",
           "id": "metadataInput",
           "exclusive": false,
-          "forms": [
-            "metadataFile"
-          ]
+          "forms": ["metadataFile"]
         }
       ]
     },
@@ -135,27 +133,36 @@
         {
           "type": "attributeTable",
           "columns": {
-            "idpAttribute": "SAML Attribute Name",
-            "keycloakAttribute": "Keycloak User Field"
+            "type": "Type",
+            "name": "Name",
+            "value": "Value"
           },
           "rows": [
             {
-              "idpAttribute": "username",
-              "keycloakAttribute": "username"
+              "type": "Constant",
+              "name": "username",
+              "value": "username"
             },
             {
-              "idpAttribute": "email",
-              "keycloakAttribute": "email"
+              "type": "Email Address",
+              "name": "Email Address",
+              "value": "N/A (not changeable)"
             },
             {
-              "idpAttribute": "firstName",
-              "keycloakAttribute": "firstName"
+              "type": "First Name",
+              "name": "firstName",
+              "value": "N/A (not changeable)"
             },
             {
-              "idpAttribute": "lastName",
-              "keycloakAttribute": "lastName"
+              "type": "Last Name",
+              "name": "lastName",
+              "value": "N/A (not changeable)"
             }
           ]
+        },
+        {
+          "type": "text",
+          "content": "Click \"Save\" to update the application configuration with the new configuration and attribute mappings."
         },
         {
           "type": "image",
@@ -169,7 +176,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the application's \"Assigned Users\" tab and add the users or groups who should have access."
+          "content": "Open the application's \"Assigned Users\" tab and add the users or groups who should have access. The recommendation is to start with \"All Users\"."
         },
         {
           "type": "image",
@@ -224,9 +231,7 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": [
-          "METADATA_VALIDATED"
-        ]
+        "dispatch": ["METADATA_VALIDATED"]
       },
       "messages": {
         "success": "Metadata file validated. Continue to the next step.",
@@ -251,10 +256,7 @@
             "result": "SAML Identity Provider created successfully."
           }
         ],
-        "then": [
-          "addSamlMappers",
-          "clearAlias"
-        ]
+        "then": ["addSamlMappers", "clearAlias"]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."
