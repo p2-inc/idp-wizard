@@ -139,13 +139,8 @@
           },
           "rows": [
             {
-              "type": "Constant",
-              "name": "username",
-              "value": "username"
-            },
-            {
               "type": "Email Address",
-              "name": "Email Address",
+              "name": "email",
               "value": "N/A (not changeable)"
             },
             {
@@ -268,7 +263,7 @@
       "contentType": "json",
       "foreach": [
         {
-          "attributeName": "username",
+          "attributeName": "email",
           "friendlyName": "username",
           "userAttribute": "username"
         },
