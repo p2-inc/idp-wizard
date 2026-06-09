@@ -98,6 +98,7 @@ export function buildTemplateContext(params: {
     adminLinkSaml: (alias: string) => string;
     adminLinkOidc: (alias: string) => string;
     adminLinkSocial: (alias: string, providerId: string) => string;
+    scimEndpoint: string;
   };
   idpProviderId?: string;
   state: {
@@ -119,6 +120,7 @@ export function buildTemplateContext(params: {
     "api.adminLinkSocial": idpProviderId
       ? api.adminLinkSocial(alias, idpProviderId)
       : "",
+    "api.scimEndpoint": api.scimEndpoint,
     "state.metadata": state.metadata,
   };
 

@@ -62,13 +62,30 @@ export interface ImageBlock {
   fullWidth?: boolean;
 }
 
+/**
+ * Displays a server-generated secret that the user must copy now — typically
+ * a SCIM Bearer token or Basic auth password the wizard just provisioned.
+ * Rendered with a destructive-color container, a copy button, and a warning
+ * that the value will not be shown again after leaving the step.
+ */
+export interface SecretRevealBlock {
+  type: "secretReveal";
+  label: string;
+  /** Template string, usually "{{state.metadata.auth.shared_secret}}" */
+  value: string;
+  /** One-line warning displayed above the value in a destructive color */
+  warning: string;
+  hint?: string;
+}
+
 export type WizardBlock =
   | TextBlock
   | CopyBlock
   | FormGroupBlock
   | AttributeTableBlock
   | ConfirmBlock
-  | ImageBlock;
+  | ImageBlock
+  | SecretRevealBlock;
 
 // ---------------------------------------------------------------------------
 // Steps
@@ -125,7 +142,11 @@ export type EndpointSlot =
   | "addMappers"
   | "testLdapConnection"
   | "createComponent"
-  | "triggerSync";
+  | "triggerSync"
+  /** GET /{realm}/orgs/config — reads scimEnabled for the realm gate */
+  | "getOrgConfig"
+  /** PUT /{realm}/orgs/{orgId}/scim — configures inbound SCIM provisioning */
+  | "setOrgScim";
 
 export interface ActionOnSuccess {
   /** Merge the entire response body into state.metadata */
@@ -162,7 +183,30 @@ export interface SaveFormAction {
   fields: string[];
 }
 
-export type WizardAction = HttpAction | ClearAliasAction | SaveFormAction;
+/**
+ * Generates a cryptographically random secret client-side and saves it to
+ * state.formValues under the given field id. Used by SCIM wizards to provision
+ * Bearer tokens or Basic auth passwords without depending on backend echo.
+ *
+ * The optional `then` chain runs the listed action keys after the secret is
+ * persisted to formValues — typically pointing at the HTTP action that writes
+ * the new credential to the backend.
+ */
+export interface GenerateSecretAction {
+  type: "generateSecret";
+  /** Form field id to fill with the generated value (e.g. "shared_secret") */
+  fieldId: string;
+  /** Random bytes (default 32 = ~43 base64url chars) */
+  bytes?: number;
+  /** Follow-up action keys to execute sequentially after generation */
+  then?: string[];
+}
+
+export type WizardAction =
+  | HttpAction
+  | ClearAliasAction
+  | SaveFormAction
+  | GenerateSecretAction;
 
 // ---------------------------------------------------------------------------
 // IDP config defaults

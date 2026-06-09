@@ -1,0 +1,350 @@
+{
+  "schemaVersion": "1.0",
+  "id": "entraid-scim",
+  "providerId": "entraid",
+  "protocol": "scim",
+  "title": "Microsoft Entra ID SCIM Provisioning",
+  "alias": {
+    "prefix": "entraid-scim",
+    "sessionKey": "p2_entraid_scim"
+  },
+  "idpConfig": {
+    "providerId": "scim",
+    "hideOnLogin": true
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Verify SCIM is enabled",
+      "enableNextWhen": "state.metadata.scimEnabled",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Inbound SCIM provisioning is a realm-level feature. Click the button below to confirm your realm administrator has enabled it. If not, ask the admin to enable SCIM in the organizations configuration."
+        },
+        {
+          "type": "formGroup",
+          "id": "scimGate",
+          "exclusive": false,
+          "forms": ["scimGateCheck"]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Create an Entra ID Enterprise Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Sign in to the Microsoft Entra admin center."
+        },
+        {
+          "type": "text",
+          "content": "In the left navigation menu, expand the Entra ID section and select the Enterprise applications tab. Click New application."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_1.avif",
+          "alt": "Enterprise applications page with the New application button visible"
+        },
+        {
+          "type": "text",
+          "content": "On the Browse Microsoft Entra App Gallery page, click Create your own application. Enter a descriptive app name (for example, the name of the realm being provisioned). Select Integrate any other application you don't find in the gallery (Non-gallery) and click Create."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_2.avif",
+          "alt": "Browse Microsoft Entra App Gallery with the Create your own application form"
+        },
+        {
+          "type": "text",
+          "content": "Your new application now appears in the Enterprise applications list."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_3.avif",
+          "alt": "Enterprise applications list with the newly created Example App"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Generate credentials and configure Entra",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Click the button below. The wizard generates a high-entropy Bearer token and writes the SCIM configuration to this organization. The token is shown on the next step — copy it before leaving."
+        },
+        {
+          "type": "formGroup",
+          "id": "entraConfig",
+          "exclusive": false,
+          "forms": ["configureForm"]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Paste the credentials into Entra ID",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Open your application in the Entra admin center. In the left navigation under Manage, select Provisioning."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_4.avif",
+          "alt": "Example App Overview page with the Provisioning entry in the left navigation"
+        },
+        {
+          "type": "text",
+          "content": "On the Get started page, click Connect your application."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_5.avif",
+          "alt": "Provisioning Get started page with the Connect your application button"
+        },
+        {
+          "type": "text",
+          "content": "Under Admin credentials, ensure the authentication method is set to Bearer authentication. Paste the values below into the Tenant URL and Secret token fields, then click Test connection."
+        },
+        {
+          "type": "copy",
+          "label": "Tenant URL",
+          "value": "{{api.scimEndpoint}}",
+          "hint": "Paste into the Tenant URL field in Admin credentials"
+        },
+        {
+          "type": "secretReveal",
+          "label": "Secret Token",
+          "value": "{{state.formValues.shared_secret}}",
+          "warning": "Copy this value now — it cannot be recovered later. Anyone holding it can push users and groups into this organization.",
+          "hint": "Paste into the Secret token field in Admin credentials"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_6.avif",
+          "alt": "Admin credentials form with Bearer authentication, Tenant URL, Secret token, and Test connection button"
+        },
+        {
+          "type": "text",
+          "content": "Once the connection test succeeds, click Create to save the configuration."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Confirm attribute mapping",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the Provisioning tab, expand the Mappings section. You'll see two mappings: Provision Microsoft Entra ID Groups and Provision Microsoft Entra ID Users."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_7.avif",
+          "alt": "Provisioning page with Mappings section expanded"
+        },
+        {
+          "type": "text",
+          "content": "Click Provision Microsoft Entra ID Users to open the Attribute Mapping editor."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_8.avif",
+          "alt": "Mappings section with the Provision Microsoft Entra ID Users link highlighted"
+        },
+        {
+          "type": "text",
+          "content": "Confirm Enabled is Yes, and that Target Object Actions has Create, Update, and Delete all checked."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_9.avif",
+          "alt": "Attribute Mapping editor showing Enabled toggle and Target Object Actions checkboxes"
+        },
+        {
+          "type": "text",
+          "content": "Scroll down to the externalId mapping. If it is not already mapped to objectId, click Edit."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_10.avif",
+          "alt": "Attribute Mapping list scrolled to the externalId row with the Edit button highlighted"
+        },
+        {
+          "type": "text",
+          "content": "Select objectId from the Source attribute dropdown and click Ok."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_11.avif",
+          "alt": "Edit Attribute dialog with Source attribute set to objectId and Ok button"
+        },
+        {
+          "type": "text",
+          "content": "Click Save at the top, then Yes in the Save changes dialog to confirm."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_12.avif",
+          "alt": "Save changes confirmation dialog with Yes button"
+        },
+        {
+          "type": "text",
+          "content": "Review the full attribute mapping list. The defaults shown below should work for most realms — adjust only if your realm uses non-standard user attributes."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_13.avif",
+          "alt": "Attribute Mapping list showing default Entra ID to SCIM attribute mappings"
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "scimAttribute": "SCIM Attribute",
+            "entraAttribute": "Source Attribute (Entra)"
+          },
+          "rows": [
+            { "scimAttribute": "userName", "entraAttribute": "userPrincipalName" },
+            { "scimAttribute": "emails[type eq \"work\"].value", "entraAttribute": "mail" },
+            { "scimAttribute": "name.givenName", "entraAttribute": "givenName" },
+            { "scimAttribute": "name.familyName", "entraAttribute": "surname" },
+            { "scimAttribute": "externalId", "entraAttribute": "objectId" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Assign users and groups",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In your Entra application, go to Users and groups and click Add user/group."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_14.avif",
+          "alt": "Users and groups page with the Add user/group button"
+        },
+        {
+          "type": "text",
+          "content": "On the Add Assignment screen, click None Selected under Users."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_15.avif",
+          "alt": "Add Assignment page with None Selected highlighted"
+        },
+        {
+          "type": "text",
+          "content": "Search for and select each user who should be provisioned. Click Select."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_16.avif",
+          "alt": "Users dialog with a user selected and the Select button"
+        },
+        {
+          "type": "text",
+          "content": "When finished, click Assign."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_17.avif",
+          "alt": "Add Assignment page showing 1 user selected and the Assign button"
+        },
+        {
+          "type": "text",
+          "content": "Return to the Provisioning tab. Under Settings, set Scope to Sync only assigned users and groups, then toggle Provisioning Status to On. Entra will start pushing users within a few minutes."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/scim/entraid_scim_18.avif",
+          "alt": "Provisioning Settings showing Scope set to Sync only assigned users and groups, and Provisioning Status On"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "SCIM provisioning is configured",
+          "description": "Entra ID will start pushing users and groups within a few minutes. Sync events appear in the Keycloak admin console under Events.",
+          "buttonText": "Mark as complete",
+          "action": "clearAlias",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Open Keycloak admin console"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "scimGateCheck": {
+      "title": "Check SCIM availability",
+      "description": "Reads the realm's organization configuration to confirm SCIM is enabled.",
+      "fields": [],
+      "submit": {
+        "label": "Verify SCIM is enabled",
+        "action": "loadOrgConfig"
+      }
+    },
+    "configureForm": {
+      "title": "Configure SCIM provisioning",
+      "description": "Generates a Bearer token and writes the SCIM configuration to this organization.",
+      "fields": [],
+      "submit": {
+        "label": "Generate token and configure",
+        "action": "configureScim"
+      }
+    }
+  },
+  "actions": {
+    "loadOrgConfig": {
+      "endpoint": "getOrgConfig",
+      "method": "GET",
+      "contentType": "json",
+      "body": {},
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}"
+      },
+      "messages": {
+        "error": "Could not load the realm's organization configuration. Confirm the realm has SCIM enabled."
+      }
+    },
+    "configureScim": {
+      "type": "generateSecret",
+      "fieldId": "shared_secret",
+      "then": ["configureScimWrite"]
+    },
+    "configureScimWrite": {
+      "endpoint": "setOrgScim",
+      "method": "PUT",
+      "contentType": "json",
+      "body": {
+        "enabled": true,
+        "auth": {
+          "type": "EXTERNAL_SECRET",
+          "shared_secret": "{{state.formValues.shared_secret}}"
+        }
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["CREDENTIALS_PROVIDED"]
+      },
+      "messages": {
+        "success": "SCIM provisioning configured. Reveal the Secret Token on the next step.",
+        "error": "Could not write the SCIM configuration. Check that the realm has SCIM enabled."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}
