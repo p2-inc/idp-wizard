@@ -15,6 +15,10 @@ export interface WizardEndpoints {
   createComponent: string;
   /** POST — triggers a user sync for a user storage component */
   triggerSync: (componentId: string) => string;
+  /** GET — realm org config, used to read the `scimEnabled` feature flag */
+  getOrgConfig: string;
+  /** PUT — write per-org SCIM 2.0 configuration */
+  setOrgScim: string;
 }
 
 /** Read-only derived values the wizard templates can reference as {{api.*}} */
@@ -25,6 +29,8 @@ export interface WizardApi {
   adminLinkSaml: (alias: string) => string;
   adminLinkOidc: (alias: string) => string;
   adminLinkSocial: (alias: string, providerId: string) => string;
+  /** Inbound SCIM endpoint URL — `{authServerUrl}/realms/{realm}/scim/v2/organizations/{orgId}/` */
+  scimEndpoint: string;
   endpoints: WizardEndpoints;
 }
 

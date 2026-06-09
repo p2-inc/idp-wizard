@@ -1,4 +1,4 @@
-export type Protocol = "saml" | "oidc" | "ldap" | "oauth";
+export type Protocol = "saml" | "oidc" | "ldap" | "oauth" | "scim";
 
 export interface Provider {
   id: string;
@@ -26,6 +26,12 @@ export const genericProviders: Provider[] = [
     logo: "ldap.svg",
     protocols: ["ldap"],
   },
+  {
+    id: "scim",
+    name: "SCIM",
+    logo: "ldap.svg",
+    protocols: ["scim"],
+  },
 ];
 
 export const popularProviders: Provider[] = [
@@ -33,13 +39,13 @@ export const popularProviders: Provider[] = [
     id: "entraid",
     name: "Entra ID (Azure AD)",
     logo: "azure.svg",
-    protocols: ["saml", "oidc"],
+    protocols: ["saml", "oidc", "scim"],
   },
   {
     id: "okta",
     name: "Okta",
     logo: "okta.svg",
-    protocols: ["saml", "oidc", "ldap"],
+    protocols: ["saml", "oidc", "ldap", "scim"],
   },
   {
     id: "google",

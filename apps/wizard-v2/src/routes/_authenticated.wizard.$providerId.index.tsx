@@ -29,6 +29,10 @@ const protocolLabels: Record<Protocol, { label: string; description: string }> =
     label: "OAuth / Social Login",
     description: "OAuth 2.0 social identity provider — simplified setup for common platforms.",
   },
+  scim: {
+    label: "SCIM Provisioning",
+    description: "SCIM 2.0 inbound user and group provisioning — push directory changes from your IdP into Keycloak.",
+  },
 };
 
 function ProtocolPicker() {

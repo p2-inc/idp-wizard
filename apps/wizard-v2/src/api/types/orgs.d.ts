@@ -820,6 +820,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/{realm}/orgs/{orgId}/scim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description realm name (not id!) */
+                realm: string;
+                /** @description organization id */
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        /**
+         * Get the SCIM configuration for an organization
+         * @description Returns the SCIM 2.0 service-provider configuration for the
+         *     organization. Requires `view-organizations` or
+         *     `view-identity-providers` on the organization. Returns 404 if
+         *     the realm-level SCIM flag (`scimEnabled` in the orgs config) is
+         *     off, or if no configuration exists for the organization yet.
+         */
+        get: operations["getOrganizationScimConfig"];
+        /**
+         * Update the SCIM configuration for an organization
+         * @description Updates the SCIM 2.0 service-provider configuration for the
+         *     organization. Requires `manage-organizations` or
+         *     `manage-identity-providers` on the organization. Omit
+         *     secret/password fields on `auth` to preserve the existing stored
+         *     credential; supply a new value to rotate.
+         */
+        put: operations["updateOrganizationScimConfig"];
+        /**
+         * Create the SCIM configuration for an organization
+         * @description Creates the SCIM 2.0 service-provider configuration for the
+         *     organization. Requires `manage-organizations` or
+         *     `manage-identity-providers` on the organization. Returns 404 if
+         *     the realm-level SCIM flag is off, and 409 if a configuration
+         *     already exists for the organization. Cleartext secrets and basic
+         *     passwords submitted here are hashed with Argon2id before
+         *     persistence.
+         */
+        post: operations["createOrganizationScimConfig"];
+        /**
+         * Delete the SCIM configuration for an organization
+         * @description Removes the SCIM 2.0 service-provider configuration for the
+         *     organization. Requires `manage-organizations` or
+         *     `manage-identity-providers` on the organization.
+         */
+        delete: operations["deleteOrganizationScimConfig"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/{realm}/users/{userId}/orgs": {
         parameters: {
             query?: never;
@@ -1410,6 +1463,13 @@ export interface components {
             attributes?: {
                 [key: string]: string[];
             };
+            /**
+             * @description Realm-level feature flag that turns on per-organization SCIM 2.0
+             *     provisioning. When false (the default) the organization SCIM
+             *     configuration endpoints under `/{realm}/orgs/{orgId}/scim`
+             *     return 404 and the SCIM tab is hidden in the Admin UI.
+             */
+            scimEnabled?: boolean;
         };
         OrganizationsExportRepresentation: {
             /** @description Export format version */
@@ -1609,6 +1669,110 @@ export interface components {
             keycloak_event_id?: string;
             webhook?: components["schemas"]["WebhookRepresentation"];
             payload?: string;
+        };
+        /**
+         * @description Per-organization SCIM 2.0 service-provider configuration. One of these
+         *     backs the SCIM endpoint at
+         *     `{authServerUrl}/realms/{realm}/scim/v2/organizations/{orgId}/`.
+         */
+        OrganizationScimRepresentation: {
+            /**
+             * @description Whether the organization's SCIM endpoint accepts inbound traffic.
+             *     Turn this off to pause provisioning without losing the
+             *     configuration.
+             */
+            enabled?: boolean;
+            /**
+             * @description When true, the provisioned user's `username` mirrors their
+             *     `email`, and subsequent SCIM update operations do not change
+             *     the username.
+             */
+            email_as_username?: boolean;
+            /**
+             * @description When true, provisioned users are federated with the
+             *     organization's configured identity provider so they can sign in
+             *     via the org's SSO immediately after provisioning.
+             */
+            link_idp?: boolean;
+            auth?: components["schemas"]["OrganizationScimAuth"];
+        };
+        /**
+         * @description Polymorphic authentication configuration for the inbound SCIM
+         *     endpoint. The `type` field discriminates the variant; the remaining
+         *     fields depend on the variant chosen.
+         */
+        OrganizationScimAuth: {
+            /**
+             * @description Authentication mode selector.
+             * @enum {string}
+             */
+            type: "KEYCLOAK" | "EXTERNAL_JWT" | "EXTERNAL_SECRET" | "EXTERNAL_BASIC";
+        } & (components["schemas"]["KeycloakScimAuth"] | components["schemas"]["ExternalJwtScimAuth"] | components["schemas"]["ExternalSecretScimAuth"] | components["schemas"]["ExternalBasicScimAuth"]);
+        /**
+         * @description Authenticates inbound SCIM calls with a Keycloak-issued access
+         *     token (Bearer). The caller must hold the realm-management roles
+         *     required to manage members of the organization.
+         */
+        KeycloakScimAuth: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "KEYCLOAK";
+        };
+        /**
+         * @description Validates an inbound JWT issued by an external IdP. The token's
+         *     issuer and audience must match the configured values, and the
+         *     signature is verified against keys fetched from the configured
+         *     JWKS URI.
+         */
+        ExternalJwtScimAuth: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "EXTERNAL_JWT";
+            /** @description Expected `iss` claim. Must exactly match the upstream IdP's issuer URL. */
+            issuer?: string;
+            /** @description Expected `aud` claim. */
+            audience?: string;
+            /** @description URL the server fetches to validate the JWT signature. */
+            jwks_uri?: string;
+        };
+        /**
+         * @description Bearer-style shared secret. The client sends
+         *     `Authorization: Bearer <secret>`; the server compares the value
+         *     against a stored Argon2id hash.
+         */
+        ExternalSecretScimAuth: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "EXTERNAL_SECRET";
+            /**
+             * @description Random opaque value. Cleartext on submit; hashed at rest. Omit
+             *     on update to keep the existing secret.
+             */
+            shared_secret?: string;
+        };
+        /**
+         * @description HTTP Basic auth. The password is hashed with Argon2id before
+         *     storage.
+         */
+        ExternalBasicScimAuth: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "EXTERNAL_BASIC";
+            /** @description Username for HTTP Basic auth. Stored in cleartext. */
+            username?: string;
+            /**
+             * @description Password for HTTP Basic auth. Cleartext on submit; hashed at
+             *     rest. Omit on update to keep the existing password.
+             */
+            password?: string;
         };
         MagicLinkRequest: {
             email?: string;
@@ -3175,6 +3339,175 @@ export interface operations {
         responses: {
             /** @description success */
             204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getOrganizationScimConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description realm name (not id!) */
+                realm: string;
+                /** @description organization id */
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationScimRepresentation"];
+                };
+            };
+            /** @description Insufficient permission */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description SCIM disabled at realm level, or no configuration exists for this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updateOrganizationScimConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description realm name (not id!) */
+                realm: string;
+                /** @description organization id */
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationScimRepresentation"];
+            };
+        };
+        responses: {
+            /** @description success */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationScimRepresentation"];
+                };
+            };
+            /** @description Insufficient permission */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description SCIM disabled at realm level, or no configuration exists for this organization */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createOrganizationScimConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description realm name (not id!) */
+                realm: string;
+                /** @description organization id */
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrganizationScimRepresentation"];
+            };
+        };
+        responses: {
+            /** @description SCIM configuration created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrganizationScimRepresentation"];
+                };
+            };
+            /** @description Insufficient permission */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description SCIM disabled at realm level */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description SCIM configuration already exists for this organization */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteOrganizationScimConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description realm name (not id!) */
+                realm: string;
+                /** @description organization id */
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SCIM configuration deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Insufficient permission */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description SCIM disabled at realm level, or no configuration exists for this organization */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

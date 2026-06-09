@@ -68,6 +68,7 @@ const protocolBadgeClass: Record<Protocol, string> = {
   ldap: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
   oauth:
     "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300",
+  scim: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300",
 };
 
 function ProtocolBadge({ protocol }: { protocol: Protocol }) {
