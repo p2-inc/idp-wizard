@@ -25,25 +25,47 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the miniOrange admin console, add a new SAML application. Enter the following service provider details in the application configuration."
+          "content": "In the miniOrange admin console, open \"Apps\", click \"Add Application\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_1.png"
+        },
+
+        {
+          "type": "text",
+          "content": "Search for SAML and check the \"Show custom apps only\" box. Click the \"Custom SAML App\" tile."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter the details below in the appropriate fields."
+        },
+
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_3.png"
+        },
+        {
+          "type": "copy",
+          "label": "Display Name",
+          "value": "My Application",
+          "hint": "An internal name for the app in miniOrange. Anything descriptive works."
+        },
+        {
+          "type": "copy",
+          "label": "SP Entity ID or Issuer",
+          "value": "{{api.entityId}}",
+          "hint": "A unique identifier for the service provider (your Keycloak realm)."
         },
         {
           "type": "copy",
           "label": "ACS URL",
           "value": "{{api.ssoUrl}}",
-          "hint": "Sometimes called SSO Service URL or Callback URL"
-        },
-        {
-          "type": "copy",
-          "label": "Entity ID",
-          "value": "{{api.entityId}}",
-          "hint": "Sometimes called Audience URI or SP Entity ID"
-        },
-        {
-          "type": "copy",
-          "label": "SAML Metadata URL",
-          "value": "{{api.samlMetadata}}",
-          "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+          "hint": "Assertion Consumer Service URL — where miniOrange sends the SAML response after login."
         }
       ]
     },
@@ -54,15 +76,21 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Copy the IdP metadata URL from the miniOrange SAML application settings."
+          "content": "Open the app's \"Metadata\" tab in miniOrange and copy its IdP metadata URL (it may be labeled \"Metadata URL\" or \"IDP Metadata\")."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste the IdP metadata URL below to import miniOrange's configuration into Keycloak."
         },
         {
           "type": "formGroup",
           "id": "metadataInput",
           "exclusive": false,
-          "forms": [
-            "metadataUrl"
-          ]
+          "forms": ["metadataUrl"]
         }
       ]
     },
@@ -72,26 +100,34 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "On the app's \"Attributes\" tab in miniOrange, configure it to send the following SAML attributes."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_5.png"
         },
         {
           "type": "attributeTable",
+          "columns": {
+            "name": "Attribute Name",
+            "value": "Attribute Value"
+          },
           "rows": [
             {
-              "idpAttribute": "username",
-              "keycloakAttribute": "username"
+              "name": "Username",
+              "value": "username"
             },
             {
-              "idpAttribute": "email",
-              "keycloakAttribute": "email"
+              "name": "E-mail Address",
+              "value": "email"
             },
             {
-              "idpAttribute": "firstName",
-              "keycloakAttribute": "firstName"
+              "name": "First Name",
+              "value": "firstName"
             },
             {
-              "idpAttribute": "lastName",
-              "keycloakAttribute": "lastName"
+              "name": "Last Name",
+              "value": "lastName"
             }
           ]
         }
@@ -99,16 +135,6 @@
     },
     {
       "id": 4,
-      "title": "Configure User Access",
-      "blocks": [
-        {
-          "type": "text",
-          "content": "Assign the users or groups who should have access in your identity provider, then continue."
-        }
-      ]
-    },
-    {
-      "id": 5,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [
@@ -154,9 +180,7 @@
       },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}",
-        "dispatch": [
-          "METADATA_VALIDATED"
-        ]
+        "dispatch": ["METADATA_VALIDATED"]
       },
       "messages": {
         "success": "Metadata URL validated. Continue to the next step.",
@@ -181,10 +205,7 @@
             "result": "SAML Identity Provider created successfully."
           }
         ],
-        "then": [
-          "addSamlMappers",
-          "clearAlias"
-        ]
+        "then": ["addSamlMappers", "clearAlias"]
       },
       "messages": {
         "error": "Error creating Identity Provider. One may already be configured for this realm."
@@ -196,23 +217,23 @@
       "contentType": "json",
       "foreach": [
         {
-          "attributeName": "username",
-          "friendlyName": "username",
+          "attributeName": "Username",
+          "friendlyName": "Username",
           "userAttribute": "username"
         },
         {
-          "attributeName": "email",
-          "friendlyName": "email",
+          "attributeName": "E-mail Address",
+          "friendlyName": "E-mail Address",
           "userAttribute": "email"
         },
         {
-          "attributeName": "firstName",
-          "friendlyName": "firstName",
+          "attributeName": "First Name",
+          "friendlyName": "First Name",
           "userAttribute": "firstName"
         },
         {
-          "attributeName": "lastName",
-          "friendlyName": "lastName",
+          "attributeName": "Last Name",
+          "friendlyName": "Last Name",
           "userAttribute": "lastName"
         }
       ],
