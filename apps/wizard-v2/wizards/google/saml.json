@@ -123,7 +123,7 @@
         {
           "type": "attributeTable",
           "columns": {
-            "idpAttribute": "LDAP Attribute",
+            "idpAttribute": "Google Directory Attribute",
             "keycloakAttribute": "Keycloak User Field"
           },
           "rows": [

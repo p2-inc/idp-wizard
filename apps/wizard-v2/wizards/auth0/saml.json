@@ -25,13 +25,45 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Auth0 Dashboard, create a new application. Then enable the SAML2 Web App addon and enter the following values."
+          "content": "In the Auth0 Dashboard, go to Applications and click Create Application."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/COMMON/auth0-1.png"
+        },
+        {
+          "type": "text",
+          "content": "Give your application a name and pick \"Regular Web Application\" as the type."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/COMMON/auth0-2.png"
+        },
+        {
+          "type": "text",
+          "content": "On the application's Addons tab, enable the SAML2 Web App addon."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/SAML/auth0-3SAML.png"
+        },
+        {
+          "type": "text",
+          "content": "In the SAML2 Web App settings, enter the ACS URL below as the Application Callback URL."
         },
         {
           "type": "copy",
           "label": "ACS URL",
           "value": "{{api.ssoUrl}}",
           "hint": "Sometimes called SSO Service URL or Callback URL"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/SAML/auth0-5SAML.png"
+        },
+        {
+          "type": "text",
+          "content": "Then enter the Entity ID and SAML Metadata URL below into the corresponding Auth0 fields."
         },
         {
           "type": "copy",
@@ -44,22 +76,6 @@
           "label": "SAML Metadata URL",
           "value": "{{api.samlMetadata}}",
           "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/auth0/COMMON/auth0-1.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/auth0/COMMON/auth0-2.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/auth0/SAML/auth0-3SAML.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/auth0/SAML/auth0-5SAML.png"
         },
         {
           "type": "image",
@@ -96,7 +112,23 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Configure your identity provider to send the following SAML attributes."
+          "content": "Open the SAML2 Web App Settings tab in your Auth0 application's Addons page."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/SAML/auth0_saml_mapping_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Scroll to the Settings section and locate the mappings JSON field."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/SAML/auth0_saml_mapping_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste a mappings JSON that emits the following WS-Federation claim URIs."
         },
         {
           "type": "attributeTable",
@@ -122,6 +154,10 @@
               "keycloakAttribute": "lastName"
             }
           ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/auth0/SAML/auth0_saml_mapping_3.png"
         }
       ]
     },

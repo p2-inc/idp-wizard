@@ -21,11 +21,27 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create a SAML Application",
+      "title": "Create a SAML Application in Duo",
       "blocks": [
         {
           "type": "text",
-          "content": "In the Duo Admin Panel, add a new SAML application. Enter the following service provider details."
+          "content": "In the Duo Admin Panel, open the Applications submenu in the left navigation."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/duo/saml/duo_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Open the Application Catalog, search for \"Generic SAML Service Provider\", and click Add."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/duo/saml/duo_saml_3.png"
+        },
+        {
+          "type": "text",
+          "content": "On the application's configuration page, enter the following Service Provider details."
         },
         {
           "type": "copy",
@@ -47,26 +63,22 @@
         },
         {
           "type": "image",
-          "src": "/wizards/duo/saml/duo_saml_0.png"
-        },
-        {
-          "type": "image",
-          "src": "/wizards/duo/saml/duo_saml_3.png"
+          "src": "/wizards/duo/saml/duo_saml_4.png"
         }
       ]
     },
     {
       "id": 2,
-      "title": "Configure Application Metadata",
+      "title": "Import the Duo Metadata URL",
       "enableNextWhen": "state.metadataValidated",
       "blocks": [
         {
           "type": "text",
-          "content": "Enter the metadata URL provided by Duo."
+          "content": "Save your Duo SAML application. Duo will display a Metadata URL — copy it and paste it below to import Duo's IdP configuration into Keycloak."
         },
         {
           "type": "image",
-          "src": "/wizards/duo/saml/duo_saml_1.png"
+          "src": "/wizards/duo/saml/duo_saml_6.png"
         },
         {
           "type": "formGroup",

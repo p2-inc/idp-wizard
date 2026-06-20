@@ -22,7 +22,11 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In GitLab, go to User Settings → Applications (or Admin Area → Applications for instance-wide). Create a new application with the 'openid', 'profile', and 'email' scopes. Use the redirect URI below."
+          "content": "Open your GitLab OAuth applications page: https://gitlab.com/oauth/applications (for self-hosted instances, use Admin Area → Applications instead)."
+        },
+        {
+          "type": "text",
+          "content": "Create a new application with the 'openid', 'profile', and 'email' scopes. Use the redirect URI below."
         },
         {
           "type": "copy",

@@ -23,13 +23,41 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In your Vercel Dashboard, go to Integrations → Build New Integration. Set the Integration Type to 'Generic' and enable OAuth. Add the redirect URL below as the Redirect URL."
+          "content": "In your Vercel Dashboard sidebar, open Integrations."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/vercel/oauth/vercel_oauth_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Switch to the \"Integrations Console\" tab (top right)."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/vercel/oauth/vercel_oauth_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Create Integration\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/vercel/oauth/vercel_oauth_3.png"
+        },
+        {
+          "type": "text",
+          "content": "In the integration form, paste the redirect URL below into the Redirect URL field."
         },
         {
           "type": "copy",
           "label": "Redirect URL",
           "value": "{{api.ssoUrl}}",
           "hint": "Add this as the Redirect URL in your Vercel integration"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/vercel/oauth/vercel_oauth_4.png"
         }
       ]
     },

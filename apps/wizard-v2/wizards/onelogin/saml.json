@@ -33,11 +33,11 @@
         },
         {
           "type": "text",
-          "content": "Click \"Add App\" and search for \"SAML Custom Connector (Advanced)\"."
+          "content": "Click \"Add App\" and search for \"SAML Custom Connector (Advanced)\". Pick the result from OneLogin, Inc."
         },
         {
           "type": "image",
-          "src": "/wizards/onelogin/saml/onelogin_saml_2.png"
+          "src": "/wizards/onelogin/saml/onelogin_saml_1_v2.png"
         }
       ]
     },
@@ -76,6 +76,14 @@
           "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
         },
         {
+          "type": "text",
+          "content": "Note: the ACS URL Validator field shows a \"*Required\" hint, but it can be left empty — OneLogin will still save the configuration without it."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_acs_validator.png"
+        },
+        {
           "type": "image",
           "src": "/wizards/onelogin/saml/onelogin_saml_4.png"
         }
@@ -88,7 +96,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the application's \"SSO\" tab, click \"More Actions\" → \"SAML Metadata\" to copy the metadata URL."
+          "content": "On the application's \"SSO\" tab, copy the Issuer URL (this is the OneLogin SAML metadata URL)."
         },
         {
           "type": "image",
@@ -127,24 +135,24 @@
         {
           "type": "attributeTable",
           "columns": {
-            "idpAttribute": "LDAP Attribute",
+            "idpAttribute": "SAML Attribute Name",
             "keycloakAttribute": "Keycloak User Field"
           },
           "rows": [
             {
-              "idpAttribute": "uid",
+              "idpAttribute": "username",
               "keycloakAttribute": "username"
             },
             {
-              "idpAttribute": "mail",
+              "idpAttribute": "email",
               "keycloakAttribute": "email"
             },
             {
-              "idpAttribute": "givenName",
+              "idpAttribute": "firstName",
               "keycloakAttribute": "firstName"
             },
             {
-              "idpAttribute": "sn",
+              "idpAttribute": "lastName",
               "keycloakAttribute": "lastName"
             }
           ]
@@ -258,23 +266,23 @@
       "contentType": "json",
       "foreach": [
         {
-          "attributeName": "uid",
-          "friendlyName": "uid",
+          "attributeName": "username",
+          "friendlyName": "username",
           "userAttribute": "username"
         },
         {
-          "attributeName": "mail",
-          "friendlyName": "mail",
+          "attributeName": "email",
+          "friendlyName": "email",
           "userAttribute": "email"
         },
         {
-          "attributeName": "givenName",
-          "friendlyName": "givenName",
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
           "userAttribute": "firstName"
         },
         {
-          "attributeName": "sn",
-          "friendlyName": "sn",
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
           "userAttribute": "lastName"
         }
       ],

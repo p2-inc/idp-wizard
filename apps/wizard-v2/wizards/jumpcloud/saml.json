@@ -25,11 +25,11 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Sign in to the JumpCloud admin console and navigate to \"SSO Applications\" in the left sidebar."
+          "content": "Sign in to the JumpCloud admin console and navigate to Access → SSO Applications in the left sidebar."
         },
         {
           "type": "image",
-          "src": "/wizards/jumpcloud/jumpcloud_saml_1.png"
+          "src": "/wizards/jumpcloud/jumpcloud_saml_access_nav.png"
         },
         {
           "type": "text",
@@ -41,11 +41,11 @@
         },
         {
           "type": "text",
-          "content": "Search for or scroll to find \"Custom SAML App\" and click \"Configure\" to add it."
+          "content": "Pick \"Custom Application\", then on the \"Select the features you would like to enable\" screen, check \"Manage Single Sign-On (SSO)\" and choose \"Configure SSO with SAML\"."
         },
         {
           "type": "image",
-          "src": "/wizards/jumpcloud/jumpcloud_saml_3.png"
+          "src": "/wizards/jumpcloud/jumpcloud_saml_custom_app.png"
         }
       ]
     },
@@ -78,6 +78,14 @@
         {
           "type": "image",
           "src": "/wizards/jumpcloud/jumpcloud_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Under the \"Sign\" section, expand it and check the \"Assertion\" sub-option to sign the SAML assertion."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/jumpcloud/jumpcloud_saml_sign_assertion.png"
         },
         {
           "type": "text",
@@ -135,24 +143,24 @@
         {
           "type": "attributeTable",
           "columns": {
-            "idpAttribute": "LDAP Attribute",
+            "idpAttribute": "SAML Attribute Name",
             "keycloakAttribute": "Keycloak User Field"
           },
           "rows": [
             {
-              "idpAttribute": "uid",
+              "idpAttribute": "username",
               "keycloakAttribute": "username"
             },
             {
-              "idpAttribute": "mail",
+              "idpAttribute": "email",
               "keycloakAttribute": "email"
             },
             {
-              "idpAttribute": "givenName",
+              "idpAttribute": "firstName",
               "keycloakAttribute": "firstName"
             },
             {
-              "idpAttribute": "sn",
+              "idpAttribute": "lastName",
               "keycloakAttribute": "lastName"
             }
           ]
@@ -282,23 +290,23 @@
       "contentType": "json",
       "foreach": [
         {
-          "attributeName": "uid",
-          "friendlyName": "uid",
+          "attributeName": "username",
+          "friendlyName": "username",
           "userAttribute": "username"
         },
         {
-          "attributeName": "mail",
-          "friendlyName": "mail",
+          "attributeName": "email",
+          "friendlyName": "email",
           "userAttribute": "email"
         },
         {
-          "attributeName": "givenName",
-          "friendlyName": "givenName",
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
           "userAttribute": "firstName"
         },
         {
-          "attributeName": "sn",
-          "friendlyName": "sn",
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
           "userAttribute": "lastName"
         }
       ],

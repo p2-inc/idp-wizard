@@ -18,17 +18,61 @@
   "steps": [
     {
       "id": 1,
-      "title": "Create an OAuth Consumer",
+      "title": "Create an OAuth Client",
       "blocks": [
         {
           "type": "text",
-          "content": "In Bitbucket, go to your workspace settings → OAuth consumers and click 'Add consumer'. Give it a name and enable the 'Email' and 'Account' permissions. Use the callback URL below."
+          "content": "In Bitbucket, open your Workspace settings."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Under \"Apps and features\", select OAuth clients."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Create OAuth client\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_3.png"
+        },
+        {
+          "type": "text",
+          "content": "Select the scopes \"Email\" and \"Account\" (these provide the user's email and basic profile)."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Under \"Authorization\", paste the callback URL below into the Callback URL field."
         },
         {
           "type": "copy",
           "label": "Callback URL",
           "value": "{{api.ssoUrl}}",
           "hint": "Paste this as the Callback URL in Bitbucket"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_5.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a descriptive name for your app and click Save."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_6.png"
         }
       ]
     },
@@ -39,7 +83,11 @@
       "blocks": [
         {
           "type": "text",
-          "content": "After saving the consumer, copy the Key and Secret and paste them below."
+          "content": "After saving the OAuth client, copy the Key and Secret and paste them below."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_7.png"
         },
         {
           "type": "formGroup",

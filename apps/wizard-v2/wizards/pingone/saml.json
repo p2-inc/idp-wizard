@@ -93,24 +93,24 @@
         {
           "type": "attributeTable",
           "columns": {
-            "idpAttribute": "LDAP Attribute",
+            "idpAttribute": "SAML Attribute Name",
             "keycloakAttribute": "Keycloak User Field"
           },
           "rows": [
             {
-              "idpAttribute": "uid",
+              "idpAttribute": "username",
               "keycloakAttribute": "username"
             },
             {
-              "idpAttribute": "mail",
+              "idpAttribute": "email",
               "keycloakAttribute": "email"
             },
             {
-              "idpAttribute": "givenName",
+              "idpAttribute": "firstName",
               "keycloakAttribute": "firstName"
             },
             {
-              "idpAttribute": "sn",
+              "idpAttribute": "lastName",
               "keycloakAttribute": "lastName"
             }
           ]
@@ -228,23 +228,23 @@
       "contentType": "json",
       "foreach": [
         {
-          "attributeName": "uid",
-          "friendlyName": "uid",
+          "attributeName": "username",
+          "friendlyName": "username",
           "userAttribute": "username"
         },
         {
-          "attributeName": "mail",
-          "friendlyName": "mail",
+          "attributeName": "email",
+          "friendlyName": "email",
           "userAttribute": "email"
         },
         {
-          "attributeName": "givenName",
-          "friendlyName": "givenName",
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
           "userAttribute": "firstName"
         },
         {
-          "attributeName": "sn",
-          "friendlyName": "sn",
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
           "userAttribute": "lastName"
         }
       ],

@@ -23,13 +23,45 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Vercel Dashboard, create a new Marketplace Integration with OAuth enabled. Add the redirect URL below to the integration's OAuth configuration."
+          "content": "Vercel Marketplace integrations use the same creation flow as a regular Vercel integration — there is no separate Marketplace page. The only difference is the Visibility setting, which controls whether the integration is publicly listed."
+        },
+        {
+          "type": "text",
+          "content": "In your Vercel Dashboard sidebar, open Integrations."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/vercel-marketplace/oauth/vercel_marketplace_oauth_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Create Integration\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/vercel-marketplace/oauth/vercel_marketplace_oauth_2.png"
+        },
+        {
+          "type": "text",
+          "content": "In the integration form, set Visibility to \"Public\" — this is what makes it a Marketplace integration (discoverable by all Vercel users)."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/vercel-marketplace/oauth/vercel_marketplace_oauth_3.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste the redirect URL below into the Redirect URL field."
         },
         {
           "type": "copy",
           "label": "Redirect URL",
           "value": "{{api.ssoUrl}}",
           "hint": "Add this as the Redirect URL in your Vercel Marketplace integration"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/vercel-marketplace/oauth/vercel_marketplace_oauth_4.png"
         }
       ]
     },

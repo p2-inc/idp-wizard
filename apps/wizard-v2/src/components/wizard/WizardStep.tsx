@@ -126,9 +126,31 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
 // Block renderers
 // ---------------------------------------------------------------------------
 
+/**
+ * Renders the text block content. Any `https://` or `http://` URL in the
+ * content is auto-wrapped in an anchor that opens in a new tab. Wizard
+ * authors can drop URLs directly into prose and they become clickable.
+ */
 function TextBlockRenderer({ content }: { content: string }) {
+  const parts = content.split(/(https?:\/\/[^\s)]+)/g);
   return (
-    <p className="text-base leading-relaxed">{content}</p>
+    <p className="text-base leading-relaxed">
+      {parts.map((part, i) =>
+        /^https?:\/\//.test(part) ? (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline underline-offset-2 hover:text-primary/80"
+          >
+            {part}
+          </a>
+        ) : (
+          part
+        ),
+      )}
+    </p>
   );
 }
 

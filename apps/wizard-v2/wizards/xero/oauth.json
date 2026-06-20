@@ -23,13 +23,33 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Xero Developer Portal, create a new app. Select 'Web app' as the integration type and add the redirect URI below."
+          "content": "Open the Xero Developer Portal: https://developer.xero.com/app/manage"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/xero/oauth/xero_oauth_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"New app\" and enter a name. Select \"Web app\" as the integration type."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/xero/oauth/xero_oauth_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Add the redirect URI below into the app's Redirect URI field."
         },
         {
           "type": "copy",
           "label": "Redirect URI",
           "value": "{{api.ssoUrl}}",
           "hint": "Add this as a Redirect URI in your Xero app"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/xero/oauth/xero_oauth_3.png"
         }
       ]
     },
@@ -40,7 +60,23 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Copy the Client ID and generate a Client Secret in your Xero app's Configuration page. Paste both values below."
+          "content": "Open the Configuration page of your Xero app. Copy the Client ID."
+        },
+        {
+          "type": "text",
+          "content": "Click \"Generate a secret\" to create the Client Secret. Xero only shows the secret once — copy it before navigating away."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/xero/oauth/xero_oauth_4.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/xero/oauth/xero_oauth_5.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste both values below."
         },
         {
           "type": "formGroup",
