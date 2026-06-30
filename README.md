@@ -71,6 +71,8 @@ This extension depends on 2 other extensions. You must install all of the jars o
 - [keycloak-orgs](https://github.com/p2-inc/keycloak-orgs)
 - [keycloak-scim](https://github.com/p2-inc/keycloak-scim) (not currently used or required)
 
+> :information_source: Cutting over the production build from wizard-v1 to wizard-v2 is documented in [apps/wizard-v2/README.md](apps/wizard-v2/README.md#cutting-over-from-wizard-v1).
+
 ### Compatibility
 
 Although it has been developed and working since Keycloak 14.0.0, the extensions are currently known to work with Keycloak > 23.0.0. Additionally, because of the fast pace of breaking changes since Keycloak "X" (Quarkus version), we don't make any guarantee that this will work with any version other than it is packaged with in the [Docker image](https://quay.io/repository/phasetwo/phasetwo-keycloak?tab=tags).
@@ -97,6 +99,72 @@ Wizards are currently available for the following vendors.
 | Oracle               | :white_check_mark: |                    |                    |      |       |
 | PingOne              | :white_check_mark: |                    |                    |      |       |
 | Salesforce           | :white_check_mark: | :white_check_mark: |                    |      |       |
+
+## Wizard implementation status (wizard-v2)
+
+The table below tracks the review state of each wizard in the in-development [wizard-v2](apps/wizard-v2/) app. Each wizard is a declarative JSON definition rendered by the generic runtime engine, so "implemented" means a `wizards/{provider}/{protocol}.json` file exists and renders end-to-end.
+
+**Status legend**
+
+| Status                          | Meaning                                                                                         |
+| ------------------------------- | ----------------------------------------------------------------------------------------------- |
+| :white_check_mark: Supported    | Reviewed and/or implemented and working.                                                        |
+| :hammer_and_wrench: In progress | Wizard still in development.                                                                     |
+| :warning: Experimental          | Implemented but not yet validated — no test account available (invite-only, paid, or region-locked). |
+
+_Listed in the order they appear in the testing report._
+
+| Provider                | Protocol | Status                          |
+| ----------------------- | -------- | ------------------------------- |
+| LastPass                | SAML     | :white_check_mark: Supported    |
+| miniOrange              | SAML     | :white_check_mark: Supported    |
+| OneLogin                | SAML     | :white_check_mark: Supported    |
+| PingOne                 | SAML     | :white_check_mark: Supported    |
+| Salesforce              | SAML     | :white_check_mark: Supported    |
+| VMware                  | SAML     | :white_check_mark: Supported    |
+| Xero                    | OAuth    | :white_check_mark: Supported    |
+| Google                  | SAML     | :white_check_mark: Supported    |
+| JumpCloud               | SAML     | :white_check_mark: Supported    |
+| GitLab                  | OAuth    | :white_check_mark: Supported    |
+| Duo                     | SAML     | :white_check_mark: Supported    |
+| Google                  | OIDC     | :white_check_mark: Supported    |
+| Discord                 | OAuth    | :white_check_mark: Supported    |
+| Okta                    | SAML     | :white_check_mark: Supported    |
+| Okta                    | OIDC     | :white_check_mark: Supported    |
+| Generic                 | SAML     | :white_check_mark: Supported    |
+| Slack                   | OAuth    | :white_check_mark: Supported    |
+| Auth0                   | SAML     | :white_check_mark: Supported    |
+| Cloudflare              | SAML     | :white_check_mark: Supported    |
+| Google                  | OAuth    | :white_check_mark: Supported    |
+| Vercel Marketplace      | OAuth    | :white_check_mark: Supported    |
+| Generic                 | OIDC     | :white_check_mark: Supported    |
+| GitHub                  | OAuth    | :white_check_mark: Supported    |
+| Vercel Integration      | OAuth    | :white_check_mark: Supported    |
+| Okta                    | LDAP     | :white_check_mark: Supported    |
+| LinkedIn                | OAuth    | :white_check_mark: Supported    |
+| Bitbucket               | OAuth    | :white_check_mark: Supported    |
+| CAS                     | SAML     | :white_check_mark: Supported    |
+| ClassLink               | SAML     | :white_check_mark: Supported    |
+| Clever                  | OIDC     | :white_check_mark: Supported    |
+| CyberArk                | SAML     | :white_check_mark: Supported    |
+| Keycloak                | SAML     | :white_check_mark: Supported    |
+| ADFS                    | SAML     | :white_check_mark: Supported    |
+| ADP                     | OIDC     | :warning: Experimental          |
+| Apple                   | OAuth    | :white_check_mark: Supported    |
+| Azure                   | SAML     | :warning: Experimental          |
+| Entra ID                | OIDC     | :warning: Experimental          |
+| Intuit                  | OAuth    | :white_check_mark: Supported    |
+| Login.gov               | OIDC     | :hammer_and_wrench: In progress |
+| Magic Link              | —        | :hammer_and_wrench: In progress |
+| Microsoft               | OAuth    | :warning: Experimental          |
+| NetIQ                   | SAML     | :white_check_mark: Supported    |
+| Oracle                  | SAML     | :white_check_mark: Supported    |
+| PingFederate            | SAML     | :warning: Experimental          |
+| Rippling                | SAML     | :warning: Experimental          |
+| Shibboleth (Generic)    | SAML     | :white_check_mark: Supported    |
+| Shibboleth              | SAML     | :white_check_mark: Supported    |
+| SimpleSAMLphp           | SAML     | :white_check_mark: Supported    |
+| Salesforce              | OAuth    | :hammer_and_wrench: In progress |
 
 ## Contributing
 

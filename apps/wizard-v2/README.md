@@ -428,6 +428,31 @@ pnpm build
 
 Output goes to `dist/`. When wizard-v2 is ready for production, the root `pom.xml` `workingDirectory` will be updated to `apps/wizard-v2` and `mvn package` will bundle it into the Keycloak JAR.
 
+## Cutting over from wizard-v1
+
+The packaging pivot is a single line. The `frontend-maven-plugin`'s `workingDirectory` in the root [pom.xml](../../pom.xml) currently points at `apps/wizard-v1`:
+
+```xml
+<workingDirectory>apps/wizard-v1</workingDirectory>
+```
+
+It runs `pnpm install` + `pnpm build` in that directory, and the `maven-resources-plugin` copies the resulting `dist/` into `target/classes/theme/wizard/login/resources`. Pointing `workingDirectory` at `apps/wizard-v2` makes `mvn package` ship v2 inside the same Keycloak JAR. The Java SPI extension is frontend-agnostic — it just serves whichever `dist/` was copied in — so no Java changes are required.
+
+### Verify before flipping the switch
+
+1. **Build output parity** — `pnpm build` here must emit to `dist/` so the existing `copy-resources` step keeps working unchanged.
+2. **Base path / routing** — v1 sets a `RELATIVE_PATH` in `routes.tsx` and a `<base href>` in the `wizard.ftl` theme files. v2 uses TanStack Router; confirm it serves correctly under the Keycloak theme path (`/realms/{realm}/wizard/...`), not just at `localhost:5173`. This is the most likely thing to break.
+3. **Auth model change** — v1 uses a downloaded `keycloak.json`; v2 uses `oidc-spa` driven by `VITE_OIDC_ISSUER_URI` / `VITE_OIDC_CLIENT_ID`. A production v2 client (with correct redirect URIs and web origins) must be registered in each realm, and the `VITE_*` values resolved at build time.
+4. **Realm config** — v2 reads `{issuerUri}/wizard/config.json` for `logoUrl`, `appName`, `apiMode`, and `emailAsUsername`. Confirm these map onto the v1 `_providerConfig.wizard.*` realm attributes (documented in the root README).
+5. **Provider coverage** — see the wizard implementation status table in the root README. Decide whether cut-over requires every non-experimental wizard to reach **Supported**, or whether some can ship as **In progress**. v2 shows a "not yet available" message for any provider without a JSON file, so missing wizards degrade gracefully rather than error.
+
+### Suggested rollout
+
+1. **Parallel build** — build a v2 JAR from a branch (or a Maven profile that overrides `workingDirectory`) and deploy to a staging realm. Keep `main`'s `pom.xml` on v1.
+2. **Soft launch** — serve both themes side by side at distinct theme resource paths so specific realms/orgs can opt in.
+3. **Flip** — once the queue is cleared, change `workingDirectory` to `apps/wizard-v2`, bump the version, and cut a release. Keep `apps/wizard-v1` for one release as a one-line rollback path.
+4. **Retire** — after a stable release, remove `apps/wizard-v1` and its v1-specific docs.
+
 ## Migration check
 
 - Existing provider setup is displayed
