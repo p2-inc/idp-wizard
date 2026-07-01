@@ -21,7 +21,16 @@ idp-wizard/
 │       ├── public/             # Static assets (favicons, logos, provider images, wizard screenshots)
 │       ├── src/                # Application source
 │       └── wizards/            # Declarative JSON wizard definitions
-├── ext/                        # Java Keycloak SPI extension
+├── ext/                        # Java Keycloak SPI extensionprivate static final String ENV_SENDGRID_HAS_CLUSTER_FIELD_ID = "SENDGRID_HAS_CLUSTER_FIELD_ID";
+
+  /**
+   * SendGrid custom-field ID (not name) for the {@code has_cluster} attribute used to segment
+   * onboarding automations. Fetch from {@code GET /v3/marketing/field_definitions}. When unset, the
+   * attribute is not written (the upsert still proceeds without it).
+   */
+  public static String sendgridHasClusterFieldId() {
+    return System.getenv(ENV_SENDGRID_HAS_CLUSTER_FIELD_ID);
+  }
 ├── pom.xml                     # Maven build — packages the active frontend into a Keycloak JAR
 └── pnpm-workspace.yaml
 ```
@@ -45,7 +54,7 @@ There are some reasonable defaults used for the configuration, but the behavior 
 | Realm attribute key                             | Default     | Description                                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `_providerConfig.wizard.apiMode`                | `onprem`    | `onprem` or `cloud`. `onprem` uses the Keycloak Admin APIs to set up an Identity Provider, so the user must have the correct `realm-management` roles. `cloud` uses the Phase Two Organizations API, so the user must have membership in an organization with the correct organization roles. A "picker" will be shown to the user if they have both and/or roles in more than one organization. |
-| `_providerConfig.wizard.auth-realm-override`   | realm name  | Override the realm used in the generated `keycloak.json`. If unset, the wizard uses the current realm name.                                                                                                                                                                                                                                                                                     |
+| `_providerConfig.wizard.auth-realm-override`    | realm name  | Override the realm used in the generated `keycloak.json`. If unset, the wizard uses the current realm name.                                                                                                                                                                                                                                                                                      |
 | `_providerConfig.wizard.emailAsUsername`        | `false`     | When building Identity Provider mappers, should the IdP email address be mapped to the Keycloak `username` field.                                                                                                                                                                                                                                                                                |
 | `_providerConfig.wizard.enableDashboard`        | `true`      | Show a minimal dashboard showing the state of the setup.                                                                                                                                                                                                                                                                                                                                         |
 | `_providerConfig.wizard.enableDirectorySync`    | `true`      | Show Directory Sync section.                                                                                                                                                                                                                                                                                                                                                                     |
@@ -81,24 +90,24 @@ Although it has been developed and working since Keycloak 14.0.0, the extensions
 
 Wizards are currently available for the following vendors.
 
-| Vendor               | SAML               | OIDC               | LDAP               | SCIM | Other |
-| -------------------- | ------------------ | ------------------ | ------------------ | ---- | ----- |
-| ADFS                 | :white_check_mark: |                    |                    |      |       |
-| AWS                  | :white_check_mark: |                    |                    |      |       |
-| Auth0                | :white_check_mark: | :white_check_mark: |                    |      |       |
-| Cloudflare           | :white_check_mark: |                    |                    |      |       |
-| CyberArk             | :white_check_mark: |                    |                    |      |       |
-| Duo                  | :white_check_mark: |                    |                    |      |       |
-| Entra Id             | :white_check_mark: |                    |                    |      |       |
-| Generic              | :white_check_mark: | :white_check_mark: | :white_check_mark: |      |       |
-| Google               | :white_check_mark: |                    |                    |      |       |
-| JumpCloud            | :white_check_mark: |                    |                    |      |       |
-| LastPass             | :white_check_mark: |                    |                    |      |       |
-| Okta                 | :white_check_mark: |                    | :white_check_mark: |      |       |
-| OneLogin             | :white_check_mark: |                    |                    |      |       |
-| Oracle               | :white_check_mark: |                    |                    |      |       |
-| PingOne              | :white_check_mark: |                    |                    |      |       |
-| Salesforce           | :white_check_mark: | :white_check_mark: |                    |      |       |
+| Vendor     | SAML               | OIDC               | LDAP               | SCIM | Other |
+| ---------- | ------------------ | ------------------ | ------------------ | ---- | ----- |
+| ADFS       | :white_check_mark: |                    |                    |      |       |
+| AWS        | :white_check_mark: |                    |                    |      |       |
+| Auth0      | :white_check_mark: | :white_check_mark: |                    |      |       |
+| Cloudflare | :white_check_mark: |                    |                    |      |       |
+| CyberArk   | :white_check_mark: |                    |                    |      |       |
+| Duo        | :white_check_mark: |                    |                    |      |       |
+| Entra Id   | :white_check_mark: |                    |                    |      |       |
+| Generic    | :white_check_mark: | :white_check_mark: | :white_check_mark: |      |       |
+| Google     | :white_check_mark: |                    |                    |      |       |
+| JumpCloud  | :white_check_mark: |                    |                    |      |       |
+| LastPass   | :white_check_mark: |                    |                    |      |       |
+| Okta       | :white_check_mark: |                    | :white_check_mark: |      |       |
+| OneLogin   | :white_check_mark: |                    |                    |      |       |
+| Oracle     | :white_check_mark: |                    |                    |      |       |
+| PingOne    | :white_check_mark: |                    |                    |      |       |
+| Salesforce | :white_check_mark: | :white_check_mark: |                    |      |       |
 
 ## Wizard implementation status (wizard-v2)
 
@@ -106,65 +115,65 @@ The table below tracks the review state of each wizard in the in-development [wi
 
 **Status legend**
 
-| Status                          | Meaning                                                                                         |
-| ------------------------------- | ----------------------------------------------------------------------------------------------- |
-| :white_check_mark: Supported    | Reviewed and/or implemented and working.                                                        |
-| :hammer_and_wrench: In progress | Wizard still in development.                                                                     |
+| Status                          | Meaning                                                                                              |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| :white_check_mark: Supported    | Reviewed and/or implemented and working.                                                             |
+| :hammer_and_wrench: In progress | Wizard still in development.                                                                         |
 | :warning: Experimental          | Implemented but not yet validated — no test account available (invite-only, paid, or region-locked). |
 
 _Listed in the order they appear in the testing report._
 
-| Provider                | Protocol | Status                          |
-| ----------------------- | -------- | ------------------------------- |
-| LastPass                | SAML     | :white_check_mark: Supported    |
-| miniOrange              | SAML     | :white_check_mark: Supported    |
-| OneLogin                | SAML     | :white_check_mark: Supported    |
-| PingOne                 | SAML     | :white_check_mark: Supported    |
-| Salesforce              | SAML     | :white_check_mark: Supported    |
-| VMware                  | SAML     | :white_check_mark: Supported    |
-| Xero                    | OAuth    | :white_check_mark: Supported    |
-| Google                  | SAML     | :white_check_mark: Supported    |
-| JumpCloud               | SAML     | :white_check_mark: Supported    |
-| GitLab                  | OAuth    | :white_check_mark: Supported    |
-| Duo                     | SAML     | :white_check_mark: Supported    |
-| Google                  | OIDC     | :white_check_mark: Supported    |
-| Discord                 | OAuth    | :white_check_mark: Supported    |
-| Okta                    | SAML     | :white_check_mark: Supported    |
-| Okta                    | OIDC     | :white_check_mark: Supported    |
-| Generic                 | SAML     | :white_check_mark: Supported    |
-| Slack                   | OAuth    | :white_check_mark: Supported    |
-| Auth0                   | SAML     | :white_check_mark: Supported    |
-| Cloudflare              | SAML     | :white_check_mark: Supported    |
-| Google                  | OAuth    | :white_check_mark: Supported    |
-| Vercel Marketplace      | OAuth    | :white_check_mark: Supported    |
-| Generic                 | OIDC     | :white_check_mark: Supported    |
-| GitHub                  | OAuth    | :white_check_mark: Supported    |
-| Vercel Integration      | OAuth    | :white_check_mark: Supported    |
-| Okta                    | LDAP     | :white_check_mark: Supported    |
-| LinkedIn                | OAuth    | :white_check_mark: Supported    |
-| Bitbucket               | OAuth    | :white_check_mark: Supported    |
-| CAS                     | SAML     | :white_check_mark: Supported    |
-| ClassLink               | SAML     | :white_check_mark: Supported    |
-| Clever                  | OIDC     | :white_check_mark: Supported    |
-| CyberArk                | SAML     | :white_check_mark: Supported    |
-| Keycloak                | SAML     | :white_check_mark: Supported    |
-| ADFS                    | SAML     | :white_check_mark: Supported    |
-| ADP                     | OIDC     | :warning: Experimental          |
-| Apple                   | OAuth    | :white_check_mark: Supported    |
-| Azure                   | SAML     | :warning: Experimental          |
-| Entra ID                | OIDC     | :warning: Experimental          |
-| Intuit                  | OAuth    | :white_check_mark: Supported    |
-| Login.gov               | OIDC     | :hammer_and_wrench: In progress |
-| Magic Link              | —        | :hammer_and_wrench: In progress |
-| Microsoft               | OAuth    | :warning: Experimental          |
-| NetIQ                   | SAML     | :white_check_mark: Supported    |
-| Oracle                  | SAML     | :white_check_mark: Supported    |
-| PingFederate            | SAML     | :warning: Experimental          |
-| Rippling                | SAML     | :warning: Experimental          |
-| Shibboleth (Generic)    | SAML     | :white_check_mark: Supported    |
-| Shibboleth              | SAML     | :white_check_mark: Supported    |
-| SimpleSAMLphp           | SAML     | :white_check_mark: Supported    |
-| Salesforce              | OAuth    | :hammer_and_wrench: In progress |
+| Provider             | Protocol | Status                          |
+| -------------------- | -------- | ------------------------------- |
+| LastPass             | SAML     | :white_check_mark: Supported    |
+| miniOrange           | SAML     | :white_check_mark: Supported    |
+| OneLogin             | SAML     | :white_check_mark: Supported    |
+| PingOne              | SAML     | :white_check_mark: Supported    |
+| Salesforce           | SAML     | :white_check_mark: Supported    |
+| VMware               | SAML     | :white_check_mark: Supported    |
+| Xero                 | OAuth    | :white_check_mark: Supported    |
+| Google               | SAML     | :white_check_mark: Supported    |
+| JumpCloud            | SAML     | :white_check_mark: Supported    |
+| GitLab               | OAuth    | :white_check_mark: Supported    |
+| Duo                  | SAML     | :white_check_mark: Supported    |
+| Google               | OIDC     | :white_check_mark: Supported    |
+| Discord              | OAuth    | :white_check_mark: Supported    |
+| Okta                 | SAML     | :white_check_mark: Supported    |
+| Okta                 | OIDC     | :white_check_mark: Supported    |
+| Generic              | SAML     | :white_check_mark: Supported    |
+| Slack                | OAuth    | :white_check_mark: Supported    |
+| Auth0                | SAML     | :white_check_mark: Supported    |
+| Cloudflare           | SAML     | :white_check_mark: Supported    |
+| Google               | OAuth    | :white_check_mark: Supported    |
+| Vercel Marketplace   | OAuth    | :white_check_mark: Supported    |
+| Generic              | OIDC     | :white_check_mark: Supported    |
+| GitHub               | OAuth    | :white_check_mark: Supported    |
+| Vercel Integration   | OAuth    | :white_check_mark: Supported    |
+| Okta                 | LDAP     | :white_check_mark: Supported    |
+| LinkedIn             | OAuth    | :white_check_mark: Supported    |
+| Bitbucket            | OAuth    | :white_check_mark: Supported    |
+| CAS                  | SAML     | :white_check_mark: Supported    |
+| ClassLink            | SAML     | :white_check_mark: Supported    |
+| Clever               | OIDC     | :white_check_mark: Supported    |
+| CyberArk             | SAML     | :white_check_mark: Supported    |
+| Keycloak             | SAML     | :white_check_mark: Supported    |
+| ADFS                 | SAML     | :white_check_mark: Supported    |
+| ADP                  | OIDC     | :warning: Experimental          |
+| Apple                | OAuth    | :white_check_mark: Supported    |
+| Azure                | SAML     | :warning: Experimental          |
+| Entra ID             | OIDC     | :warning: Experimental          |
+| Intuit               | OAuth    | :white_check_mark: Supported    |
+| Login.gov            | OIDC     | :hammer_and_wrench: In progress |
+| Magic Link           | —        | :hammer_and_wrench: In progress |
+| Microsoft            | OAuth    | :warning: Experimental          |
+| NetIQ                | SAML     | :white_check_mark: Supported    |
+| Oracle               | SAML     | :white_check_mark: Supported    |
+| PingFederate         | SAML     | :warning: Experimental          |
+| Rippling             | SAML     | :warning: Experimental          |
+| Shibboleth (Generic) | SAML     | :white_check_mark: Supported    |
+| Shibboleth           | SAML     | :white_check_mark: Supported    |
+| SimpleSAMLphp        | SAML     | :white_check_mark: Supported    |
+| Salesforce           | OAuth    | :hammer_and_wrench: In progress |
 
 ## Contributing
 
