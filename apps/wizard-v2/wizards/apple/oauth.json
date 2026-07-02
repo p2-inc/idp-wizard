@@ -18,28 +18,128 @@
   "steps": [
     {
       "id": 1,
-      "title": "Configure Sign in with Apple",
+      "title": "Sign in to the Apple Developer Portal",
       "blocks": [
         {
           "type": "text",
-          "content": "In the Apple Developer Portal, create a new Services ID, enable Sign In with Apple, and configure the domain and return URL using the value below. You will also need a Key ID and Team ID — generate a new key with Sign In with Apple enabled."
+          "content": "Apple's Sign in with Apple setup requires a paid Apple Developer Program membership. Sign in at https://developer.apple.com/account."
         },
         {
-          "type": "copy",
-          "label": "Return URL",
-          "value": "{{api.ssoUrl}}",
-          "hint": "Add this as the Return URL in your Services ID configuration"
+          "type": "image",
+          "src": "/wizards/apple/oauth/apple_oauth_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Setup spans four pieces: a Services ID (the OAuth client ID), your Team ID, a Key (with its Key ID), and the downloaded .p8 private key file. The next steps walk through each one."
         }
       ]
     },
     {
       "id": 2,
-      "title": "Client Credentials",
+      "title": "Create a Services ID",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the Apple Developer Portal, go to Certificates, Identifiers & Profiles → Identifiers. Click the + button and select \"Services IDs\". Click Continue."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/apple/oauth/apple_oauth_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a Description and a unique identifier (typically reverse-DNS style, e.g. com.yourcompany.keycloak). The identifier you enter here is your OAuth Client ID — copy it for later. Click Continue, then Register."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/apple/oauth/apple_oauth_3.png"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Configure Sign in with Apple",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Open the Services ID you just created. Check \"Sign in with Apple\" and click Configure."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/apple/oauth/apple_oauth_4.png"
+        },
+        {
+          "type": "text",
+          "content": "In the dialog, set your Primary App ID (if you have an App ID; otherwise the Services ID is fine), add your Keycloak hostname to Domains and Subdomains, and add the Return URL below."
+        },
+        {
+          "type": "copy",
+          "label": "Return URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Paste into the Return URLs field in the Sign in with Apple configuration"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/apple/oauth/apple_oauth_5.png"
+        },
+        {
+          "type": "text",
+          "content": "Click Next, then Done, then Continue, then Save."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Find your Team ID",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Keycloak needs your Team ID to generate the signed JWT used as the client secret. Open https://developer.apple.com/account → Membership detail in the left sidebar."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/apple/oauth/apple_oauth_6.png"
+        },
+        {
+          "type": "text",
+          "content": "Copy the Team ID (a 10-character alphanumeric string). You'll enter this in the Keycloak admin console after the wizard creates the identity provider."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Create a Key and download the .p8 file",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In Certificates, Identifiers & Profiles, select Keys in the left navigation. Click the + button to create a new key."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/apple/oauth/apple_oauth_7.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a Key Name. Check \"Sign in with Apple\" and click Configure. Pick the Primary App ID from the previous step, then click Save."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/apple/oauth/apple_oauth_8.png"
+        },
+        {
+          "type": "text",
+          "content": "Click Continue, review, and click Register. Apple shows you the Key ID — copy it (a 10-character alphanumeric string). Then click Download to save the .p8 private key file. Important: Apple only lets you download this file once. Store it somewhere safe — you'll need to paste its contents into the next step."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Enter Apple credentials",
       "enableNextWhen": "state.credentialsProvided",
       "blocks": [
         {
           "type": "text",
-          "content": "Enter the Services ID as the Client ID. For the Client Secret, Keycloak generates it from your Team ID, Key ID, and the private key (.p8 file) — paste the contents of the .p8 key file below."
+          "content": "Paste the Services ID (from step 2) as the Client ID. Open the .p8 file you downloaded in a text editor, copy its entire contents (including the -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY----- lines), and paste them into the Private Key field."
         },
         {
           "type": "formGroup",
@@ -52,14 +152,18 @@
       ]
     },
     {
-      "id": 3,
+      "id": 7,
       "title": "Confirmation",
       "type": "confirm",
       "blocks": [
         {
+          "type": "text",
+          "content": "After creating the identity provider, open the Keycloak admin console and enter the Team ID and Key ID values you copied earlier — Keycloak uses them with the .p8 contents to mint Apple's signed JWT client secret on every login."
+        },
+        {
           "type": "confirm",
           "title": "Create Apple Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak. You may need to configure the Team ID and Key ID in the Keycloak admin console after creation.",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak, then finish the Team ID + Key ID setup in the admin console.",
           "buttonText": "Create Apple Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSocial}}",

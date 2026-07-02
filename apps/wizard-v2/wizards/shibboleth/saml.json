@@ -25,7 +25,15 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Register a new SAML service provider in your Shibboleth IdP metadata configuration. Use the following values."
+          "content": "Register the Keycloak service provider in your Shibboleth IdP's conf/metadata-providers.xml. Add a MetadataProvider that fetches the SP's SAML metadata URL, as shown below."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/shibboleth/saml/shibboleth_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Use the following values."
         },
         {
           "type": "copy",
@@ -37,13 +45,13 @@
           "type": "copy",
           "label": "Entity ID",
           "value": "{{api.entityId}}",
-          "hint": "Sometimes called Audience URI or SP Entity ID"
+          "hint": "The value for the PolicyRequirementRule in attribute-filter.xml"
         },
         {
           "type": "copy",
           "label": "SAML Metadata URL",
           "value": "{{api.samlMetadata}}",
-          "hint": "You can import this URL directly in your Shibboleth metadata-providers.xml"
+          "hint": "Set as the metadataURL in your MetadataProvider entry"
         }
       ]
     },
@@ -72,12 +80,28 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Configure the Shibboleth attribute resolver and filter to release the following attributes to this service provider."
+          "content": "In conf/attribute-resolver.xml, define the attributes to release. Each AttributeDefinition pulls a value from your data connector (e.g. LDAP) and encodes it as a SAML attribute."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/shibboleth/saml/shibboleth_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Then in conf/attribute-filter.xml, add an AttributeFilterPolicy that releases those attributes to the Keycloak SP. The PolicyRequirementRule value is your Keycloak Entity ID."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/shibboleth/saml/shibboleth_saml_3.png"
+        },
+        {
+          "type": "text",
+          "content": "The wizard maps the released SAML attributes to Keycloak user fields as follows."
         },
         {
           "type": "attributeTable",
           "columns": {
-            "idpAttribute": "LDAP Attribute",
+            "idpAttribute": "SAML Attribute Name",
             "keycloakAttribute": "Keycloak User Field"
           },
           "rows": [
