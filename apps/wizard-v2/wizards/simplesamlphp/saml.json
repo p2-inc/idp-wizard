@@ -25,7 +25,15 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In SimpleSAMLphp, add a new SP entry in metadata/saml20-sp-remote.php. Use the following values for the service provider configuration."
+          "content": "In SimpleSAMLphp, add a new SP entry in metadata/saml20-sp-remote.php. Each SP is a PHP array keyed by its entity ID, with AssertionConsumerService and SingleLogoutService locations — like the example shown below."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/simplesamlphp/saml/simplesamlphp_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Use the following values for your Keycloak service provider entry."
         },
         {
           "type": "copy",
@@ -54,7 +62,15 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Copy the SimpleSAMLphp IdP metadata URL. This is typically available at /simplesaml/saml2/idp/metadata.php."
+          "content": "In the SimpleSAMLphp admin UI, open the Federation tab. Under \"SAML 2.0 IdP Metadata\", note the Entity ID and click \"Show metadata\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/simplesamlphp/saml/simplesamlphp_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Copy the SimpleSAMLphp IdP metadata URL (typically /simplesaml/saml2/idp/metadata.php) and paste it below to import the configuration into Keycloak."
         },
         {
           "type": "formGroup",
@@ -72,12 +88,16 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Configure the SimpleSAMLphp authentication source and attribute release to include the following attributes."
+          "content": "Configure the SimpleSAMLphp authentication source and attribute release to include the following attributes. You can verify what the IdP releases by using the \"Test configured authentication sources\" page under the Authentication tab."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/simplesamlphp/saml/simplesamlphp_saml_3.png"
         },
         {
           "type": "attributeTable",
           "columns": {
-            "idpAttribute": "LDAP Attribute",
+            "idpAttribute": "SAML Attribute Name",
             "keycloakAttribute": "Keycloak User Field"
           },
           "rows": [

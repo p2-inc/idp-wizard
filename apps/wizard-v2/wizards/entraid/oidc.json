@@ -23,7 +23,43 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Microsoft Entra admin center, go to App registrations and create a new registration. Note the Application (client) ID and Directory (tenant) ID from the Overview page. Then go to Certificates & secrets and create a new client secret."
+          "content": "In the Microsoft Entra admin center, go to App registrations and click \"+ New registration\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/oidc/entraid_oidc_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a Name and choose the Supported account types (single tenant is fine for most setups). Click Register."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/oidc/entraid_oidc_2.png"
+        },
+        {
+          "type": "text",
+          "content": "On the app's Overview page, note the Application (client) ID and Directory (tenant) ID — you'll enter these in the next step."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/oidc/entraid_oidc_3.png"
+        },
+        {
+          "type": "text",
+          "content": "In the left navigation, open Certificates & secrets and click \"+ New client secret\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/oidc/entraid_oidc_4.png"
+        },
+        {
+          "type": "text",
+          "content": "After creating the secret, copy its Value immediately — Entra only shows it once. This is your Client Secret for the next step."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/oidc/entraid_oidc_5.png"
         }
       ]
     },
@@ -52,13 +88,17 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In your Entra app registration under Authentication, add the following URL as a Web redirect URI."
+          "content": "In your Entra app registration, open Authentication → \"+ Add a platform\" → Web. Add the following URL as the Redirect URI, then click Configure."
         },
         {
           "type": "copy",
           "label": "Redirect URI",
           "value": "{{api.ssoUrl}}",
           "hint": "Add this as a Web redirect URI in the Authentication section"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/entraid/oidc/entraid_oidc_6.png"
         }
       ]
     },

@@ -28,6 +28,10 @@
       "blocks": [
         {
           "type": "text",
+          "content": "Active Directory Federation Services (AD FS) is on-premises software that runs on Windows Server. This wizard is performed on the machine hosting the AD FS role — you'll need administrator access to it. There is no cloud console for AD FS."
+        },
+        {
+          "type": "text",
           "content": "On your AD FS server, open the AD FS Management console from Server Manager → Tools → AD FS Management."
         },
         {

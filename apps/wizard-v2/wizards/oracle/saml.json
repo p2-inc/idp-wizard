@@ -151,7 +151,7 @@
         {
           "type": "attributeTable",
           "columns": {
-            "idpAttribute": "LDAP Attribute",
+            "idpAttribute": "SAML Attribute Name",
             "keycloakAttribute": "Keycloak User Field"
           },
           "rows": [

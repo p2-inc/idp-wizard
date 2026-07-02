@@ -44,7 +44,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_1.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_1.png",
           "alt": "Enterprise applications page with the New application button visible"
         },
         {
@@ -53,7 +53,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_2.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_2.png",
           "alt": "Browse Microsoft Entra App Gallery with the Create your own application form"
         },
         {
@@ -62,7 +62,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_3.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_3.png",
           "alt": "Enterprise applications list with the newly created Example App"
         }
       ]
@@ -94,7 +94,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_4.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_4.png",
           "alt": "Example App Overview page with the Provisioning entry in the left navigation"
         },
         {
@@ -103,7 +103,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_5.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_5.png",
           "alt": "Provisioning Get started page with the Connect your application button"
         },
         {
@@ -125,7 +125,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_6.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_6.png",
           "alt": "Admin credentials form with Bearer authentication, Tenant URL, Secret token, and Test connection button"
         },
         {
@@ -144,7 +144,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_7.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_7.png",
           "alt": "Provisioning page with Mappings section expanded"
         },
         {
@@ -153,7 +153,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_8.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_8.png",
           "alt": "Mappings section with the Provision Microsoft Entra ID Users link highlighted"
         },
         {
@@ -162,25 +162,16 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_9.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_9.png",
           "alt": "Attribute Mapping editor showing Enabled toggle and Target Object Actions checkboxes"
         },
         {
           "type": "text",
-          "content": "Scroll down to the externalId mapping. If it is not already mapped to objectId, click Edit."
+          "content": "Scroll down to the externalId mapping. If it is not already mapped to objectId, click Edit, then select objectId from the Source attribute dropdown and click Ok."
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_10.avif",
-          "alt": "Attribute Mapping list scrolled to the externalId row with the Edit button highlighted"
-        },
-        {
-          "type": "text",
-          "content": "Select objectId from the Source attribute dropdown and click Ok."
-        },
-        {
-          "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_11.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_11.png",
           "alt": "Edit Attribute dialog with Source attribute set to objectId and Ok button"
         },
         {
@@ -189,7 +180,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_12.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_12.png",
           "alt": "Save changes confirmation dialog with Yes button"
         },
         {
@@ -198,7 +189,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_13.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_13.png",
           "alt": "Attribute Mapping list showing default Entra ID to SCIM attribute mappings"
         },
         {
@@ -227,7 +218,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_14.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_14.png",
           "alt": "Users and groups page with the Add user/group button"
         },
         {
@@ -236,7 +227,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_15.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_15.png",
           "alt": "Add Assignment page with None Selected highlighted"
         },
         {
@@ -245,7 +236,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_16.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_16.png",
           "alt": "Users dialog with a user selected and the Select button"
         },
         {
@@ -254,7 +245,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_17.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_17.png",
           "alt": "Add Assignment page showing 1 user selected and the Assign button"
         },
         {
@@ -263,7 +254,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/entraid/scim/entraid_scim_18.avif",
+          "src": "/wizards/entraid/scim/entraid_scim_18.png",
           "alt": "Provisioning Settings showing Scope set to Sync only assigned users and groups, and Provisioning Status On"
         }
       ]

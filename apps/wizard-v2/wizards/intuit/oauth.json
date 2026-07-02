@@ -23,13 +23,33 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Intuit Developer Portal, create a new app and select the Sign in with Intuit scope. Use the redirect URI below in the app's Keys & credentials settings."
+          "content": "Sign in to the Intuit Developer Portal at https://developer.intuit.com. From the Workspaces page, click the + tile in the Apps grid to create a new app. Select \"Sign in with Intuit\" as the use case (this gives you the OpenID scopes you need)."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/intuit/oauth/intuit_oauth_1.png"
+        },
+        {
+          "type": "text",
+          "content": "After the app is created, open it. In the left sidebar, click Settings."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/intuit/oauth/intuit_oauth_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Switch to the Redirect URIs tab. Make sure the Development environment is selected, then paste the redirect URI below into the URI field and click Save."
         },
         {
           "type": "copy",
           "label": "Redirect URI",
           "value": "{{api.ssoUrl}}",
           "hint": "Add this as a Redirect URI in the Intuit Developer Portal"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/intuit/oauth/intuit_oauth_3.png"
         }
       ]
     },
@@ -40,7 +60,11 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Copy the Client ID and Client Secret from your Intuit app's Keys & credentials page and paste them below."
+          "content": "Open the Keys & credentials page in the left sidebar. Toggle \"Show credentials\" to reveal the Client ID and Client Secret, copy them, and paste them below."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/intuit/oauth/intuit_oauth_4.png"
         },
         {
           "type": "formGroup",
