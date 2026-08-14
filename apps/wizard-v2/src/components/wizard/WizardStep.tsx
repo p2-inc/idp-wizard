@@ -466,7 +466,7 @@ const DEFAULT_COLUMNS: Record<string, string> = {
 
 const ATTRIBUTE_COLUMN_CLASSES: Record<string, string> = {
   name: "w-44 min-w-44",
-  namespace: "min-w-[38rem]",
+  namespace: "min-w-[30rem]",
   value: "w-72 min-w-72",
   idpAttribute: "min-w-[28rem]",
   keycloakAttribute: "min-w-[18rem]",
