@@ -428,30 +428,42 @@ pnpm build
 
 Output goes to `dist/`. When wizard-v2 is ready for production, the root `pom.xml` `workingDirectory` will be updated to `apps/wizard-v2` and `mvn package` will bundle it into the Keycloak JAR.
 
-## Cutting over from wizard-v1
+## Choosing between wizard-v1 and wizard-v2
 
-The packaging pivot is a single line. The `frontend-maven-plugin`'s `workingDirectory` in the root [pom.xml](../../pom.xml) currently points at `apps/wizard-v1`:
+Both frontends are built into the same JAR and the extension picks one per request, so
+there is no packaging pivot and no cut-over release. `mvn package` builds both apps and
+copies them to `theme/wizard/login/resources/v1` and `.../v2`; `WizardResourceProvider`
+serves `./{version}/...` and renders the matching template.
 
-```xml
-<workingDirectory>apps/wizard-v1</workingDirectory>
-```
+Selection is most specific first:
 
-It runs `pnpm install` + `pnpm build` in that directory, and the `maven-resources-plugin` copies the resulting `dist/` into `target/classes/theme/wizard/login/resources`. Pointing `workingDirectory` at `apps/wizard-v2` makes `mvn package` ship v2 inside the same Keycloak JAR. The Java SPI extension is frontend-agnostic — it just serves whichever `dist/` was copied in — so no Java changes are required.
+1. `_providerConfig.wizard.version` realm attribute (`v1` or `v2`);
+2. `--spi-realm-restapi-extension-wizard-default-version`;
+3. the built-in default, `v2`.
 
-### Verify before flipping the switch
+Because the route (`/realms/{realm}/wizard`), the `idp-wizard` client, and its redirect
+URIs are identical for both, moving a realm between versions is an attribute change — no
+redeploy, no client edits, and rollback is unsetting the attribute.
 
-1. **Build output parity** — `pnpm build` here must emit to `dist/` so the existing `copy-resources` step keeps working unchanged.
-2. **Base path / routing** — v1 sets a `RELATIVE_PATH` in `routes.tsx` and a `<base href>` in the `wizard.ftl` theme files. v2 uses TanStack Router; confirm it serves correctly under the Keycloak theme path (`/realms/{realm}/wizard/...`), not just at `localhost:5173`. This is the most likely thing to break.
-3. **Auth model change** — v1 uses a downloaded `keycloak.json`; v2 uses `oidc-spa` driven by `VITE_OIDC_ISSUER_URI` / `VITE_OIDC_CLIENT_ID`. A production v2 client (with correct redirect URIs and web origins) must be registered in each realm, and the `VITE_*` values resolved at build time.
-4. **Realm config** — v2 reads `{issuerUri}/wizard/config.json` for `logoUrl`, `appName`, `apiMode`, and `emailAsUsername`. Confirm these map onto the v1 `_providerConfig.wizard.*` realm attributes (documented in the root README).
-5. **Provider coverage** — see the wizard implementation status table in the root README. Decide whether cut-over requires every non-experimental wizard to reach **Supported**, or whether some can ship as **In progress**. v2 shows a "not yet available" message for any provider without a JSON file, so missing wizards degrade gracefully rather than error.
+### Staging the default
 
-### Suggested rollout
+`DEFAULT_VERSION` in `WizardResourceProviderFactory` is a single constant. Setting it to
+`VERSION_V1` ships the whole mechanism as a behavioural no-op, so the plumbing can be
+proven by opt-in realms before it changes what everyone else gets. Flipping it back to
+`VERSION_V2` is then the only change in the release that makes v2 the default.
 
-1. **Parallel build** — build a v2 JAR from a branch (or a Maven profile that overrides `workingDirectory`) and deploy to a staging realm. Keep `main`'s `pom.xml` on v1.
-2. **Soft launch** — serve both themes side by side at distinct theme resource paths so specific realms/orgs can opt in.
-3. **Flip** — once the queue is cleared, change `workingDirectory` to `apps/wizard-v2`, bump the version, and cut a release. Keep `apps/wizard-v1` for one release as a one-line rollback path.
-4. **Retire** — after a stable release, remove `apps/wizard-v1` and its v1-specific docs.
+### What differs between the two
+
+- **Base path** — v1 sets `ASSET_PATH` at build time (the Maven build passes `auto`); v2
+  builds with a relative Vite `base` and takes the router basepath from `<base href>`.
+- **Bundle names** — v1 emits `main.bundle.js`/`main.css`; v2 pins the same names via
+  `rollupOptions.output` with `cssCodeSplit: false`, so each template can reference its
+  bundle without a manifest lookup.
+- **Auth** — v1 uses `keycloak-js` with the SPI's `keycloak.json`; v2 uses `oidc-spa`
+  bootstrapped from the same endpoint (see `src/runtime-config.ts`). Both authenticate as
+  the `idp-wizard` client against the realm the server names.
+- **Provider coverage** — v2 is a superset of v1; see the status table in the root README.
+  Providers without a definition show a "not yet available" message rather than erroring.
 
 ## Migration check
 

@@ -64,14 +64,47 @@ There are some reasonable defaults used for the configuration, but the behavior 
 | `_providerConfig.wizard.enableScim`             | `true`      | Allow SCIM config. (not currently used)                                                                                                                                                                                                                                                                                                                                                          |
 | `_providerConfig.wizard.trustEmail`             | `false`     | Toggle _trust email_ in the IdP config.                                                                                                                                                                                                                                                                                                                                                          |
 | `_providerConfig.wizard.usernameMapperImport`   | `true`      | When building Identity Provider mappers, use `IMPORT` sync mode for the username attribute instead of `INHERIT`.                                                                                                                                                                                                                                                                                 |
+| `_providerConfig.wizard.version`                | `v2`        | Which wizard frontend to serve: `v2` (default) or `v1`. Both ship in the JAR, so switching is a realm attribute change rather than a redeploy. Set it to `v1` to opt a realm out of the new wizard. An install-wide default can be set with `--spi-realm-restapi-extension-wizard-default-version`; the realm attribute wins where both are set.                                                    |
 | `_providerConfig.assets.logo.url`               | _none_      | URL for logo override. Inherited from `keycloak-orgs` config so we can use the same logo.                                                                                                                                                                                                                                                                                                        |
 | `_providerConfig.wizard.appName`                | `Phase Two` | App name to appear in the HTML title.                                                                                                                                                                                                                                                                                                                                                            |
 
+## Choosing a wizard version
+
+Both frontends are built into the same JAR, under `theme/wizard/login/resources/v1` and
+`.../v2`, and the extension decides which to serve per request. Nothing about the route,
+the `idp-wizard` client, or its redirect URIs changes between them, so upgrading the
+extension needs no client or GitOps changes.
+
+Resolution is most specific first:
+
+1. the `_providerConfig.wizard.version` realm attribute, if set;
+2. the server default, `--spi-realm-restapi-extension-wizard-default-version=v1|v2`;
+3. the built-in default (`v2`).
+
+An unrecognised value logs a warning and falls back rather than failing the request, so a
+typo degrades to a working wizard.
+
+To move one realm back to the old wizard:
+
+```sh
+# where {realm} is the realm being configured
+curl -X PUT "$KC_URL/admin/realms/{realm}" \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"attributes": {"_providerConfig.wizard.version": "v1"}}'
+```
+
+Unset the attribute to return the realm to the server default.
+
 ## Building and installing
 
-This uses the `frontend-maven-plugin` to build the active frontend app and packages it as a JAR that can be installed as a Keycloak extension. Run `mvn package` from the repo root, which produces a JAR in `target/`. Place it in the `providers/` directory of your Keycloak distribution.
+This uses the `frontend-maven-plugin` to build **both** frontend apps and packages them as
+a single JAR that can be installed as a Keycloak extension. Run `mvn package` from the repo
+root, which produces a JAR in `target/`. Place it in the `providers/` directory of your
+Keycloak distribution.
 
-The `pom.xml` `workingDirectory` controls which app is built. It currently points at `apps/wizard-v1`. When wizard-v2 is ready for production this will be updated to `apps/wizard-v2`.
+Both apps are built on every `mvn package` and land under `theme/wizard/login/resources/v1`
+and `.../v2` in the JAR. Which one a realm gets is decided at request time — see
+[Choosing a wizard version](#choosing-a-wizard-version).
 
 ### Dependencies
 
@@ -80,7 +113,7 @@ This extension depends on 2 other extensions. You must install all of the jars o
 - [keycloak-orgs](https://github.com/p2-inc/keycloak-orgs)
 - [keycloak-scim](https://github.com/p2-inc/keycloak-scim) (not currently used or required)
 
-> :information_source: Cutting over the production build from wizard-v1 to wizard-v2 is documented in [apps/wizard-v2/README.md](apps/wizard-v2/README.md#cutting-over-from-wizard-v1).
+> :information_source: How the two wizard versions differ, and how to stage making v2 the default, is documented in [apps/wizard-v2/README.md](apps/wizard-v2/README.md#choosing-between-wizard-v1-and-wizard-v2).
 
 ### Compatibility
 
@@ -115,13 +148,14 @@ The table below tracks the review state of each wizard in the in-development [wi
 
 **Status legend**
 
-| Status                          | Meaning                                                                                              |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| :white_check_mark: Supported    | Reviewed and/or implemented and working.                                                             |
-| :hammer_and_wrench: In progress | Wizard still in development.                                                                         |
+| Status                       | Meaning                                                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------- |
+| :white_check_mark: Supported    | Reviewed and/or implemented and working.                                                          |
+| :hammer_and_wrench: In progress | Wizard actively being built.                                                                      |
 | :warning: Experimental          | Implemented but not yet validated — no test account available (invite-only, paid, or region-locked). |
+| :white_circle: Not started      | Wizard not yet built.                                                                             |
 
-_Listed in the order they appear in the testing report._
+_Listed roughly in the order they appear in the testing report._
 
 | Provider             | Protocol | Status                          |
 | -------------------- | -------- | ------------------------------- |
@@ -147,9 +181,12 @@ _Listed in the order they appear in the testing report._
 | Google               | OAuth    | :white_check_mark: Supported    |
 | Vercel Marketplace   | OAuth    | :white_check_mark: Supported    |
 | Generic              | OIDC     | :white_check_mark: Supported    |
+| Generic              | LDAP     | :white_check_mark: Supported    |
+| Generic              | SCIM     | :hammer_and_wrench: In progress |
 | GitHub               | OAuth    | :white_check_mark: Supported    |
 | Vercel Integration   | OAuth    | :white_check_mark: Supported    |
 | Okta                 | LDAP     | :white_check_mark: Supported    |
+| Okta                 | SCIM     | :hammer_and_wrench: In progress |
 | LinkedIn             | OAuth    | :white_check_mark: Supported    |
 | Bitbucket            | OAuth    | :white_check_mark: Supported    |
 | CAS                  | SAML     | :white_check_mark: Supported    |
@@ -160,20 +197,23 @@ _Listed in the order they appear in the testing report._
 | ADFS                 | SAML     | :white_check_mark: Supported    |
 | ADP                  | OIDC     | :warning: Experimental          |
 | Apple                | OAuth    | :white_check_mark: Supported    |
-| Azure                | SAML     | :warning: Experimental          |
-| Entra ID             | OIDC     | :warning: Experimental          |
+| Entra ID (Azure)     | SAML     | :white_check_mark: Supported    |
+| Entra ID             | OIDC     | :white_check_mark: Supported    |
+| Entra ID             | SCIM     | :hammer_and_wrench: In progress |
 | Intuit               | OAuth    | :white_check_mark: Supported    |
-| Login.gov            | OIDC     | :hammer_and_wrench: In progress |
-| Magic Link           | —        | :hammer_and_wrench: In progress |
-| Microsoft            | OAuth    | :warning: Experimental          |
+| Login.gov            | OIDC     | :warning: Experimental          |
+| Magic Link           | —        | :white_circle: Not started      |
+| Microsoft (social)   | OAuth    | :warning: Experimental          |
 | NetIQ                | SAML     | :white_check_mark: Supported    |
 | Oracle               | SAML     | :white_check_mark: Supported    |
-| PingFederate         | SAML     | :warning: Experimental          |
+| PingFederate         | SAML     | :white_check_mark: Supported    |
 | Rippling             | SAML     | :warning: Experimental          |
-| Shibboleth (Generic) | SAML     | :white_check_mark: Supported    |
 | Shibboleth           | SAML     | :white_check_mark: Supported    |
 | SimpleSAMLphp        | SAML     | :white_check_mark: Supported    |
-| Salesforce           | OAuth    | :hammer_and_wrench: In progress |
+| Salesforce           | OIDC     | :white_check_mark: Supported    |
+| AWS                  | SAML     | :white_check_mark: Supported    |
+
+> :bulb: **Microsoft vs. Entra ID:** the **Entra ID** wizards broker enterprise SSO (and SCIM) against an organization's Azure AD / Entra tenant — this is the workforce identity path. **Microsoft (social)** is a separate social-login connector for personal Microsoft accounts (Outlook, Xbox, etc.) using Keycloak's built-in `microsoft` broker. Use Entra ID for enterprise SSO; use Microsoft only if you need consumer Microsoft sign-in.
 
 ## Contributing
 

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import lombok.extern.jbosslog.JBossLog;
 import org.keycloak.Config.Scope;
 import org.keycloak.models.AuthenticationFlowModel;
@@ -32,6 +33,26 @@ public class WizardResourceProviderFactory implements RealmResourceProviderFacto
   public static final String AUTH_REALM_OVERRIDE_CONFIG_KEY =
       "_providerConfig.wizard.auth-realm-override";
 
+  /** Realm attribute selecting the wizard frontend: "v1" or "v2". */
+  public static final String VERSION_CONFIG_KEY = "_providerConfig.wizard.version";
+
+  public static final String VERSION_V1 = "v1";
+  public static final String VERSION_V2 = "v2";
+
+  private static final Set<String> SUPPORTED_VERSIONS = ImmutableSet.of(VERSION_V1, VERSION_V2);
+
+  /**
+   * Frontend used when neither the realm nor the server says otherwise.
+   *
+   * <p>Both frontends ship in this JAR, so switching is configuration rather than a redeploy. To
+   * stage the rollout — shipping the mechanism as a behavioural no-op before changing what existing
+   * realms get — set this to {@link #VERSION_V1}; that is the only change required.
+   */
+  public static final String DEFAULT_VERSION = VERSION_V2;
+
+  /** Server-wide default, from {@code --spi-realm-restapi-extension-wizard-default-version}. */
+  private String serverDefaultVersion = DEFAULT_VERSION;
+
   @Override
   public String getId() {
     return ID;
@@ -45,11 +66,41 @@ public class WizardResourceProviderFactory implements RealmResourceProviderFacto
         Optional.ofNullable(realm.getAttribute(AUTH_REALM_OVERRIDE_CONFIG_KEY))
             .orElse(realm.getName());
     if (!override.equals(realm.getName())) log.debugf("Using override realm %s", override);
-    return new WizardResourceProvider(session, override);
+    return new WizardResourceProvider(session, override, resolveVersion(realm));
+  }
+
+  /**
+   * Resolves which wizard frontend to serve, most specific first: realm attribute, then server
+   * configuration, then the built-in default. Unrecognised values fall back rather than 404 the
+   * wizard, so a typo degrades to a working wizard and a warning.
+   */
+  String resolveVersion(RealmModel realm) {
+    String configured = realm.getAttribute(VERSION_CONFIG_KEY);
+    if (configured == null || configured.isBlank()) return serverDefaultVersion;
+
+    String normalized = configured.trim().toLowerCase();
+    if (!SUPPORTED_VERSIONS.contains(normalized)) {
+      log.warnf(
+          "Realm %s requests unsupported wizard version '%s'. Supported: %s. Using %s.",
+          realm.getName(), configured, SUPPORTED_VERSIONS, serverDefaultVersion);
+      return serverDefaultVersion;
+    }
+    return normalized;
   }
 
   @Override
-  public void init(Scope config) {}
+  public void init(Scope config) {
+    String configured = config.get("defaultVersion", DEFAULT_VERSION);
+    if (SUPPORTED_VERSIONS.contains(configured)) {
+      serverDefaultVersion = configured;
+    } else {
+      log.warnf(
+          "Unsupported wizard defaultVersion '%s'. Supported: %s. Using %s.",
+          configured, SUPPORTED_VERSIONS, DEFAULT_VERSION);
+      serverDefaultVersion = DEFAULT_VERSION;
+    }
+    log.debugf("Default wizard version is %s", serverDefaultVersion);
+  }
 
   @Override
   public void postInit(KeycloakSessionFactory factory) {

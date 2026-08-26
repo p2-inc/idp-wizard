@@ -32,10 +32,12 @@ public class WizardResourceProvider implements RealmResourceProvider {
 
   private final KeycloakSession session;
   private final String authRealmOverride;
+  private final String version;
 
-  public WizardResourceProvider(KeycloakSession session, String authRealmOverride) {
+  public WizardResourceProvider(KeycloakSession session, String authRealmOverride, String version) {
     this.session = session;
     this.authRealmOverride = authRealmOverride;
+    this.version = version;
   }
 
   @Override
@@ -50,6 +52,13 @@ public class WizardResourceProvider implements RealmResourceProvider {
   public static final String[] METHODS = {
     "GET", "HEAD", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
   };
+
+  /**
+   * Static assets live under a per-version directory in the theme's resources, so one prefix match
+   * covers every bundler output shape. Anything else falls through to the SPA shell, which is what
+   * client-side routes need.
+   */
+  private static final Pattern STATIC_RESOURCE_PATH = Pattern.compile("^v[12]/.*");
 
   @OPTIONS
   @Path("{any:.*}")
@@ -98,11 +107,12 @@ public class WizardResourceProvider implements RealmResourceProvider {
     log.tracef("relativePath %s", getPathSegments(uriInfo.getBaseUri()).orElse("<empty>"));
 
     if (path == null || "".equals(path) || "/".equals(path)) return wizard();
+
     if (path.startsWith("/")) {
       path = path.substring(1);
     }
 
-    if (Pattern.matches("^(200|fonts|images|main|site).*", path)) {
+    if (STATIC_RESOURCE_PATH.matcher(path).matches()) {
       Response response = staticResources(path);
       if (response != null) {
         log.tracef("returning response %d for path %s", response.getStatus(), path);
@@ -116,10 +126,12 @@ public class WizardResourceProvider implements RealmResourceProvider {
   @GET
   @Produces(MediaType.TEXT_HTML)
   public Response wizard() {
-    log.trace("wizard index file");
+    log.tracef("wizard index file (version %s)", version);
     UriInfo uriInfo = session.getContext().getUri();
     String relativePath = getPathSegments(uriInfo.getBaseUri()).orElse("");
-    String wizardResources = ".";
+    // Assets are served from a per-version subdirectory; the template resolves this
+    // against its own <base href>.
+    String wizardResources = "./" + version;
     Theme theme = getTheme("wizard");
     RealmModel realm = session.getContext().getRealm();
     LoginFormsProvider form =
@@ -135,12 +147,19 @@ public class WizardResourceProvider implements RealmResourceProvider {
       Response resp =
           (Response)
               processTemplateMethod.invoke(
-                  fm, theme, "wizard.ftl", session.getContext().resolveLocale(null));
+                  fm, theme, templateName(), session.getContext().resolveLocale(null));
       return resp;
     } catch (Exception e) {
       log.warn("Could not call processTemplate on FreeMarkerLoginFormsProvider", e);
     }
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+  }
+
+  /** Each frontend has its own template — they reference different bundle filenames. */
+  private String templateName() {
+    return WizardResourceProviderFactory.VERSION_V2.equals(version)
+        ? "wizard-v2.ftl"
+        : "wizard.ftl";
   }
 
   Method getProcessTemplateMethod(FreeMarkerLoginFormsProvider provider)
@@ -162,7 +181,7 @@ public class WizardResourceProvider implements RealmResourceProvider {
   }
 
   @GET
-  @Path("{path:^(200|fonts|images|main|site).*}")
+  @Path("{path:^v[12]/.*}")
   public Response staticResources(@PathParam("path") final String path) throws IOException {
     log.trace("static resources");
     String fileName = getLastPathSegment(session.getContext().getUri());
