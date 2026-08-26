@@ -1,0 +1,306 @@
+{
+  "schemaVersion": "1.0",
+  "id": "cloudflare-saml",
+  "providerId": "cloudflare",
+  "protocol": "saml",
+  "title": "Cloudflare SAML",
+  "alias": {
+    "prefix": "cloudflare-saml",
+    "sessionKey": "p2_cloudflare_saml"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Open Cloudflare Zero Trust",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Sign in to the Cloudflare dashboard and open the Zero Trust dashboard."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_0.png"
+        },
+        {
+          "type": "text",
+          "content": "Navigate to Settings → Authentication."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_1.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Add a SAML Login Method",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Under \"Login methods\", click \"Add new\" and select \"SAML\" as the identity provider type."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a name for the login method, then fill in the following service provider values."
+        },
+        {
+          "type": "copy",
+          "label": "ACS URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
+        },
+        {
+          "type": "copy",
+          "label": "Entity ID",
+          "value": "{{api.entityId}}",
+          "hint": "Sometimes called Audience URI or SP Entity ID"
+        },
+        {
+          "type": "copy",
+          "label": "SAML Metadata URL",
+          "value": "{{api.samlMetadata}}",
+          "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_3.png"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Import Cloudflare Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "After saving, Cloudflare displays the IdP metadata URL on the login method page. Copy it from the integration details."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste the metadata URL below to import the Cloudflare IdP configuration into Keycloak."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": [
+            "metadataUrl"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Configure SAML Attributes",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the Cloudflare SAML login method settings, configure the SAML attribute mappings so the following claims are included in the assertion."
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "SAML Attribute Name",
+            "keycloakAttribute": "Keycloak User Field"
+          },
+          "rows": [
+            {
+              "idpAttribute": "username",
+              "keycloakAttribute": "username"
+            },
+            {
+              "idpAttribute": "email",
+              "keycloakAttribute": "email"
+            },
+            {
+              "idpAttribute": "firstName",
+              "keycloakAttribute": "firstName"
+            },
+            {
+              "idpAttribute": "lastName",
+              "keycloakAttribute": "lastName"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_5.png"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Configure Access Policies",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In Zero Trust, open Access → Applications and create or edit an application that uses this login method."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_6.png"
+        },
+        {
+          "type": "text",
+          "content": "Define the access policy rules that determine which users can authenticate through this SAML login method."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_7.png"
+        },
+        {
+          "type": "text",
+          "content": "Save the policy. Cloudflare will now route authentication requests through this SAML connection."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/cloudflare/saml/cloudflare_saml_8.png"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create SAML Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create SAML Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the SAML metadata URL provided by your identity provider.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://your-cloudflare-team.cloudflareaccess.com/cdn-cgi/access/saml-metadata",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "username",
+          "friendlyName": "username",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "email",
+          "friendlyName": "email",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

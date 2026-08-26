@@ -1,0 +1,94 @@
+import { useMemo } from "react";
+import { useWizardConfig } from "./useWizardConfig";
+import { getRuntimeConfig } from "@/runtime-config";
+import { createOrgsClient, createAdminClient, type OrgsClient, type AdminClient } from "@/api/clients";
+import type { WizardContextValue } from "@/context/WizardContext";
+
+export interface WizardApiContext extends Omit<WizardContextValue, "state" | "dispatch"> {
+  /** Typed client for Phase Two Orgs API — used in cloud (org-scoped) mode */
+  orgsClient: OrgsClient;
+  /** Typed client for Keycloak Admin API — used in onprem (realm-wide) mode */
+  adminClient: AdminClient;
+  /** Convenience: the active client for the current apiMode */
+  activeClient: OrgsClient | AdminClient;
+}
+
+/**
+ * Builds the full wizard API context from:
+ * - runtime config → serverUrl + target realm (see runtime-config.ts)
+ * - orgId from the URL search param → cloud vs onprem mode
+ * - WizardConfig feature flags → may override apiMode
+ */
+export function useWizardApi(orgId: string | null): WizardApiContext {
+  const { config } = useWizardConfig();
+
+  return useMemo(() => {
+    // The realm being configured, which is not necessarily the realm we authenticated
+    // against — see runtime-config.ts.
+    const { serverUrl, targetRealm: realm } = getRuntimeConfig();
+
+    // org_id in the URL always means cloud mode; otherwise use the realm config value
+    const apiMode: "cloud" | "onprem" = orgId
+      ? "cloud"
+      : config.apiMode === "cloud"
+        ? "cloud"
+        : "onprem";
+
+    const adminBase = `${serverUrl}/admin`;
+
+    const api = {
+      entityId: `${serverUrl}/realms/${realm}`,
+      ssoUrl: (alias: string) => `${serverUrl}/realms/${realm}/broker/${alias}/endpoint`,
+      samlMetadata: `${serverUrl}/realms/${realm}/protocol/saml/descriptor`,
+      adminLinkSaml: (alias: string) =>
+        `${adminBase}/${realm}/console/#/${realm}/identity-providers/saml/${alias}/settings`,
+      adminLinkOidc: (alias: string) =>
+        `${adminBase}/${realm}/console/#/${realm}/identity-providers/oidc/${alias}/settings`,
+      adminLinkSocial: (alias: string, providerId: string) =>
+        `${adminBase}/${realm}/console/#/${realm}/identity-providers/${providerId}/${alias}/settings`,
+      /**
+       * Inbound SCIM endpoint URL the upstream IdP pushes to.
+       * Empty when there is no org context — SCIM wizards are cloud-only and
+       * the route-level gate (`ScimRequiresOrgGate`) blocks before this is read.
+       */
+      scimEndpoint: orgId
+        ? `${serverUrl}/realms/${realm}/scim/v2/organizations/${orgId}/`
+        : "",
+      endpoints:
+        apiMode === "cloud" && orgId
+          ? {
+              importConfig: `${serverUrl}/realms/${realm}/orgs/${orgId}/idps/import-config`,
+              createIdp: `${serverUrl}/realms/${realm}/orgs/${orgId}/idps`,
+              addMappers: (alias: string) =>
+                `${serverUrl}/realms/${realm}/orgs/${orgId}/idps/${alias}/mappers`,
+              // LDAP user federation always uses the admin API regardless of apiMode
+              testLdapConnection: `${adminBase}/realms/${realm}/testLDAPConnection`,
+              createComponent: `${adminBase}/realms/${realm}/components`,
+              triggerSync: (componentId: string) =>
+                `${adminBase}/realms/${realm}/user-storage/${componentId}/sync`,
+              // SCIM endpoints — cloud (org-scoped) only
+              getOrgConfig: `${serverUrl}/realms/${realm}/orgs/config`,
+              setOrgScim: `${serverUrl}/realms/${realm}/orgs/${orgId}/scim`,
+            }
+          : {
+              importConfig: `${adminBase}/realms/${realm}/identity-provider/import-config`,
+              createIdp: `${adminBase}/realms/${realm}/identity-provider/instances`,
+              addMappers: (alias: string) =>
+                `${adminBase}/realms/${realm}/identity-provider/instances/${alias}/mappers`,
+              testLdapConnection: `${adminBase}/realms/${realm}/testLDAPConnection`,
+              createComponent: `${adminBase}/realms/${realm}/components`,
+              triggerSync: (componentId: string) =>
+                `${adminBase}/realms/${realm}/user-storage/${componentId}/sync`,
+              // SCIM is per-org only — wizard is gated before these are reached
+              getOrgConfig: "",
+              setOrgScim: "",
+            },
+    };
+
+    const orgsClient = createOrgsClient(serverUrl);
+    const adminClient = createAdminClient(serverUrl);
+    const activeClient = apiMode === "cloud" ? orgsClient : adminClient;
+
+    return { orgId, apiMode, realm, serverUrl, api, orgsClient, adminClient, activeClient };
+  }, [orgId, config.apiMode]);
+}
