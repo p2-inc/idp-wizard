@@ -164,22 +164,22 @@
           "rows": [
             {
               "name": "emailaddress",
-              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims",
               "value": "user.mail"
             },
             {
               "name": "givenname",
-              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims",
               "value": "user.givenname"
             },
             {
               "name": "name",
-              "namespace": "http://schemas.microsoft.com/identity/claims/name",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims",
               "value": "user.userprincipalname"
             },
             {
               "name": "surname",
-              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims",
               "value": "user.surname"
             }
           ]
@@ -308,23 +308,23 @@
       "contentType": "json",
       "foreach": [
         {
-          "attributeName": "username",
-          "friendlyName": "username",
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+          "friendlyName": "",
           "userAttribute": "username"
         },
         {
-          "attributeName": "email",
-          "friendlyName": "email",
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+          "friendlyName": "",
           "userAttribute": "email"
         },
         {
-          "attributeName": "firstName",
-          "friendlyName": "firstName",
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+          "friendlyName": "",
           "userAttribute": "firstName"
         },
         {
-          "attributeName": "lastName",
-          "friendlyName": "lastName",
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+          "friendlyName": "",
           "userAttribute": "lastName"
         }
       ],

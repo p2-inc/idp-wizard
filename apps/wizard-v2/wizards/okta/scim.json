@@ -44,7 +44,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_1.avif",
+          "src": "/wizards/okta/scim/okta_scim_1.png",
           "alt": "Okta Applications page with Browse App Catalog button highlighted"
         },
         {
@@ -53,7 +53,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_2.avif",
+          "src": "/wizards/okta/scim/okta_scim_2.png",
           "alt": "Okta Browse App Integration Catalog with search results for SCIM 2.0 Test App"
         },
         {
@@ -62,7 +62,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_3.avif",
+          "src": "/wizards/okta/scim/okta_scim_3.png",
           "alt": "SCIM 2.0 Test App detail page with Add Integration button"
         },
         {
@@ -71,7 +71,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_4.avif",
+          "src": "/wizards/okta/scim/okta_scim_4.png",
           "alt": "Add SCIM 2.0 Test App General settings — Application label field"
         },
         {
@@ -80,7 +80,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_5.avif",
+          "src": "/wizards/okta/scim/okta_scim_5.png",
           "alt": "Sign-On Options page with Done button"
         }
       ]
@@ -112,7 +112,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_6.avif",
+          "src": "/wizards/okta/scim/okta_scim_6.png",
           "alt": "Provisioning tab showing 'Provisioning is not enabled' with Configure API Integration button"
         },
         {
@@ -121,7 +121,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_7.avif",
+          "src": "/wizards/okta/scim/okta_scim_7.png",
           "alt": "Enable API Integration form with SCIM 2.0 Base URL and OAuth Bearer Token fields"
         },
         {
@@ -153,7 +153,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_8.avif",
+          "src": "/wizards/okta/scim/okta_scim_8.png",
           "alt": "Provisioning To App tab showing default disabled state"
         },
         {
@@ -162,7 +162,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_9.avif",
+          "src": "/wizards/okta/scim/okta_scim_9.png",
           "alt": "Provisioning actions enabled with checkboxes ticked and Save button"
         },
         {
@@ -171,7 +171,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_15.avif",
+          "src": "/wizards/okta/scim/okta_scim_15.png",
           "alt": "Test SCIM App Attribute Mappings page showing default Okta to SCIM attribute mappings"
         }
       ]
@@ -186,7 +186,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_10.avif",
+          "src": "/wizards/okta/scim/okta_scim_10.png",
           "alt": "Assignments tab with the Assign dropdown showing 'Assign to People' option"
         },
         {
@@ -195,7 +195,7 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_11.avif",
+          "src": "/wizards/okta/scim/okta_scim_11.png",
           "alt": "Assign Test SCIM App to People dialog with a user selected and Done button"
         },
         {
@@ -204,25 +204,16 @@
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_12.avif",
+          "src": "/wizards/okta/scim/okta_scim_12.png",
           "alt": "User assignment form with Save and Go Back button"
         },
         {
           "type": "text",
-          "content": "Now go to the Push Groups tab. Click Push Groups and select Find groups by name."
+          "content": "Now go to the Push Groups tab. Click Push Groups and select Find groups by name. Locate the appropriate group, enable Push group memberships immediately, and click Save. Okta will start pushing users and groups within a few minutes."
         },
         {
           "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_13.avif",
-          "alt": "Push Groups tab with the Push Groups dropdown showing 'Find groups by name'"
-        },
-        {
-          "type": "text",
-          "content": "Locate the appropriate group, enable Push group memberships immediately, and click Save. Okta will start pushing users and groups within a few minutes."
-        },
-        {
-          "type": "image",
-          "src": "/wizards/okta/scim/okta_scim_14.avif",
+          "src": "/wizards/okta/scim/okta_scim_14.png",
           "alt": "Push Groups by name dialog with a group selected and Save button"
         }
       ]
