@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "optimize:screenshots": "./scripts/optimize-screenshots.sh",
     "preview": "vite preview",
     "gen-api": "tsx openapi-codegen/gen.ts",
     "test:e2e": "playwright test",

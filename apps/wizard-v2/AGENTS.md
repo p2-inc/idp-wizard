@@ -237,7 +237,34 @@ Block types:
 - `copy` — copyable value: `{ type: "copy", label: "ACS URL", value: "{{api.ssoUrl}}", hint: "..." }`
 - `formGroup` — renders a tabbed/exclusive set of forms: `{ type: "formGroup", id: "metadataInput", exclusive: true, forms: ["metadataUrl", "metadataFile", "metadataManual"] }`
 - `attributeTable` — two-column mapping display
+- `image` — step screenshot: `{ type: "image", src: "/wizards/{provider}/{protocol}/step1.png", alt: "...", caption: "...", fullWidth: true }`
 - `confirm` — final step confirmation button + result display
+
+### Screenshots
+
+`src` is written root-relative (`/wizards/...`), but the wizard is not served from the
+server root in production — it is mounted at `/realms/{realm}/wizard/{version}/`. Paths are
+resolved through `assetUrl()` (`src/runtime-config.ts`) against the `wizard-asset-base` meta
+tag the theme template supplies. Use root-relative paths in the JSON and never hardcode a
+prefix; anything bypassing `assetUrl()` will work under `vite dev` and 404 in production.
+
+**Optimize every screenshot you add.** These files ship inside the Keycloak extension JAR,
+which lands in every Keycloak image, so an unoptimized capture is paid for on every image
+pull rather than just by the browser. Straight from a Retina screen they run 2–3 MB each;
+optimized they are 40–300 KB with no visible difference at display size.
+
+```sh
+pnpm optimize:screenshots            # whole public/wizards tree, safe to re-run
+pnpm optimize:screenshots path/to/dir
+```
+
+It downscales so neither side exceeds 1400px, then runs `pngquant` and `oxipng`. Requires
+`brew install imagemagick pngquant oxipng`. Override with `MAX_DIM` / `QUALITY` if a
+particular screenshot needs more detail.
+
+Keep screenshots as PNG. Do not commit multi-megabyte captures — the whole tree was 92 MB
+before it was first optimized down to 14 MB, and it regressed once already when a batch of
+AVIFs was replaced with full-resolution PNGs.
 
 ### Template variables available in blocks and actions
 
