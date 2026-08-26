@@ -25,7 +25,9 @@ module.exports = {
       __dirname,
       "node_modules/@patternfly/react-inline-edit-extension/node_modules/@patternfly/react-styles/css",
     ),
-    // Allow pnpm's store paths to be picked up by the CSS loader.
+    // Allow pnpm's store paths to be picked up by the CSS loader. In a pnpm workspace
+    // the virtual store lives at the repo root, not inside the app, so both are listed.
     path.resolve(__dirname, "node_modules/.pnpm"),
+    path.resolve(__dirname, "../../node_modules/.pnpm"),
   ],
 };
