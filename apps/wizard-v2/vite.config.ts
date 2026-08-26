@@ -20,6 +20,26 @@ export default defineConfig(({ mode }) => {
     : '/auth/realms'
 
   return {
+    // Relative base: the app is mounted under /realms/{realm}/wizard/{version}/ in
+    // production and at / under `vite dev`, so asset and chunk URLs must resolve
+    // against the entry's own location rather than an absolute path baked in here.
+    base: './',
+    build: {
+      // One stylesheet, so the theme template can link a predictable filename.
+      cssCodeSplit: false,
+      rollupOptions: {
+        output: {
+          // Fixed entry names let wizard-v2.ftl reference the bundle without a
+          // manifest lookup, mirroring how wizard-v1's theme template works.
+          entryFileNames: 'main.js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: (assetInfo) => {
+            const name = assetInfo.names?.[0] ?? ''
+            return name.endsWith('.css') ? 'main.css' : 'assets/[name]-[hash][extname]'
+          },
+        },
+      },
+    },
     plugins: [
       tailwindcss(),
       tanstackRouter({ target: 'react', autoCodeSplitting: true }),

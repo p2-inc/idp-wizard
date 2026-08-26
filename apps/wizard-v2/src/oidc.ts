@@ -1,4 +1,5 @@
 import { oidcSpa } from "oidc-spa/react-spa";
+import type { RuntimeConfig } from "./runtime-config";
 
 export const {
   bootstrapOidc,
@@ -9,25 +10,36 @@ export const {
   .withAutoLogin()
   .createUtils();
 
-bootstrapOidc(
-  import.meta.env.VITE_OIDC_USE_MOCK === "true"
-    ? {
-        implementation: "mock",
-        isUserInitiallyLoggedIn: true,
-        decodedIdToken_mock: {
-          sub: "mock-user-id",
-          preferred_username: "wizard",
-          email: "wizard@example.com",
-          organizations: {} as Record<string, unknown>,
+const isMock = import.meta.env.VITE_OIDC_USE_MOCK === "true";
+
+/**
+ * Boots oidc-spa from runtime configuration.
+ *
+ * The issuer and client id come from the server (see `runtime-config.ts`) rather than
+ * from build-time env, because one published JAR serves every realm of every install.
+ * Must be awaited before the app renders — see `main.tsx`.
+ */
+export function initOidc(config: RuntimeConfig): Promise<void> {
+  return bootstrapOidc(
+    isMock
+      ? {
+          implementation: "mock",
+          isUserInitiallyLoggedIn: true,
+          decodedIdToken_mock: {
+            sub: "mock-user-id",
+            preferred_username: "wizard",
+            email: "wizard@example.com",
+            organizations: {} as Record<string, unknown>,
+          },
+        }
+      : {
+          implementation: "real",
+          issuerUri: config.issuerUri,
+          clientId: config.clientId,
+          debugLogs: import.meta.env.VITE_OIDC_SPA_DEBUG === "true" || false,
         },
-      }
-    : {
-        implementation: "real",
-        issuerUri: import.meta.env.VITE_OIDC_ISSUER_URI,
-        clientId: import.meta.env.VITE_OIDC_CLIENT_ID,
-        debugLogs: import.meta.env.VITE_OIDC_SPA_DEBUG === "true" || false,
-      },
-);
+  );
+}
 
 /**
  * Wraps fetch() and automatically attaches a Bearer token when the user is logged in.

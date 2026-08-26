@@ -28,6 +28,7 @@ import {
 import { ImageZoom } from "./ImageZoom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { assetUrl } from "@/runtime-config";
 
 interface Props {
   step: WizardStepDef;
@@ -87,7 +88,7 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
     case "image":
       return (
         <ImageZoom
-          src={resolveTemplate(block.src, ctx)}
+          src={assetUrl(resolveTemplate(block.src, ctx))}
           alt={block.alt}
           caption={block.caption}
           fullWidth={block.fullWidth}

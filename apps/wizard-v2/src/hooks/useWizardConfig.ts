@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchWithAuth } from "@/oidc";
+import { getRuntimeConfig } from "@/runtime-config";
 
 export interface WizardConfig {
   appName: string | null;
@@ -32,10 +33,15 @@ const DEFAULT_CONFIG: WizardConfig = {
   trustEmail: false,
 };
 
+/**
+ * The SPI serves config.json for the realm being configured. This must use the target
+ * realm, not the auth realm — with `_providerConfig.wizard.auth-realm-override` set the
+ * two differ, and the auth realm's config.json describes the wrong realm.
+ */
 function getConfigUrl(): string | null {
-  const issuerUri = import.meta.env.VITE_OIDC_ISSUER_URI as string | undefined;
-  if (!issuerUri) return null;
-  return `${issuerUri}/wizard/config.json`;
+  const { serverUrl, targetRealm } = getRuntimeConfig();
+  if (!serverUrl || !targetRealm) return null;
+  return `${serverUrl}/realms/${targetRealm}/wizard/config.json`;
 }
 
 export function useWizardConfig() {
