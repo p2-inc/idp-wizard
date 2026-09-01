@@ -28,7 +28,7 @@
     "@patternfly/react-table": "^4.113.7",
     "@react-keycloak/web": "^3.4.0",
     "@reduxjs/toolkit": "^1.9.7",
-    "axios": "^1.15.0",
+    "axios": "^1.18.0",
     "classnames": "^2.5.1",
     "formik": "^2.4.9",
     "keycloak-js": "^25.0.6",
