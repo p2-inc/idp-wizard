@@ -219,6 +219,13 @@ body,
   vertical-align: middle;
 }
 
-.justify-items-center {
-  justify-items: center;
+/* Centers the stacked children of a pf-l-stack__item. The item is a flex
+ * *item* of the stack, not a container, so it has to become a flex column
+ * before its children can be aligned — `justify-items` alone is inert here,
+ * being a grid-only property. */
+.center-stack-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }

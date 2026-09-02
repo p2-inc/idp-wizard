@@ -62,20 +62,29 @@ export const stripOidcParams = (href: string): string => {
 
 /**
  * Drop OIDC response parameters from the address bar without reloading, and
- * return the cleaned URL.
+ * return a URL that is safe to hand to Keycloak as `redirect_uri`.
  *
  * The portal link (`POST /orgs/{id}/portal-link`) lands the user on the wizard
  * with an authorization response in the *query* string, while keycloak-js reads
  * the *fragment* by default. keycloak-js therefore never consumes those
  * parameters, and its subsequent `login()` defaults `redirect_uri` to
  * `window.location.href` — which still carries them, and is rejected.
+ *
+ * Only the query string is cleared. Under `response_mode=fragment` the fragment
+ * is keycloak-js's own callback channel, so clearing it here would delete the
+ * authorization response before keycloak-js could read it — leaving the app in
+ * a login redirect loop that never reaches the token endpoint. The returned
+ * redirect target is stripped of both, because Keycloak rejects these
+ * parameters wherever they appear in a `redirect_uri`.
  */
 export const stripOidcParamsFromLocation = (): string => {
-  const cleaned = stripOidcParams(window.location.href);
+  const url = new URL(window.location.href);
 
-  if (cleaned !== window.location.href) {
-    window.history.replaceState({}, "", cleaned);
+  if (hasForbidden(url.search)) {
+    const stripped = withoutForbidden(url.search);
+    url.search = stripped ? `?${stripped}` : "";
+    window.history.replaceState({}, "", url.toString());
   }
 
-  return cleaned;
+  return stripOidcParams(window.location.href);
 };

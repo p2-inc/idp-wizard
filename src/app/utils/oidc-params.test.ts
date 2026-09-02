@@ -1,4 +1,4 @@
-import { stripOidcParams } from "./oidc-params";
+import { stripOidcParams, stripOidcParamsFromLocation } from "./oidc-params";
 
 const WIZARD = "https://auth.example.com/realms/demo/wizard";
 
@@ -48,5 +48,41 @@ describe("stripOidcParams", () => {
   it("leaves a clean URL byte-identical", () => {
     const clean = `${WIZARD}/?a=b%3Ac#/idp/okta`;
     expect(stripOidcParams(clean)).toBe(clean);
+  });
+});
+
+describe("stripOidcParamsFromLocation", () => {
+  const setUrl = (url: string) => window.history.replaceState({}, "", url);
+  const APP = "/auth/realms/test/wizard";
+
+  it("clears an authorization response delivered in the query string", () => {
+    setUrl(`${APP}?session_state=abc&iss=http%3A%2F%2Fx&code=def`);
+
+    const redirectUri = stripOidcParamsFromLocation();
+
+    expect(window.location.search).toBe("");
+    expect(redirectUri).toBe(`http://localhost${APP}`);
+  });
+
+  it("preserves a fragment callback so keycloak-js can consume it", () => {
+    // response_mode=fragment: clearing this strands the login round-trip in a
+    // redirect loop that never reaches the token endpoint.
+    const fragment =
+      "#state=cb262493&session_state=39f&iss=http%3A%2F%2Fx&code=0960ad66";
+    setUrl(`${APP}${fragment}`);
+
+    const redirectUri = stripOidcParamsFromLocation();
+
+    expect(window.location.hash).toBe(fragment);
+    expect(redirectUri).toBe(`http://localhost${APP}`);
+  });
+
+  it("leaves a clean URL untouched", () => {
+    setUrl(`${APP}?org_id=abc`);
+
+    expect(stripOidcParamsFromLocation()).toBe(
+      `http://localhost${APP}?org_id=abc`
+    );
+    expect(window.location.search).toBe("?org_id=abc");
   });
 });
