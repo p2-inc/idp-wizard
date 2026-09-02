@@ -10,6 +10,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
 let persistor = persistStore(store);
 import { Toaster } from "react-hot-toast";
+import { stripOidcParamsFromLocation } from "@app/utils/oidc-params";
 
 if (process.env.NODE_ENV !== "production") {
   const config = {
@@ -25,11 +26,17 @@ if (process.env.NODE_ENV !== "production") {
   axe(React, ReactDOM, 1000, config);
 }
 
+// Must run before keycloak-js initializes: it defaults `redirect_uri` to
+// window.location.href, and Keycloak rejects that URL outright if it still
+// carries an OIDC response (as it does when arriving via a portal link).
+const redirectUri = stripOidcParamsFromLocation();
+
 ReactDOM.render(
   <ReactKeycloakProvider
     authClient={keycloak}
     initOptions={{
       onLoad: "login-required",
+      redirectUri,
       silentCheckSsoRedirectUri:
         window.location.origin + "/silent-check-sso.html",
     }}
