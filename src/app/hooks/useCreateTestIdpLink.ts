@@ -2,6 +2,7 @@ import { useApi } from "./useApi";
 import { Axios } from "@app/components/IdentityProviderWizard/Wizards/services";
 import { Protocols } from "@app/configurations";
 import { useKeycloakAdminApi } from "./useKeycloakAdminApi";
+import { stripOidcParams } from "@app/utils/oidc-params";
 
 export function useCreateTestIdpLink() {
   const { baseServerRealmsUrl, endpoints } = useApi();
@@ -22,7 +23,10 @@ export function useCreateTestIdpLink() {
   };
 
   const generateValidationUrl = (alias: string) => {
-    return `${baseServerRealmsUrl}/${realm}/protocol/openid-connect/auth?client_id=idp-tester&redirect_uri=${window.location.href}&response_type=code&scope=openid&kc_idp_hint=${alias}&prompt=login`;
+    const redirectUri = encodeURIComponent(
+      stripOidcParams(window.location.href),
+    );
+    return `${baseServerRealmsUrl}/${realm}/protocol/openid-connect/auth?client_id=idp-tester&redirect_uri=${redirectUri}&response_type=code&scope=openid&kc_idp_hint=${alias}&prompt=login`;
   };
 
   const isValidationPendingForAlias = async (alias: string) => {
