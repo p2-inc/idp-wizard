@@ -49,7 +49,7 @@ export const IdPProtocolSelector: FC = ({}) => {
 
   return (
     <Stack id="protocol-selector" className="container">
-      <StackItem isFilled className="justify-items-center">
+      <StackItem isFilled className="center-stack-items">
         <StackItem>
           <Link to={generatePath(PATHS.idpSelector, { realm })}>
             <Button

@@ -13,8 +13,7 @@ RUN set -e; \
     echo "No existing idp-wizard jar found in base image." >&2; \
     exit 1; \
   fi; \
-  cp /tmp/phasetwo-idp-wizard.jar "$target"; \
-  rm -f /tmp/phasetwo-idp-wizard.jar
+  cp /tmp/phasetwo-idp-wizard.jar "$target"
 
 RUN /opt/keycloak/bin/kc.sh build
 
