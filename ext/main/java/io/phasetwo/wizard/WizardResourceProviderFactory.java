@@ -44,11 +44,11 @@ public class WizardResourceProviderFactory implements RealmResourceProviderFacto
   /**
    * Frontend used when neither the realm nor the server says otherwise.
    *
-   * <p>Both frontends ship in this JAR, so switching is configuration rather than a redeploy. To
-   * stage the rollout — shipping the mechanism as a behavioural no-op before changing what existing
-   * realms get — set this to {@link #VERSION_V1}; that is the only change required.
+   * <p>Both frontends ship in this JAR, so switching is configuration rather than a redeploy. This
+   * stays {@link #VERSION_V1} while v2 is rolled out opt-in (per realm, or server-wide via the SPI
+   * option); flipping it to {@link #VERSION_V2} is the only change needed to make v2 the default.
    */
-  public static final String DEFAULT_VERSION = VERSION_V2;
+  public static final String DEFAULT_VERSION = VERSION_V1;
 
   /** Server-wide default, from {@code --spi-realm-restapi-extension-wizard-default-version}. */
   private String serverDefaultVersion = DEFAULT_VERSION;

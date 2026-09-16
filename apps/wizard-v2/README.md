@@ -439,7 +439,7 @@ Selection is most specific first:
 
 1. `_providerConfig.wizard.version` realm attribute (`v1` or `v2`);
 2. `--spi-realm-restapi-extension-wizard-default-version`;
-3. the built-in default, `v2`.
+3. the built-in default, `v1`.
 
 Because the route (`/realms/{realm}/wizard`), the `idp-wizard` client, and its redirect
 URIs are identical for both, moving a realm between versions is an attribute change — no
@@ -447,10 +447,11 @@ redeploy, no client edits, and rollback is unsetting the attribute.
 
 ### Staging the default
 
-`DEFAULT_VERSION` in `WizardResourceProviderFactory` is a single constant. Setting it to
-`VERSION_V1` ships the whole mechanism as a behavioural no-op, so the plumbing can be
-proven by opt-in realms before it changes what everyone else gets. Flipping it back to
-`VERSION_V2` is then the only change in the release that makes v2 the default.
+`DEFAULT_VERSION` in `WizardResourceProviderFactory` is a single constant, currently
+`VERSION_V1`: the whole mechanism ships as a behavioural no-op, so the plumbing can be
+proven by opt-in realms (or a server-wide SPI override) before it changes what everyone
+else gets. Flipping it to `VERSION_V2` is then the only change in the release that makes
+v2 the default.
 
 ### What differs between the two
 
