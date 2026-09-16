@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "1.0",
+  "id": "slack-oauth",
+  "providerId": "slack",
+  "protocol": "oauth",
+  "title": "Slack OAuth",
+  "alias": {
+    "prefix": "slack-oauth",
+    "sessionKey": "p2_slack_oauth"
+  },
+  "idpConfig": {
+    "providerId": "oidc",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "clientAuthMethod": "client_secret_post"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a Slack App",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Open the Slack apps dashboard: https://api.slack.com/apps and click \"Create New App\" → \"From scratch\"."
+        },
+        {
+          "type": "text",
+          "content": "Under \"OAuth & Permissions\", add the redirect URL below to the Redirect URLs list. Request the 'openid', 'profile', and 'email' user scopes."
+        },
+        {
+          "type": "copy",
+          "label": "Redirect URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Add this to Redirect URLs in Slack OAuth & Permissions"
+        },
+        {
+          "type": "text",
+          "content": "Important: do NOT click \"Install OAuth App\" or \"Install to Workspace\" in Slack's authorization section. That creates a one-workspace-specific install and breaks the OIDC flow. Save the redirect URLs and copy the credentials only — installation happens at login time, per user."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/slack/oauth/slack_oauth_dont_install.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Client Credentials",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "From the Basic Information page of your Slack app, copy the Client ID and Client Secret and paste them below."
+        },
+        {
+          "type": "formGroup",
+          "id": "slackCreds",
+          "exclusive": false,
+          "forms": [
+            "clientCredentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create Slack Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create Slack Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkOidc}}",
+          "adminButtonText": "Manage Slack Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "clientCredentials": {
+      "title": "Slack OAuth Credentials",
+      "description": "Enter the Client ID and Client Secret from your Slack app.",
+      "fields": [
+        {
+          "id": "clientId",
+          "type": "text",
+          "label": "Client ID",
+          "placeholder": "your-client-id",
+          "required": true
+        },
+        {
+          "id": "clientSecret",
+          "type": "password",
+          "label": "Client Secret",
+          "placeholder": "your-client-secret",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save Credentials",
+        "action": "saveCredentials"
+      }
+    }
+  },
+  "actions": {
+    "saveCredentials": {
+      "type": "saveForm",
+      "fields": ["clientId", "clientSecret"],
+      "dispatch": ["CREDENTIALS_PROVIDED"]
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "oidc",
+        "hideOnLogin": true,
+        "config": {
+          "syncMode": "FORCE",
+          "clientAuthMethod": "client_secret_post",
+          "clientId": "{{state.formValues.clientId}}",
+          "clientSecret": "{{state.formValues.clientSecret}}",
+          "authorizationUrl": "https://slack.com/openid/connect/authorize",
+          "tokenUrl": "https://slack.com/api/openid.connect.token",
+          "userInfoUrl": "https://slack.com/api/openid.connect.userInfo",
+          "defaultScope": "openid email profile"
+        }
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "Slack Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

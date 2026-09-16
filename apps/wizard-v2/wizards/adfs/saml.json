@@ -1,0 +1,343 @@
+{
+  "schemaVersion": "1.0",
+  "id": "adfs-saml",
+  "providerId": "adfs",
+  "protocol": "saml",
+  "title": "ADFS SAML",
+  "alias": {
+    "prefix": "adfs-saml",
+    "sessionKey": "p2_adfs_saml"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+      "principalType": "SUBJECT",
+      "wantAuthnRequestsSigned": "true",
+      "signatureAlgorithm": "RSA_SHA256",
+      "xmlSigKeyInfoKeyNameTransformer": "CERT_SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Open AD FS Management",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Active Directory Federation Services (AD FS) is on-premises software that runs on Windows Server. This wizard is performed on the machine hosting the AD FS role — you'll need administrator access to it. There is no cloud console for AD FS."
+        },
+        {
+          "type": "text",
+          "content": "On your AD FS server, open the AD FS Management console from Server Manager → Tools → AD FS Management."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_0.png"
+        },
+        {
+          "type": "text",
+          "content": "In the left sidebar, expand \"Relying Party Trusts\", then click \"Add Relying Party Trust...\" in the Actions panel on the right."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_1.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Import AD FS Metadata into Keycloak",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Copy the AD FS federation metadata URL from your server. It is typically located at https://your-adfs-server/federationmetadata/2007-06/federationmetadata.xml. Paste it into the form below to import the AD FS configuration."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_13.png"
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": [
+            "metadataUrl"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Configure the Relying Party Trust",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Back in AD FS Management, in the Add Relying Party Trust wizard, choose \"Claims aware\" and click \"Start\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "On the \"Select Data Source\" step, choose \"Enter data about the relying party manually\" and click \"Next\". Use the following values when prompted by the wizard."
+        },
+        {
+          "type": "copy",
+          "label": "ACS URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
+        },
+        {
+          "type": "copy",
+          "label": "Entity ID (Relying Party Trust Identifier)",
+          "value": "{{api.entityId}}",
+          "hint": "Sometimes called Audience URI or SP Entity ID"
+        },
+        {
+          "type": "copy",
+          "label": "SAML Metadata URL",
+          "value": "{{api.samlMetadata}}",
+          "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_3.png"
+        },
+        {
+          "type": "text",
+          "content": "Specify a display name for the relying party, then click \"Next\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "On the \"Configure URL\" step, check \"Enable support for the SAML 2.0 WebSSO protocol\" and paste the ACS URL above as the Relying party SAML 2.0 SSO service URL."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_5.png"
+        },
+        {
+          "type": "text",
+          "content": "On the \"Configure Identifiers\" step, paste the Entity ID above into the Relying party trust identifier field, click \"Add\", then \"Next\" to continue. Complete the rest of the wizard, accepting the defaults."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_6.png"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Configure Claim Issuance Policy",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "After finishing the wizard, right-click the new Relying Party Trust and select \"Edit Claim Issuance Policy...\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_7.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Add Rule...\" to launch the Add Transform Claim Rule Wizard."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_8.png"
+        },
+        {
+          "type": "text",
+          "content": "From the \"Claim rule template\" dropdown, select \"Send LDAP Attributes as Claims\" and click \"Next\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_9.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a claim rule name (for example, \"Send User Attributes\") and choose \"Active Directory\" as the Attribute store. Map the following LDAP attributes to the corresponding Outgoing Claim Type URIs:"
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "ADFS Claim URI",
+            "keycloakAttribute": "Keycloak User Field"
+          },
+          "rows": [
+            {
+              "idpAttribute": "http://schemas.microsoft.com/2012/12/certificatecontext/field/subjectname",
+              "keycloakAttribute": "username"
+            },
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+              "keycloakAttribute": "email"
+            },
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+              "keycloakAttribute": "firstName"
+            },
+            {
+              "idpAttribute": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+              "keycloakAttribute": "lastName"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_10.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Finish\" to save the claim rule."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_11.png"
+        },
+        {
+          "type": "text",
+          "content": "Verify the rule appears in the \"Issuance Transform Rules\" list, then click \"OK\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/adfs/saml/adfs_saml_12.png"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create SAML Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create SAML Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the SAML metadata URL provided by your identity provider.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://your-adfs-server/federationmetadata/2007-06/federationmetadata.xml",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "http://schemas.microsoft.com/2012/12/certificatecontext/field/subjectname",
+          "friendlyName": "subjectname",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+          "friendlyName": "emailaddress",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+          "friendlyName": "givenname",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+          "friendlyName": "surname",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

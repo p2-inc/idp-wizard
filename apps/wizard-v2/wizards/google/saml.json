@@ -1,0 +1,306 @@
+{
+  "schemaVersion": "1.0",
+  "id": "google-saml",
+  "providerId": "google",
+  "protocol": "saml",
+  "title": "Google Workspace SAML",
+  "alias": {
+    "prefix": "google-saml",
+    "sessionKey": "p2_google_saml"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Add a Custom SAML App",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Sign in to the Google Admin Console and navigate to Apps → Web and mobile apps."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_1a.png"
+        },
+        {
+          "type": "text",
+          "content": "Click the \"Add app\" dropdown and select \"Add custom SAML app\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_1b.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter an App name (and optional description and logo), then click \"Continue\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_2.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Download Google IdP Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the \"Google Identity Provider details\" step, click \"DOWNLOAD METADATA\" to save the IdP metadata XML file."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_3.png"
+        },
+        {
+          "type": "text",
+          "content": "Upload the downloaded file below to import the Google IdP configuration into Keycloak, then click \"Continue\" in Google."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": [
+            "metadataFile"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Configure Service Provider Details",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the \"Service provider details\" step, enter the following values from Keycloak."
+        },
+        {
+          "type": "copy",
+          "label": "ACS URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
+        },
+        {
+          "type": "copy",
+          "label": "Entity ID",
+          "value": "{{api.entityId}}",
+          "hint": "Sometimes called Audience URI or SP Entity ID"
+        },
+        {
+          "type": "copy",
+          "label": "SAML Metadata URL",
+          "value": "{{api.samlMetadata}}",
+          "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Leave the Name ID format set to UNSPECIFIED and Name ID set to \"Basic Information > Primary email\". Click \"Continue\"."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Configure Attribute Mapping",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the \"Attribute mapping\" step, click \"Add mapping\" for each of the following entries."
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "Google Directory Attribute",
+            "keycloakAttribute": "Keycloak User Field"
+          },
+          "rows": [
+            {
+              "idpAttribute": "uid",
+              "keycloakAttribute": "username"
+            },
+            {
+              "idpAttribute": "email",
+              "keycloakAttribute": "email"
+            },
+            {
+              "idpAttribute": "givenName",
+              "keycloakAttribute": "firstName"
+            },
+            {
+              "idpAttribute": "sn",
+              "keycloakAttribute": "lastName"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_5.png"
+        },
+        {
+          "type": "text",
+          "content": "Map each Google Directory attribute (Primary email, First name, Last name) to its corresponding App attribute, then click \"Finish\"."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Enable Service for Users",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the new app's page, click the \"User access\" panel."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_6a.png"
+        },
+        {
+          "type": "text",
+          "content": "Choose \"ON for everyone\" or scope access to specific organizational units, then click \"Save\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/google/google_saml_6b.png"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create SAML Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create SAML Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataFile": {
+      "title": "Metadata File",
+      "description": "Upload the SAML metadata XML file from your identity provider.",
+      "fields": [
+        {
+          "id": "file",
+          "type": "file",
+          "label": "Metadata File",
+          "accept": "text/xml,application/xml,.xml",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate File",
+        "action": "validateMetadataFile"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataFile": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "multipart",
+      "body": {
+        "providerId": "saml",
+        "file": "{{form.file}}"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata file validated. Continue to the next step.",
+        "error": "Validation failed. Check the file and try again."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "uid",
+          "friendlyName": "uid",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "email",
+          "friendlyName": "email",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "givenName",
+          "friendlyName": "givenName",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "sn",
+          "friendlyName": "sn",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

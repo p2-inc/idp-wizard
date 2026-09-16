@@ -1,0 +1,316 @@
+{
+  "schemaVersion": "1.0",
+  "id": "okta-ldap",
+  "providerId": "okta",
+  "protocol": "ldap",
+  "title": "Okta LDAP",
+  "alias": {
+    "prefix": "okta-ldap",
+    "sessionKey": "p2_okta_ldap"
+  },
+  "idpConfig": {
+    "providerId": "ldap",
+    "hideOnLogin": false,
+    "defaults": {
+      "editMode": "READ_ONLY",
+      "vendor": "other",
+      "searchScope": "1",
+      "authType": "simple",
+      "useTruststoreSpi": "ldapsOnly",
+      "connectionPooling": "true",
+      "pagination": "true",
+      "batchSizeForSync": "1000",
+      "fullSyncPeriod": "-1",
+      "changedSyncPeriod": "-1",
+      "cachePolicy": "DEFAULT",
+      "importEnabled": "true",
+      "syncRegistrations": "false"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Enable LDAP Interface",
+      "enableNextWhen": "state.connectionTested",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In Okta, navigate to Directory → Directory Integrations and enable the LDAP Interface. Then enter your Okta LDAP connection details below. Your host will be in the format: your-org.ldap.okta.com"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/okta-1.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/okta-2.png"
+        },
+        {
+          "type": "formGroup",
+          "id": "serverDetails",
+          "exclusive": false,
+          "forms": [
+            "serverConfig"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "LDAP Authentication",
+      "enableNextWhen": "state.authTested",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Enter the bind DN and password for the Okta LDAP service account. For Okta LDAP, the bind DN format is typically: uid=<username>,<base-dn>"
+        },
+        {
+          "type": "formGroup",
+          "id": "bindConfig",
+          "exclusive": false,
+          "forms": [
+            "bindCredentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create Okta LDAP User Federation",
+          "description": "Configuration is complete. Click the button below to create the LDAP user federation and trigger an initial user sync.",
+          "buttonText": "Create LDAP User Federation",
+          "action": "createComponent",
+          "adminLink": "",
+          "adminButtonText": "Manage User Federation"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "serverConfig": {
+      "title": "Okta LDAP Server",
+      "description": "Enter your Okta LDAP host and base DN.",
+      "fields": [
+        {
+          "id": "host",
+          "type": "text",
+          "label": "LDAP Host",
+          "placeholder": "your-org.ldap.okta.com",
+          "required": true
+        },
+        {
+          "id": "port",
+          "type": "text",
+          "label": "SSL Port",
+          "placeholder": "636",
+          "required": true
+        },
+        {
+          "id": "baseDn",
+          "type": "text",
+          "label": "Base DN",
+          "placeholder": "dc=your-org,dc=okta,dc=com",
+          "required": true
+        },
+        {
+          "id": "usersDn",
+          "type": "text",
+          "label": "Users DN",
+          "placeholder": "ou=users,dc=your-org,dc=okta,dc=com",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Test Connection",
+        "action": "testLdapConnection"
+      }
+    },
+    "bindCredentials": {
+      "title": "Bind Credentials",
+      "description": "The Okta LDAP service account used to read from your directory.",
+      "fields": [
+        {
+          "id": "bindDn",
+          "type": "text",
+          "label": "Bind DN",
+          "placeholder": "uid=admin,dc=your-org,dc=okta,dc=com",
+          "required": true
+        },
+        {
+          "id": "bindPassword",
+          "type": "password",
+          "label": "Bind Password",
+          "placeholder": "••••••••",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Test Authentication",
+        "action": "testLdapAuth"
+      }
+    }
+  },
+  "actions": {
+    "testLdapConnection": {
+      "endpoint": "testLdapConnection",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "action": "testConnection",
+        "connectionUrl": "ldaps://{{form.host}}:{{form.port}}",
+        "authType": "simple",
+        "bindDn": "",
+        "bindCredential": "",
+        "useTruststoreSpi": "ldapsOnly",
+        "connectionTimeout": "",
+        "startTls": ""
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "CONNECTION_TESTED"
+        ]
+      },
+      "messages": {
+        "success": "Connection successful.",
+        "error": "Connection failed. Check the host and port."
+      }
+    },
+    "testLdapAuth": {
+      "endpoint": "testLdapConnection",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "action": "testAuthentication",
+        "connectionUrl": "ldaps://{{state.formValues.host}}:{{state.formValues.port}}",
+        "authType": "simple",
+        "bindDn": "{{form.bindDn}}",
+        "bindCredential": "{{form.bindPassword}}",
+        "useTruststoreSpi": "ldapsOnly",
+        "connectionTimeout": "",
+        "startTls": ""
+      },
+      "onSuccess": {
+        "dispatch": [
+          "AUTH_TESTED"
+        ]
+      },
+      "messages": {
+        "success": "Authentication successful.",
+        "error": "Authentication failed. Check your bind DN and password."
+      }
+    },
+    "createComponent": {
+      "endpoint": "createComponent",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "name": "ldap",
+        "providerId": "ldap",
+        "providerType": "org.keycloak.storage.UserStorageProvider",
+        "config": {
+          "enabled": [
+            "true"
+          ],
+          "priority": [
+            "0"
+          ],
+          "editMode": [
+            "READ_ONLY"
+          ],
+          "importEnabled": [
+            "true"
+          ],
+          "syncRegistrations": [
+            "false"
+          ],
+          "vendor": [
+            "other"
+          ],
+          "usernameLDAPAttribute": [
+            "uid"
+          ],
+          "rdnLDAPAttribute": [
+            "uid"
+          ],
+          "uuidLDAPAttribute": [
+            "entryUUID"
+          ],
+          "userObjectClasses": [
+            "inetOrgPerson, organizationalPerson"
+          ],
+          "connectionUrl": [
+            "ldaps://{{state.formValues.host}}:{{state.formValues.port}}"
+          ],
+          "usersDn": [
+            "{{state.formValues.usersDn}}"
+          ],
+          "authType": [
+            "simple"
+          ],
+          "bindDn": [
+            "{{state.formValues.bindDn}}"
+          ],
+          "bindCredential": [
+            "{{state.formValues.bindPassword}}"
+          ],
+          "searchScope": [
+            "1"
+          ],
+          "useTruststoreSpi": [
+            "ldapsOnly"
+          ],
+          "connectionPooling": [
+            "true"
+          ],
+          "pagination": [
+            "true"
+          ],
+          "batchSizeForSync": [
+            "1000"
+          ],
+          "fullSyncPeriod": [
+            "-1"
+          ],
+          "changedSyncPeriod": [
+            "-1"
+          ],
+          "cachePolicy": [
+            "DEFAULT"
+          ]
+        }
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "Okta LDAP User Federation created successfully."
+          }
+        ],
+        "then": [
+          "triggerSync"
+        ]
+      },
+      "messages": {
+        "error": "Error creating LDAP user federation."
+      }
+    },
+    "triggerSync": {
+      "endpoint": "triggerSync",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "action": "triggerChangedUsersSync"
+      },
+      "messages": {
+        "error": "User federation created but initial sync could not be triggered."
+      }
+    }
+  }
+}

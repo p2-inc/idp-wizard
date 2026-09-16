@@ -89,7 +89,9 @@
 
         <configuration>
           <nodeVersion>v24.12.0</nodeVersion>
-          <workingDirectory>.</workingDirectory>
+          <!-- pnpm workspace root: one node toolchain and one dependency install serve
+               both apps. Each app is then built by name with a pnpm filter. -->
+          <workingDirectory>${project.basedir}</workingDirectory>
           <!-- optional: only if you need to pin/override corepack -->
           <!-- <corepackVersion>v0.25.2</corepackVersion> -->
         </configuration>
@@ -113,13 +115,30 @@
             </configuration>
           </execution>
 
+          <!-- Both frontends ship in the same JAR; which one a realm gets is decided at
+               request time by WizardResourceProviderFactory, not here. -->
           <execution>
-            <id>build</id>
+            <id>build-wizard-v1</id>
             <goals>
               <goal>corepack</goal>
             </goals>
             <configuration>
-              <arguments>pnpm build</arguments>
+              <arguments>pnpm --filter idp-wizard build</arguments>
+              <environmentVariables>
+                <!-- Assets are served from the version subdirectory, so webpack must
+                     resolve chunk URLs from the running script's own location. -->
+                <ASSET_PATH>auto</ASSET_PATH>
+              </environmentVariables>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>build-wizard-v2</id>
+            <goals>
+              <goal>corepack</goal>
+            </goals>
+            <configuration>
+              <arguments>pnpm --filter wizard-v2 build</arguments>
             </configuration>
           </execution>
 
@@ -129,17 +148,36 @@
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.3.1</version>
         <executions>
+          <!-- Each frontend lands under its own directory in the theme's resources. The
+               provider serves ./{version}/... and the static-asset allowlist is a version
+               prefix, so neither app's bundler output shape is baked into the Java. -->
           <execution>
-            <id>copy-resources</id>
+            <id>copy-wizard-v1</id>
             <phase>process-resources</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/classes/theme/wizard/login/resources</outputDirectory>
+              <outputDirectory>${project.build.directory}/classes/theme/wizard/login/resources/v1</outputDirectory>
               <resources>
                 <resource>
-                  <directory>dist</directory>
+                  <directory>${project.basedir}/apps/wizard-v1/dist</directory>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-wizard-v2</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/classes/theme/wizard/login/resources/v2</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${project.basedir}/apps/wizard-v2/dist</directory>
                   <filtering>false</filtering>
                 </resource>
               </resources>

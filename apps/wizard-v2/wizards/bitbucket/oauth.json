@@ -1,0 +1,185 @@
+{
+  "schemaVersion": "1.0",
+  "id": "bitbucket-oauth",
+  "providerId": "bitbucket",
+  "protocol": "oauth",
+  "title": "Bitbucket OAuth",
+  "alias": {
+    "prefix": "bitbucket-oauth",
+    "sessionKey": "p2_bitbucket_oauth"
+  },
+  "idpConfig": {
+    "providerId": "bitbucket",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create an OAuth Client",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In Bitbucket, open your Workspace settings."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Under \"Apps and features\", select OAuth clients."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Create OAuth client\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_3.png"
+        },
+        {
+          "type": "text",
+          "content": "Select the scopes \"Email\" and \"Account\" (these provide the user's email and basic profile)."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Under \"Authorization\", paste the callback URL below into the Callback URL field."
+        },
+        {
+          "type": "copy",
+          "label": "Callback URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Paste this as the Callback URL in Bitbucket"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_5.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a descriptive name for your app and click Save."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_6.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Client Credentials",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "After saving the OAuth client, copy the Key and Secret and paste them below."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/bitbucket/oauth/bitbucket_oauth_7.png"
+        },
+        {
+          "type": "formGroup",
+          "id": "bitbucketCreds",
+          "exclusive": false,
+          "forms": [
+            "clientCredentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create Bitbucket Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create Bitbucket Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSocial}}",
+          "adminButtonText": "Manage Bitbucket Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "clientCredentials": {
+      "title": "Bitbucket OAuth Credentials",
+      "description": "Enter the Key and Secret from your Bitbucket OAuth consumer.",
+      "fields": [
+        {
+          "id": "clientId",
+          "type": "text",
+          "label": "Key",
+          "placeholder": "your-consumer-key",
+          "required": true
+        },
+        {
+          "id": "clientSecret",
+          "type": "password",
+          "label": "Secret",
+          "placeholder": "your-consumer-secret",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save Credentials",
+        "action": "saveCredentials"
+      }
+    }
+  },
+  "actions": {
+    "saveCredentials": {
+      "type": "saveForm",
+      "fields": ["clientId", "clientSecret"],
+      "dispatch": ["CREDENTIALS_PROVIDED"]
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "bitbucket",
+        "hideOnLogin": true,
+        "config": {
+          "syncMode": "FORCE",
+          "clientId": "{{state.formValues.clientId}}",
+          "clientSecret": "{{state.formValues.clientSecret}}"
+        }
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "Bitbucket Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "realm": "wizard",
+  "enabled": true,
+  "displayName": "IDP Wizard Dev",
+  "adminTheme": "phasetwo.v2",
+  "attributes": {
+    "_providerConfig.wizard.apiMode": "onprem",
+    "_providerConfig.wizard.emailAsUsername": "false",
+    "_providerConfig.wizard.enableDashboard": "true",
+    "_providerConfig.wizard.enableDirectorySync": "true",
+    "_providerConfig.wizard.enableIdentityProvider": "true",
+    "_providerConfig.wizard.logoUrl": "",
+    "_providerConfig.wizard.trustEmail": "false"
+  },
+  "clients": [
+    {
+      "clientId": "wizard-v2-dev",
+      "name": "IDP Wizard v2 Dev",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "attributes": {}
+    }
+  ],
+  "users": [
+    {
+      "username": "wizard",
+      "email": "wizard@example.com",
+      "firstName": "Wizard",
+      "lastName": "Admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "clientRoles": {
+        "realm-management": [
+          "realm-admin"
+        ]
+      }
+    },
+    {
+      "username": "org-admin",
+      "email": "org-admin@example.com",
+      "firstName": "Org",
+      "lastName": "Admin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "org-member",
+      "email": "org-member@example.com",
+      "firstName": "Org",
+      "lastName": "Member",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

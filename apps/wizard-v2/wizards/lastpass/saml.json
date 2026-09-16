@@ -1,0 +1,303 @@
+{
+  "schemaVersion": "1.0",
+  "id": "lastpass-saml",
+  "providerId": "lastpass",
+  "protocol": "saml",
+  "title": "LastPass SAML",
+  "alias": {
+    "prefix": "lastpass-saml",
+    "sessionKey": "p2_lastpass_saml"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Enable Identity Provider in LastPass",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Sign in to the LastPass Admin Console and open Applications → SSO apps."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_0.png"
+        },
+        {
+          "type": "text",
+          "content": "If you haven't already, enable Single Sign-On for your account from the Settings → SSO menu. When searching the catalog, look for \"Custom Service\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_1.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Add a SAML Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "From the Custom service view, click \"Add new domain\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter the following service provider values into the SAML configuration fields."
+        },
+        {
+          "type": "copy",
+          "label": "Entity ID",
+          "value": "{{api.entityId}}",
+          "hint": "Sometimes called Audience URI or SP Entity ID"
+        },
+        {
+          "type": "copy",
+          "label": "ACS (assertion consumer service) URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
+        },
+        {
+          "type": "copy",
+          "label": "SAML Metadata URL",
+          "value": "{{api.samlMetadata}}",
+          "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_4.png"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Download LastPass IdP Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Under the \"Configuration\" title, locate the \"Export SAML IdP Metadata\" link."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_5.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Export SAML IdP Metadata\" link then \"Download\" to save the IdP metadata XML file."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_6.png"
+        },
+        {
+          "type": "text",
+          "content": "Upload the downloaded file below to import the LastPass IdP configuration into Keycloak."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": ["metadataFile"]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Configure Attribute Mapping",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Back in the LastPass app settings, scroll to the Attributes section."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_7.png"
+        },
+        {
+          "type": "text",
+          "content": "Add the following SAML attribute mappings so user information is included in the assertion."
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "type": "Type",
+            "name": "Name",
+            "value": "Value"
+          },
+          "rows": [
+            {
+              "type": "Email Address",
+              "name": "email",
+              "value": "N/A (not changeable)"
+            },
+            {
+              "type": "First Name",
+              "name": "firstName",
+              "value": "N/A (not changeable)"
+            },
+            {
+              "type": "Last Name",
+              "name": "lastName",
+              "value": "N/A (not changeable)"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "content": "Click \"Save\" to update the application configuration with the new configuration and attribute mappings."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_8.png"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Assign User Access",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Open the application's \"Assigned Users\" tab and add the users or groups who should have access. The recommendation is to start with \"All Users\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/lastpass/lastpass_saml_3.png"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create SAML Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create SAML Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataFile": {
+      "title": "Metadata File",
+      "description": "Upload the SAML metadata XML file from your identity provider.",
+      "fields": [
+        {
+          "id": "file",
+          "type": "file",
+          "label": "Metadata File",
+          "accept": "text/xml,application/xml,.xml",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate File",
+        "action": "validateMetadataFile"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataFile": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "multipart",
+      "body": {
+        "providerId": "saml",
+        "file": "{{form.file}}"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["METADATA_VALIDATED"]
+      },
+      "messages": {
+        "success": "Metadata file validated. Continue to the next step.",
+        "error": "Validation failed. Check the file and try again."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
+        ],
+        "then": ["addSamlMappers", "clearAlias"]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "email",
+          "friendlyName": "username",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "email",
+          "friendlyName": "email",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

@@ -1,0 +1,300 @@
+{
+  "schemaVersion": "1.0",
+  "id": "okta-scim",
+  "providerId": "okta",
+  "protocol": "scim",
+  "title": "Okta SCIM Provisioning",
+  "alias": {
+    "prefix": "okta-scim",
+    "sessionKey": "p2_okta_scim"
+  },
+  "idpConfig": {
+    "providerId": "scim",
+    "hideOnLogin": true
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Verify SCIM is enabled",
+      "enableNextWhen": "state.metadata.scimEnabled",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Inbound SCIM provisioning is a realm-level feature. Click the button below to confirm your realm administrator has enabled it. If not, ask the admin to enable SCIM in the organizations configuration."
+        },
+        {
+          "type": "formGroup",
+          "id": "scimGate",
+          "exclusive": false,
+          "forms": ["scimGateCheck"]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Create an Okta SCIM application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Sign in to the Okta admin console."
+        },
+        {
+          "type": "text",
+          "content": "In the left navigation, expand the Applications section and select the Applications tab. Click Browse App Catalog."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_1.png",
+          "alt": "Okta Applications page with Browse App Catalog button highlighted"
+        },
+        {
+          "type": "text",
+          "content": "Search for SCIM 2.0 Test App (OAuth Bearer Token) and select the matching result."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_2.png",
+          "alt": "Okta Browse App Integration Catalog with search results for SCIM 2.0 Test App"
+        },
+        {
+          "type": "text",
+          "content": "On the page that opens, click Add Integration."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_3.png",
+          "alt": "SCIM 2.0 Test App detail page with Add Integration button"
+        },
+        {
+          "type": "text",
+          "content": "Give the application a descriptive name (for example, the name of the realm being provisioned). Click Next."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_4.png",
+          "alt": "Add SCIM 2.0 Test App General settings — Application label field"
+        },
+        {
+          "type": "text",
+          "content": "You can leave the Sign-On Options at their defaults. Click Done."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_5.png",
+          "alt": "Sign-On Options page with Done button"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Generate credentials and configure Okta",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Click the button below. The wizard generates a high-entropy OAuth Bearer Token and writes the SCIM configuration to this organization. The token is shown on the next step — copy it before leaving."
+        },
+        {
+          "type": "formGroup",
+          "id": "oktaConfig",
+          "exclusive": false,
+          "forms": ["configureForm"]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Paste the credentials into Okta",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In your Okta SCIM application, go to the Provisioning tab and click Configure API Integration."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_6.png",
+          "alt": "Provisioning tab showing 'Provisioning is not enabled' with Configure API Integration button"
+        },
+        {
+          "type": "text",
+          "content": "Check Enable API Integration. Paste the values below into the SCIM 2.0 Base URL and OAuth Bearer Token fields."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_7.png",
+          "alt": "Enable API Integration form with SCIM 2.0 Base URL and OAuth Bearer Token fields"
+        },
+        {
+          "type": "copy",
+          "label": "SCIM 2.0 Base URL",
+          "value": "{{api.scimEndpoint}}",
+          "hint": "Paste into the SCIM 2.0 Base URL field"
+        },
+        {
+          "type": "secretReveal",
+          "label": "OAuth Bearer Token",
+          "value": "{{state.formValues.shared_secret}}",
+          "warning": "Copy this value now — it cannot be recovered later. Anyone holding it can push users and groups into this organization.",
+          "hint": "Paste into the OAuth Bearer Token field"
+        },
+        {
+          "type": "text",
+          "content": "Click Test API Credentials in Okta to verify the connection, then click Save."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Configure provisioning actions",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the Provisioning tab, click To App in the left navigation. You will see Create Users, Update User Attributes, and Deactivate Users are disabled by default."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_8.png",
+          "alt": "Provisioning To App tab showing default disabled state"
+        },
+        {
+          "type": "text",
+          "content": "Click Edit, check Enable next to Create Users, Update User Attributes, and Deactivate Users, then click Save."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_9.png",
+          "alt": "Provisioning actions enabled with checkboxes ticked and Save button"
+        },
+        {
+          "type": "text",
+          "content": "Optional: review the attribute mappings under Test SCIM App Attribute Mappings. The defaults work for most realms; you can return here later to add custom mappings."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_15.png",
+          "alt": "Test SCIM App Attribute Mappings page showing default Okta to SCIM attribute mappings"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Assign people and push groups",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the Okta application, go to the Assignments tab. Click Assign and select Assign to People."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_10.png",
+          "alt": "Assignments tab with the Assign dropdown showing 'Assign to People' option"
+        },
+        {
+          "type": "text",
+          "content": "In the dialog that opens, search for and assign each user who should be provisioned, then click Done."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_11.png",
+          "alt": "Assign Test SCIM App to People dialog with a user selected and Done button"
+        },
+        {
+          "type": "text",
+          "content": "For each user, review the profile fields that will be sent over SCIM. Most fields can be left blank — Okta will sync the default profile attributes. Click Save and Go Back."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_12.png",
+          "alt": "User assignment form with Save and Go Back button"
+        },
+        {
+          "type": "text",
+          "content": "Now go to the Push Groups tab. Click Push Groups and select Find groups by name. Locate the appropriate group, enable Push group memberships immediately, and click Save. Okta will start pushing users and groups within a few minutes."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/scim/okta_scim_14.png",
+          "alt": "Push Groups by name dialog with a group selected and Save button"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "SCIM provisioning is configured",
+          "description": "Okta will start pushing users and groups within a few minutes. Sync events appear in the Keycloak admin console under Events.",
+          "buttonText": "Mark as complete",
+          "action": "clearAlias",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Open Keycloak admin console"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "scimGateCheck": {
+      "title": "Check SCIM availability",
+      "description": "Reads the realm's organization configuration to confirm SCIM is enabled.",
+      "fields": [],
+      "submit": {
+        "label": "Verify SCIM is enabled",
+        "action": "loadOrgConfig"
+      }
+    },
+    "configureForm": {
+      "title": "Configure SCIM provisioning",
+      "description": "Generates an OAuth Bearer Token and writes the SCIM configuration to this organization.",
+      "fields": [],
+      "submit": {
+        "label": "Generate token and configure",
+        "action": "configureScim"
+      }
+    }
+  },
+  "actions": {
+    "loadOrgConfig": {
+      "endpoint": "getOrgConfig",
+      "method": "GET",
+      "contentType": "json",
+      "body": {},
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}"
+      },
+      "messages": {
+        "error": "Could not load the realm's organization configuration. Confirm the realm has SCIM enabled."
+      }
+    },
+    "configureScim": {
+      "type": "generateSecret",
+      "fieldId": "shared_secret",
+      "then": ["configureScimWrite"]
+    },
+    "configureScimWrite": {
+      "endpoint": "setOrgScim",
+      "method": "PUT",
+      "contentType": "json",
+      "body": {
+        "enabled": true,
+        "auth": {
+          "type": "EXTERNAL_SECRET",
+          "shared_secret": "{{state.formValues.shared_secret}}"
+        }
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["CREDENTIALS_PROVIDED"]
+      },
+      "messages": {
+        "success": "SCIM provisioning configured. Reveal the OAuth Bearer Token on the next step.",
+        "error": "Could not write the SCIM configuration. Check that the realm has SCIM enabled."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

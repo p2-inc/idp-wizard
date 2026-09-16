@@ -1,0 +1,291 @@
+{
+  "schemaVersion": "1.0",
+  "id": "generic-scim",
+  "providerId": "scim",
+  "protocol": "scim",
+  "title": "Generic SCIM Provisioning",
+  "alias": {
+    "prefix": "scim",
+    "sessionKey": "p2_scim_scim"
+  },
+  "idpConfig": {
+    "providerId": "scim",
+    "hideOnLogin": true
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Verify SCIM is enabled",
+      "enableNextWhen": "state.metadata.scimEnabled",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Inbound SCIM provisioning is a realm-level feature. Click the button below to check whether your realm administrator has enabled it. If it has not, ask the realm administrator to enable SCIM in the organizations configuration before continuing."
+        },
+        {
+          "type": "formGroup",
+          "id": "scimGate",
+          "exclusive": false,
+          "forms": ["scimGateCheck"]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Choose authentication mode",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Pick the authentication scheme the upstream identity provider will use when it pushes SCIM requests to this organization. Most enterprise IdPs (Entra ID, Okta) expect a Bearer token, which corresponds to External Secret below."
+        },
+        {
+          "type": "formGroup",
+          "id": "scimAuth",
+          "exclusive": true,
+          "forms": [
+            "externalSecret",
+            "externalBasic",
+            "externalJwt",
+            "keycloakAuth"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Reveal your SCIM credentials",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Paste these values into the upstream identity provider's SCIM provisioning configuration. The secret will not be displayed again once you leave this step."
+        },
+        {
+          "type": "copy",
+          "label": "SCIM Endpoint URL",
+          "value": "{{api.scimEndpoint}}",
+          "hint": "Sometimes called Tenant URL, Base URL, or SCIM 2.0 endpoint"
+        },
+        {
+          "type": "secretReveal",
+          "label": "Bearer Token / Shared Secret",
+          "value": "{{state.formValues.shared_secret}}",
+          "warning": "Copy this value now — it cannot be recovered later. Anyone holding it can push users and groups into this organization.",
+          "hint": "Only shown for External Secret and External Basic modes."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Configure your identity provider",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the upstream identity provider's admin console, locate the SCIM provisioning or directory sync section. Paste the SCIM Endpoint URL into the tenant URL field, paste the Bearer Token or shared secret into the secret field, and test the connection. Once the test succeeds, enable provisioning and assign the users and groups that should be synced."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "SCIM provisioning is configured",
+          "description": "The SCIM endpoint is now accepting traffic for this organization. After your IdP starts pushing changes, sync events appear in the Keycloak admin console under Events.",
+          "buttonText": "Mark as complete",
+          "action": "clearAlias",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Open Keycloak admin console"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "scimGateCheck": {
+      "title": "Check SCIM availability",
+      "description": "Reads the realm's organization configuration to confirm SCIM is enabled.",
+      "fields": [],
+      "submit": {
+        "label": "Verify SCIM is enabled",
+        "action": "loadOrgConfig"
+      }
+    },
+    "externalSecret": {
+      "title": "External Secret (Bearer)",
+      "description": "Most common. The wizard generates a high-entropy Bearer token; the upstream IdP sends Authorization: Bearer <token> on every SCIM call. Used by Entra ID, Okta, OneLogin, and most enterprise IdPs.",
+      "fields": [],
+      "submit": {
+        "label": "Generate token and configure",
+        "action": "configureExternalSecret"
+      }
+    },
+    "externalBasic": {
+      "title": "External Basic (Username/Password)",
+      "description": "HTTP Basic authentication. Use when the upstream IdP only supports username/password auth instead of Bearer tokens.",
+      "fields": [
+        {
+          "id": "basic_username",
+          "type": "text",
+          "label": "Basic auth username",
+          "placeholder": "scim-provisioner",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Generate password and configure",
+        "action": "configureExternalBasic"
+      }
+    },
+    "externalJwt": {
+      "title": "External JWT",
+      "description": "Validates a JWT issued by an external identity provider. Use when the SCIM client signs its own tokens against a known JWKS.",
+      "fields": [
+        {
+          "id": "jwt_issuer",
+          "type": "text",
+          "label": "Expected issuer",
+          "placeholder": "https://example-idp.com/",
+          "required": true
+        },
+        {
+          "id": "jwt_audience",
+          "type": "text",
+          "label": "Expected audience",
+          "placeholder": "scim-client",
+          "required": true
+        },
+        {
+          "id": "jwt_jwks_uri",
+          "type": "url",
+          "label": "JWKS URI",
+          "placeholder": "https://example-idp.com/.well-known/jwks.json",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Configure JWT validation",
+        "action": "configureExternalJwt"
+      }
+    },
+    "keycloakAuth": {
+      "title": "Keycloak Bearer",
+      "description": "The SCIM caller presents a Keycloak-issued access token and must hold the realm-management roles required to manage members of this organization. No additional credentials needed.",
+      "fields": [],
+      "submit": {
+        "label": "Configure Keycloak authentication",
+        "action": "configureKeycloak"
+      }
+    }
+  },
+  "actions": {
+    "loadOrgConfig": {
+      "endpoint": "getOrgConfig",
+      "method": "GET",
+      "contentType": "json",
+      "body": {},
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}"
+      },
+      "messages": {
+        "error": "Could not load the realm's organization configuration. Confirm the realm has SCIM enabled."
+      }
+    },
+    "configureExternalSecret": {
+      "type": "generateSecret",
+      "fieldId": "shared_secret",
+      "then": ["configureExternalSecretWrite"]
+    },
+    "configureExternalSecretWrite": {
+      "endpoint": "setOrgScim",
+      "method": "PUT",
+      "contentType": "json",
+      "body": {
+        "enabled": true,
+        "auth": {
+          "type": "EXTERNAL_SECRET",
+          "shared_secret": "{{state.formValues.shared_secret}}"
+        }
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["CREDENTIALS_PROVIDED"]
+      },
+      "messages": {
+        "success": "SCIM provisioning configured. Reveal the Bearer token on the next step.",
+        "error": "Could not write the SCIM configuration. Check that the realm has SCIM enabled."
+      }
+    },
+    "configureExternalBasic": {
+      "type": "generateSecret",
+      "fieldId": "basic_password",
+      "then": ["configureExternalBasicWrite"]
+    },
+    "configureExternalBasicWrite": {
+      "endpoint": "setOrgScim",
+      "method": "PUT",
+      "contentType": "json",
+      "body": {
+        "enabled": true,
+        "auth": {
+          "type": "EXTERNAL_BASIC",
+          "username": "{{state.formValues.basic_username}}",
+          "password": "{{state.formValues.basic_password}}"
+        }
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["CREDENTIALS_PROVIDED"]
+      },
+      "messages": {
+        "success": "SCIM provisioning configured. Reveal the password on the next step.",
+        "error": "Could not write the SCIM configuration."
+      }
+    },
+    "configureExternalJwt": {
+      "endpoint": "setOrgScim",
+      "method": "PUT",
+      "contentType": "json",
+      "body": {
+        "enabled": true,
+        "auth": {
+          "type": "EXTERNAL_JWT",
+          "issuer": "{{state.formValues.jwt_issuer}}",
+          "audience": "{{state.formValues.jwt_audience}}",
+          "jwks_uri": "{{state.formValues.jwt_jwks_uri}}"
+        }
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["CREDENTIALS_PROVIDED"]
+      },
+      "messages": {
+        "success": "SCIM provisioning configured with JWT validation.",
+        "error": "Could not write the SCIM configuration. Verify the JWKS URI is reachable."
+      }
+    },
+    "configureKeycloak": {
+      "endpoint": "setOrgScim",
+      "method": "PUT",
+      "contentType": "json",
+      "body": {
+        "enabled": true,
+        "auth": {
+          "type": "KEYCLOAK"
+        }
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["CREDENTIALS_PROVIDED"]
+      },
+      "messages": {
+        "success": "SCIM provisioning configured with Keycloak Bearer authentication.",
+        "error": "Could not write the SCIM configuration."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

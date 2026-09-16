@@ -1,0 +1,137 @@
+{
+  "schemaVersion": "1.0",
+  "id": "linkedin-oauth",
+  "providerId": "linkedin",
+  "protocol": "oauth",
+  "title": "LinkedIn OAuth",
+  "alias": {
+    "prefix": "linkedin-oauth",
+    "sessionKey": "p2_linkedin_oauth"
+  },
+  "idpConfig": {
+    "providerId": "linkedin-openid-connect",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a LinkedIn App",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the LinkedIn Developer Portal, create a new app. Under the Auth tab, add the redirect URL below. Request access to the 'Sign In with LinkedIn using OpenID Connect' product."
+        },
+        {
+          "type": "copy",
+          "label": "Authorized redirect URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Add this to the Authorized redirect URLs in LinkedIn"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Client Credentials",
+      "enableNextWhen": "state.credentialsProvided",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Copy the Client ID and Client Secret from the Auth tab of your LinkedIn app and paste them below."
+        },
+        {
+          "type": "formGroup",
+          "id": "linkedinCreds",
+          "exclusive": false,
+          "forms": [
+            "clientCredentials"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create LinkedIn Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create LinkedIn Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSocial}}",
+          "adminButtonText": "Manage LinkedIn Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "clientCredentials": {
+      "title": "LinkedIn OAuth Credentials",
+      "description": "Enter the Client ID and Client Secret from your LinkedIn app.",
+      "fields": [
+        {
+          "id": "clientId",
+          "type": "text",
+          "label": "Client ID",
+          "placeholder": "your-client-id",
+          "required": true
+        },
+        {
+          "id": "clientSecret",
+          "type": "password",
+          "label": "Client Secret",
+          "placeholder": "your-client-secret",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save Credentials",
+        "action": "saveCredentials"
+      }
+    }
+  },
+  "actions": {
+    "saveCredentials": {
+      "type": "saveForm",
+      "fields": ["clientId", "clientSecret"],
+      "dispatch": ["CREDENTIALS_PROVIDED"]
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "linkedin-openid-connect",
+        "hideOnLogin": true,
+        "config": {
+          "syncMode": "FORCE",
+          "clientId": "{{state.formValues.clientId}}",
+          "clientSecret": "{{state.formValues.clientSecret}}"
+        }
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "LinkedIn Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

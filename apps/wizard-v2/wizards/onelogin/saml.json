@@ -1,0 +1,306 @@
+{
+  "schemaVersion": "1.0",
+  "id": "onelogin-saml",
+  "providerId": "onelogin",
+  "protocol": "saml",
+  "title": "OneLogin SAML",
+  "alias": {
+    "prefix": "onelogin-saml",
+    "sessionKey": "p2_onelogin_saml"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Add a SAML Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Sign in to the OneLogin Administration portal and navigate to Applications → Applications."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Add App\" and search for \"SAML Custom Connector (Advanced)\". Pick the result from OneLogin, Inc."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_1_v2.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure SAML Service Provider Settings",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Enter a Display name, then click \"Save\". Switch to the \"Configuration\" tab."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_3.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter the following service provider values into the Configuration fields."
+        },
+        {
+          "type": "copy",
+          "label": "ACS (Consumer) URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Sometimes called SSO Service URL or Callback URL"
+        },
+        {
+          "type": "copy",
+          "label": "Audience (EntityID)",
+          "value": "{{api.entityId}}",
+          "hint": "Sometimes called Audience URI or SP Entity ID"
+        },
+        {
+          "type": "copy",
+          "label": "SAML Metadata URL",
+          "value": "{{api.samlMetadata}}",
+          "hint": "Sometimes called Entity Provider Metadata or Descriptor URL"
+        },
+        {
+          "type": "text",
+          "content": "Note: the ACS URL Validator field shows a \"*Required\" hint, but it can be left empty — OneLogin will still save the configuration without it."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_acs_validator.png"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_4.png"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Import OneLogin IdP Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the application's \"SSO\" tab, copy the Issuer URL (this is the OneLogin SAML metadata URL)."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_6a.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste the metadata URL below to import the OneLogin IdP configuration into Keycloak."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": [
+            "metadataUrl"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Configure Attribute Mapping",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Open the \"Parameters\" tab and click the \"+\" icon to add each of the following SAML attribute parameters."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_5.png"
+        },
+        {
+          "type": "text",
+          "content": "For each parameter, enable \"Include in SAML assertion\" and map it to the corresponding user attribute."
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "SAML Attribute Name",
+            "keycloakAttribute": "Keycloak User Field"
+          },
+          "rows": [
+            {
+              "idpAttribute": "username",
+              "keycloakAttribute": "username"
+            },
+            {
+              "idpAttribute": "email",
+              "keycloakAttribute": "email"
+            },
+            {
+              "idpAttribute": "firstName",
+              "keycloakAttribute": "firstName"
+            },
+            {
+              "idpAttribute": "lastName",
+              "keycloakAttribute": "lastName"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_5a.png"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Assign User Access",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Switch to the \"Access\" tab and choose the Roles that should have access to this application, then click \"Save\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/onelogin/saml/onelogin_saml_7.png"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create SAML Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create SAML Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the SAML metadata URL provided by your identity provider.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://your-domain.onelogin.com/saml/metadata/appid",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
+        ],
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "username",
+          "friendlyName": "username",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "email",
+          "friendlyName": "email",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

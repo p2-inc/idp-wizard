@@ -1,0 +1,257 @@
+{
+  "schemaVersion": "1.0",
+  "id": "miniorange-saml",
+  "providerId": "miniorange",
+  "protocol": "saml",
+  "title": "miniOrange SAML",
+  "alias": {
+    "prefix": "miniorange-saml",
+    "sessionKey": "p2_miniorange_saml"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a SAML Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the miniOrange admin console, open \"Apps\", click \"Add Application\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_1.png"
+        },
+
+        {
+          "type": "text",
+          "content": "Search for SAML and check the \"Show custom apps only\" box. Click the \"Custom SAML App\" tile."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_2.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter the details below in the appropriate fields."
+        },
+
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_3.png"
+        },
+        {
+          "type": "copy",
+          "label": "Display Name",
+          "value": "My Application",
+          "hint": "An internal name for the app in miniOrange. Anything descriptive works."
+        },
+        {
+          "type": "copy",
+          "label": "SP Entity ID or Issuer",
+          "value": "{{api.entityId}}",
+          "hint": "A unique identifier for the service provider (your Keycloak realm)."
+        },
+        {
+          "type": "copy",
+          "label": "ACS URL",
+          "value": "{{api.ssoUrl}}",
+          "hint": "Assertion Consumer Service URL — where miniOrange sends the SAML response after login."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure Application Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Open the app's \"Metadata\" tab in miniOrange and copy its IdP metadata URL (it may be labeled \"Metadata URL\" or \"IDP Metadata\")."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_4.png"
+        },
+        {
+          "type": "text",
+          "content": "Paste the IdP metadata URL below to import miniOrange's configuration into Keycloak."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": false,
+          "forms": ["metadataUrl"]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Configure Attribute Mapping",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the app's \"Attributes\" tab in miniOrange, configure it to send the following SAML attributes."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/miniorange/saml/miniorange_saml_5.png"
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "name": "Attribute Name",
+            "value": "Attribute Value"
+          },
+          "rows": [
+            {
+              "name": "Username",
+              "value": "username"
+            },
+            {
+              "name": "E-mail Address",
+              "value": "email"
+            },
+            {
+              "name": "First Name",
+              "value": "firstName"
+            },
+            {
+              "name": "Last Name",
+              "value": "lastName"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Create SAML Identity Provider",
+          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "buttonText": "Create SAML Identity Provider",
+          "action": "createIdp",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the SAML metadata URL provided by your identity provider.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://login.xecurify.com/moas/metadata/saml",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": ["METADATA_VALIDATED"]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{alias}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "SAML Identity Provider created successfully."
+          }
+        ],
+        "then": ["addSamlMappers", "clearAlias"]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "Username",
+          "friendlyName": "Username",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "E-mail Address",
+          "friendlyName": "E-mail Address",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "First Name",
+          "friendlyName": "First Name",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "Last Name",
+          "friendlyName": "Last Name",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    }
+  }
+}

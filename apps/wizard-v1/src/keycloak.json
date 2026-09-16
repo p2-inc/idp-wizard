@@ -1,0 +1,8 @@
+{
+  "realm": "master",
+  "auth-server-url": "http://localhost:8080/auth",
+  "ssl-required": "external",
+  "resource": "idp-wizard",
+  "public-client": true,
+  "confidential-port": 0
+}
