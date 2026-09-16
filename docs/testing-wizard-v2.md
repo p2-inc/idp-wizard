@@ -36,6 +36,10 @@ curl -s -H "Authorization: Bearer $TOKEN" "$HOST/admin/realms/$REALM" \
 
 To roll back, set the value to `"v1"` or delete the key the same way (`jq 'del(.attributes["_providerConfig.wizard.version"])'`). The change is per-request — no restart, no cache to clear; a browser reload is enough.
 
+## A counterpart IdP for end-to-end runs
+
+Completing a wizard needs something on the other side to federate with. The easiest counterpart is a second realm on the same Keycloak server acting as the IdP via the **generic OIDC** wizard: create a confidential client in realm B (any redirect URI under realm A's broker endpoint, `https://{keycloak-host}{relative-path}/realms/{realmA}/broker/*`), then feed realm B's issuer (`.../realms/{realmB}`), client id, and secret into realm A's wizard. The same trick works for generic SAML using realm B's SAML descriptor. If you have credentials for a real vendor tenant (Okta, Entra ID, …), running one vendor-specific wizard on v2 is a worthwhile bonus — v2's provider definitions are the new declarative JSON engine, so vendor wizards exercise code paths the generic ones don't — but generic OIDC/SAML is the required minimum.
+
 ## What to test
 
 **1. v1 regression (default path).** Before touching any attribute, load `/realms/{realm}/wizard/` on a realm with no version attribute. It must look and behave exactly as before the upgrade — this proves the 0.53 rollout is the no-op it claims to be. Walk at least one wizard through to a created IdP config.
