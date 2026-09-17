@@ -66,11 +66,14 @@ export function parseIssuerUri(issuerUri: string): { serverUrl: string; realm: s
 /**
  * The path the app is served under. In production the theme template sets
  * `<base href=".../realms/{realm}/wizard/">`; under `vite dev` there is no `<base>`
- * and this resolves to "/". Synchronous, so the router can be built at module scope.
+ * and this resolves to "/". Synchronous, so the router can be built at module scope
+ * and oidc-spa's early init can learn its callback path before the app loads.
  */
 export function getBasepath(): string {
+  const declared = document.querySelector("base")?.getAttribute("href");
+  if (!declared) return "/";
   try {
-    return new URL(document.baseURI).pathname || "/";
+    return new URL(declared, document.baseURI).pathname || "/";
   } catch {
     return "/";
   }
