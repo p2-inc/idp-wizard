@@ -1,5 +1,6 @@
 import { useTheme } from "@/components/theme-provider";
 import { useWizardConfig } from "@/hooks/useWizardConfig";
+import { assetUrl } from "@/runtime-config";
 
 /**
  * Resolves the wizard's branding logo with cascading precedence:
@@ -12,7 +13,7 @@ export function useAppLogo() {
   const { config } = useWizardConfig();
   const themed =
     resolvedTheme === "dark" ? config.logoUrlDark : config.logoUrlLight;
-  const fallback = `/phasetwo-logos/${resolvedTheme}/logo_phase_slash.svg`;
+  const fallback = assetUrl(`/phasetwo-logos/${resolvedTheme}/logo_phase_slash.svg`);
   return {
     src: themed ?? config.logoUrl ?? fallback,
     fallback,

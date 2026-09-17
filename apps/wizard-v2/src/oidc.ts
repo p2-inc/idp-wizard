@@ -36,6 +36,7 @@ export function initOidc(config: RuntimeConfig): Promise<void> {
           implementation: "real",
           issuerUri: config.issuerUri,
           clientId: config.clientId,
+          BASE_URL: config.basepath,
           debugLogs: import.meta.env.VITE_OIDC_SPA_DEBUG === "true" || false,
         },
   );
