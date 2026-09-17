@@ -30,7 +30,7 @@
     "clsx": "^2.1.1",
     "fuse.js": "^7.3.0",
     "lucide-react": "^1.8.0",
-    "oidc-spa": "^10.2.1",
+    "oidc-spa": "^10.2.13",
     "openapi-fetch": "^0.17.0",
     "radix-ui": "^1.4.3",
     "react": "^19.2.4",
