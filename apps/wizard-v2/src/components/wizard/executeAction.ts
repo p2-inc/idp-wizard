@@ -26,6 +26,7 @@ import type { OrgsClient, AdminClient } from "@/api/clients";
 import type { WizardConfig } from "@/hooks/useWizardConfig";
 import { resolveValue, buildTemplateContext } from "./resolveTemplate";
 import { clearAlias } from "@/lib/alias";
+import { resolveIdpTestLink } from "@/lib/idp-test-link";
 import { fetchWithAuth } from "@/oidc";
 
 // ---------------------------------------------------------------------------
@@ -51,6 +52,7 @@ export interface ExecuteActionParams {
     adminLinkOidc: (alias: string) => string;
     adminLinkSocial: (alias: string, providerId: string) => string;
     scimEndpoint: string;
+    testLoginUrl: (alias: string) => string;
     endpoints: WizardEndpoints;
   };
   formValues?: Record<string, unknown>;
@@ -445,7 +447,19 @@ export async function executeAction(
           if (typeof d === "string") {
             localDispatch({ type: d } as ReducerAction);
           } else if (typeof d === "object" && d !== null && "type" in d) {
-            localDispatch(d as unknown as ReducerAction);
+            const reducerAction = d as unknown as ReducerAction;
+            if (
+              reducerAction.type === "SUBMIT_SUCCESS" &&
+              httpAction.endpoint === "createIdp"
+            ) {
+              const idpTestLink = await resolveIdpTestLink({
+                getIdpUrl: params.api.endpoints.getIdp(currentState.alias),
+                testLoginUrl: params.api.testLoginUrl(currentState.alias),
+              });
+              localDispatch({ ...reducerAction, idpTestLink });
+              continue;
+            }
+            localDispatch(reducerAction);
           }
         }
       }

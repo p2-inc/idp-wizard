@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useWizardConfig } from "./useWizardConfig";
 import { getRuntimeConfig } from "@/runtime-config";
+import { buildTestLoginUrl, stripOidcParams } from "@/lib/idp-test-link";
 import { createOrgsClient, createAdminClient, type OrgsClient, type AdminClient } from "@/api/clients";
 import type { WizardContextValue } from "@/context/WizardContext";
 
@@ -54,11 +55,20 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
       scimEndpoint: orgId
         ? `${serverUrl}/realms/${realm}/scim/v2/organizations/${orgId}/`
         : "",
+      testLoginUrl: (alias: string) =>
+        buildTestLoginUrl({
+          serverUrl,
+          realm,
+          alias,
+          redirectUri: stripOidcParams(window.location.href),
+        }),
       endpoints:
         apiMode === "cloud" && orgId
           ? {
               importConfig: `${serverUrl}/realms/${realm}/orgs/${orgId}/idps/import-config`,
               createIdp: `${serverUrl}/realms/${realm}/orgs/${orgId}/idps`,
+              getIdp: (alias: string) =>
+                `${serverUrl}/realms/${realm}/orgs/${orgId}/idps/${alias}`,
               addMappers: (alias: string) =>
                 `${serverUrl}/realms/${realm}/orgs/${orgId}/idps/${alias}/mappers`,
               // LDAP user federation always uses the admin API regardless of apiMode
@@ -73,6 +83,8 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
           : {
               importConfig: `${adminBase}/realms/${realm}/identity-provider/import-config`,
               createIdp: `${adminBase}/realms/${realm}/identity-provider/instances`,
+              getIdp: (alias: string) =>
+                `${adminBase}/realms/${realm}/identity-provider/instances/${alias}`,
               addMappers: (alias: string) =>
                 `${adminBase}/realms/${realm}/identity-provider/instances/${alias}/mappers`,
               testLdapConnection: `${adminBase}/realms/${realm}/testLDAPConnection`,
