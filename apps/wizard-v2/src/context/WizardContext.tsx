@@ -7,6 +7,8 @@ export interface WizardEndpoints {
   importConfig: string;
   /** POST — creates the identity provider */
   createIdp: string;
+  /** GET — reads an identity provider back after creation */
+  getIdp: (alias: string) => string;
   /** POST — adds attribute mappers to an existing IDP */
   addMappers: (alias: string) => string;
   /** POST — tests an LDAP connection or authentication */
@@ -31,6 +33,8 @@ export interface WizardApi {
   adminLinkSocial: (alias: string, providerId: string) => string;
   /** Inbound SCIM endpoint URL — `{authServerUrl}/realms/{realm}/scim/v2/organizations/{orgId}/` */
   scimEndpoint: string;
+  /** Login through the `idp-tester` client pinned to one provider, used to validate a new provider */
+  testLoginUrl: (alias: string) => string;
   endpoints: WizardEndpoints;
 }
 
