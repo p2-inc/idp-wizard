@@ -1,6 +1,23 @@
-> :rocket: **Try it for free** in the Phase Two Enhanced [Keycloak as a service](https://phasetwo.io/?utm_source=github&utm_medium=readme&utm_campaign=idp-wizard).
-
 # Identity Provider and Directory Sync setup wizards for Keycloak
+
+<!-- phasetwo:banner:start - managed by p2-inc/shared-github-actions, edit there -->
+[![build](https://img.shields.io/github/actions/workflow/status/p2-inc/idp-wizard/ci.yml?branch=main&label=build)](https://github.com/p2-inc/idp-wizard/actions/workflows/ci.yml) [![Maven Central](https://img.shields.io/maven-central/v/io.phasetwo/phasetwo-idp-wizard?label=maven%20central)](https://central.sonatype.com/artifact/io.phasetwo/phasetwo-idp-wizard) [![license](https://img.shields.io/badge/license-ELv2-blue)](COPYING) [![docs](https://img.shields.io/badge/docs-phasetwo.io-blue)](https://phasetwo.io/docs/sso/wizards/)
+
+📚 [Documentation](https://phasetwo.io/docs/sso/wizards/) • 🚀 [Hosted Keycloak](https://dash.phasetwo.io/?utm_source=github&utm_medium=readme&utm_campaign=idp-wizard) • 🤖 [Keycloak Skills](https://github.com/p2-inc/keycloak-skills) • 💬 [Support](mailto:support@phasetwo.io)
+
+> [!TIP]
+> **Run this in our cloud, no setup needed.** Phase Two hosts Keycloak with this extension and the rest of ours built in. [Try it free with your own cluster →](https://dash.phasetwo.io/?utm_source=github&utm_medium=readme&utm_campaign=idp-wizard)
+>
+> **Using a coding agent?** Add the Phase Two Keycloak skills ([launch post](https://phasetwo.io/blog/keycloak-skills-mcp-launch)) to Claude Code, Cursor or Codex so your agent can set up passwordless login, SSO, organizations and clusters for you:
+>
+> ```sh
+> # Install the skills (connects to our hosted MCP server)
+> claude plugin marketplace add p2-inc/keycloak-skills
+> claude plugin install phasetwo@keycloak-skills
+> # Or connect to the MCP server directly
+> claude mcp add --transport http keycloak https://mcp.phasetwo.io/mcp
+> ```
+<!-- phasetwo:banner:end -->
 
 Phase Two SSO and Directory Sync setup wizards for on-prem onboarding and enterprise SaaS self-management. This application uses the [Keycloak Admin API](https://www.keycloak.org/docs-api/24.0.1/rest-api/index.html) and the [Phase Two Organizations API](https://phasetwo.io/api/phase-two-admin-rest-api) to provide wizards for onboarding customer Identity Providers. The goal of these wizards is to solve the complex and error-prone process of connecting a vendor identity system a bit easier, and to avoid exposing customers to the Keycloak UI.
 
