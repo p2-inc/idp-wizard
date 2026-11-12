@@ -138,6 +138,8 @@ test.describe("SAML wizard — Auth0", () => {
     const body = (await createRequest).postDataJSON();
     expect(body.displayName).toBe("Auth0 SAML");
     expect(body.alias).toMatch(/^auth0-saml-/);
+    await wizard.waitForSuccess(/SAML Identity Provider created successfully/i);
+    await expect(displayName).toBeDisabled();
   });
 
   test("sends an edited display name, falling back to the alias when blank", async ({
