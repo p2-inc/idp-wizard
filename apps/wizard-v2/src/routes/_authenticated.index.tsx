@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import Fuse from "fuse.js";
@@ -29,7 +29,15 @@ import {
   type Provider,
 } from "@/data/providers";
 import { useWizardConfig } from "@/hooks/useWizardConfig";
+import { useProtocolFilter } from "@/hooks/useProtocolFilter";
 import { useOidc } from "@/oidc";
+import { useOrgDisplayNames } from "@/hooks/useOrgDisplayNames";
+import { useRealmIdpAccess } from "@/hooks/useRealmIdpAccess";
+import {
+  defaultOrgId,
+  eligibleOrgIds,
+  type OrgClaims,
+} from "@/lib/org-access";
 
 const searchSchema = z.object({
   org_id: z.string().optional(),
@@ -41,22 +49,15 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 // ---------------------------------------------------------------------------
-// Required roles to manage identity providers in an org
+// Org labels
 // ---------------------------------------------------------------------------
-const REQUIRED_ORG_ROLES = [
-  "view-organization",
-  "manage-organization",
-  "view-identity-providers",
-  "manage-identity-providers",
-];
-
-// ---------------------------------------------------------------------------
-// Token organizations claim shape
-// ---------------------------------------------------------------------------
-type OrgClaims = Record<string, { name?: string; roles?: string[] }>;
-
-function hasAllRoles(orgEntry: { roles?: string[] }): boolean {
-  return REQUIRED_ORG_ROLES.every((r) => orgEntry.roles?.includes(r));
+/** Prefer the org's displayName, then its name, then its id. */
+function orgLabel(
+  id: string,
+  orgs: OrgClaims,
+  displayNames: Record<string, string>,
+): string {
+  return displayNames[id] || orgs[id]?.name || id;
 }
 
 // ---------------------------------------------------------------------------
@@ -125,19 +126,31 @@ function ProviderRow({
 function OrgPicker({
   orgId,
   orgs,
+  displayNames,
+  eligibleIds,
+  canUseGlobal,
+  open,
+  onOpenChange: setOpen,
   onChange,
 }: {
   orgId: string | null;
   orgs: OrgClaims;
+  displayNames: Record<string, string>;
+  eligibleIds: string[];
+  /** Offer "Global (realm-wide)" — only for users with realm IdP roles. */
+  canUseGlobal: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onChange: (id: string | null) => void;
 }) {
-  const [open, setOpen] = useState(false);
-
-  const eligibleOrgs = Object.entries(orgs).filter(([, v]) => hasAllRoles(v));
-  if (eligibleOrgs.length === 0) return null;
+  if (eligibleIds.length === 0) return null;
 
   const currentName =
-    orgId && orgs[orgId] ? (orgs[orgId].name ?? orgId) : "Global (realm-wide)";
+    orgId && orgs[orgId]
+      ? orgLabel(orgId, orgs, displayNames)
+      : canUseGlobal
+        ? "Global (realm-wide)"
+        : "Select an organization";
 
   return (
     <div className="w-full max-w-sm">
@@ -158,31 +171,32 @@ function OrgPicker({
             <DialogTitle>Select Organization</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-1 py-2">
-            {/* Realm-wide option */}
-            <button
-              onClick={() => {
-                onChange(null);
-                setOpen(false);
-              }}
-              className={cn(
-                "flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent",
-                !orgId && "bg-accent",
-              )}
-            >
-              <div>
-                <p className="font-medium">Global</p>
-                <p className="text-muted-foreground text-xs">
-                  Realm-wide configuration
-                </p>
-              </div>
-              {!orgId && <Check className="h-4 w-4 text-primary" />}
-            </button>
-
-            {eligibleOrgs.length > 0 && (
-              <div className="border-border my-1 border-t" />
+            {/* Realm-wide option — only with realm IdP roles */}
+            {canUseGlobal && (
+              <>
+                <button
+                  onClick={() => {
+                    onChange(null);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent",
+                    !orgId && "bg-accent",
+                  )}
+                >
+                  <div>
+                    <p className="font-medium">Global</p>
+                    <p className="text-muted-foreground text-xs">
+                      Realm-wide configuration
+                    </p>
+                  </div>
+                  {!orgId && <Check className="h-4 w-4 text-primary" />}
+                </button>
+                <div className="border-border my-1 border-t" />
+              </>
             )}
 
-            {eligibleOrgs.map(([id, org]) => (
+            {eligibleIds.map((id) => (
               <button
                 key={id}
                 onClick={() => {
@@ -195,7 +209,9 @@ function OrgPicker({
                 )}
               >
                 <div>
-                  <p className="font-medium">{org.name ?? id}</p>
+                  <p className="font-medium">
+                    {orgLabel(id, orgs, displayNames)}
+                  </p>
                   <p className="text-muted-foreground font-mono text-xs">
                     {id}
                   </p>
@@ -271,6 +287,7 @@ function ProviderSelector() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const { config } = useWizardConfig();
+  const { filterProviders } = useProtocolFilter();
   const { org_id: initialOrgId } = Route.useSearch();
 
   // Org state — starts from URL param, can be changed via picker
@@ -281,16 +298,38 @@ function ProviderSelector() {
   const orgs: OrgClaims =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ((oidc.decodedIdToken as any)?.organizations as OrgClaims) ?? {};
+  const eligibleIds = eligibleOrgIds(orgs);
+  const orgDisplayNames = useOrgDisplayNames(eligibleIds.length > 0);
+
+  // Global (realm-wide) mode calls the admin API, so only offer it to users who hold
+  // the realm IdP roles. null while the access token is being read.
+  const canUseGlobal = useRealmIdpAccess();
+  const mustPickOrg = canUseGlobal === false && eligibleIds.length > 0;
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const { src: logoSrc, fallback: fallbackLogo } = useAppLogo();
 
+  // Drop protocols the realm has disabled (e.g. LDAP), and providers left with none.
+  const visiblePopular = useMemo(
+    () => filterProviders(popularProviders),
+    [filterProviders],
+  );
+  const visibleProviders = useMemo(
+    () => filterProviders(providers),
+    [filterProviders],
+  );
+  const visibleGeneric = useMemo(
+    () => filterProviders(genericProviders),
+    [filterProviders],
+  );
+
   const fuse = useMemo(
     () =>
-      new Fuse([...popularProviders, ...providers, ...genericProviders], {
+      new Fuse([...visiblePopular, ...visibleProviders, ...visibleGeneric], {
         keys: ["name"],
         threshold: 0.4,
       }),
-    [],
+    [visiblePopular, visibleProviders, visibleGeneric],
   );
 
   const filteredProviders = query
@@ -298,6 +337,12 @@ function ProviderSelector() {
     : null;
 
   const handleSelect = (provider: Provider) => {
+    // Without realm IdP roles, a wizard started without an org would hit the admin
+    // API and fail — ask for the org first.
+    if (mustPickOrg && !orgId) {
+      setPickerOpen(true);
+      return;
+    }
     const search = orgId ? { org_id: orgId } : {};
     if (provider.protocols.length === 1) {
       navigate({
@@ -323,6 +368,14 @@ function ProviderSelector() {
     });
   };
 
+  // Default to the user's only eligible org when Global is not an option for them.
+  const autoOrgId =
+    !orgId && canUseGlobal !== null ? defaultOrgId(eligibleIds, canUseGlobal) : null;
+  useEffect(() => {
+    if (autoOrgId) handleOrgChange(autoOrgId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOrgId]);
+
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center gap-6 p-6">
       <ThemeToggle className="fixed bottom-4 right-4 z-10" />
@@ -343,9 +396,18 @@ function ProviderSelector() {
         )}
       </div>
 
-      {/* Org picker — only shown when there are eligible orgs */}
-      {Object.keys(orgs).some((id) => hasAllRoles(orgs[id])) && (
-        <OrgPicker orgId={orgId} orgs={orgs} onChange={handleOrgChange} />
+      {/* Org picker — only shown when there are eligible orgs, once realm access is known */}
+      {canUseGlobal !== null && (
+        <OrgPicker
+          orgId={orgId}
+          orgs={orgs}
+          displayNames={orgDisplayNames}
+          eligibleIds={eligibleIds}
+          canUseGlobal={canUseGlobal}
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
+          onChange={handleOrgChange}
+        />
       )}
 
       {/* Provider search card */}
@@ -386,7 +448,7 @@ function ProviderSelector() {
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Popular
               </div>
-              {popularProviders.map((provider) => (
+              {visiblePopular.map((provider) => (
                 <ProviderRow
                   key={provider.id}
                   provider={provider}
@@ -399,7 +461,7 @@ function ProviderSelector() {
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Providers
               </div>
-              {providers.map((provider) => (
+              {visibleProviders.map((provider) => (
                 <ProviderRow
                   key={provider.id}
                   provider={provider}
@@ -412,12 +474,12 @@ function ProviderSelector() {
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Generic
               </div>
-              {genericProviders.map((provider, i) => (
+              {visibleGeneric.map((provider, i) => (
                 <ProviderRow
                   key={provider.id}
                   provider={provider}
                   onSelect={handleSelect}
-                  isLast={i === genericProviders.length - 1}
+                  isLast={i === visibleGeneric.length - 1}
                 />
               ))}
             </>

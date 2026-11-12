@@ -83,11 +83,15 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
   useEffect(() => {
     if (!loader) return;
     loader()
-      .then((mod) =>
-        setDefinition((mod as { default: WizardDefinition }).default),
-      )
+      .then((mod) => {
+        const def = (mod as { default: WizardDefinition }).default;
+        setDefinition(def);
+        // Seed a readable IdP display name (e.g. "Okta SAML") rather than
+        // exposing the generated alias. Editable on the confirmation step.
+        dispatch({ type: "SET_DISPLAY_NAME", displayName: def.title });
+      })
       .catch(() => setLoadFailed(true));
-  }, [loader]);
+  }, [loader, dispatch]);
 
   // ---------------------------------------------------------------------------
   // Action handler
@@ -308,6 +312,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
           <WizardStep
             step={currentStep}
             forms={definition.forms}
+            actions={definition.actions}
             onAction={handleAction}
             idpProviderId={definition.idpConfig.providerId}
           />

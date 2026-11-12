@@ -152,6 +152,13 @@ The `apiMode` can also be set via the realm config (`config.apiMode` from `useWi
 
 Both endpoint sets are fully typed via the generated OpenAPI clients.
 
+**Org picker** (provider selector, `src/lib/org-access.ts`):
+
+- Lists orgs from the token's `organizations` claim where the user holds all of `REQUIRED_ORG_ROLES`.
+- Offers **Global (realm-wide)** only when the user holds `view-identity-providers` and `manage-identity-providers` on `realm-management` (or `{targetRealm}-realm` for master-realm users), read from `resource_access` in the access or ID token (`useRealmIdpAccess`).
+- Without those roles: a single eligible org is selected by default (`?org_id=` is set), and with several, picking a provider before an org opens the picker.
+- In mock-OIDC mode, e2e tests set token claims through `window.__WIZARD_MOCK_ID_TOKEN__` (see `e2e/org-picker.spec.ts`).
+
 ---
 
 ## API clients
@@ -238,7 +245,7 @@ Block types:
 - `formGroup` — renders a tabbed/exclusive set of forms: `{ type: "formGroup", id: "metadataInput", exclusive: true, forms: ["metadataUrl", "metadataFile", "metadataManual"] }`
 - `attributeTable` — two-column mapping display
 - `image` — step screenshot: `{ type: "image", src: "/wizards/{provider}/{protocol}/step1.png", alt: "...", caption: "...", fullWidth: true }`
-- `confirm` — final step confirmation button + result display
+- `confirm` — final step confirmation button + result display. When the confirm action's body sends `"displayName": "{{displayName}}"`, an editable "Display name" field is shown above the button. Always use `{{displayName}}` (not `{{alias}}`) for `createIdp` display names so admins and users see a readable name.
 
 ### Screenshots
 
@@ -276,6 +283,7 @@ AVIFs was replaced with full-resolution PNGs.
 | `{{api.adminLinkSaml}}` | Keycloak admin console link for the SAML IDP          |
 | `{{api.adminLinkOidc}}` | Keycloak admin console link for the OIDC IDP          |
 | `{{alias}}`             | The generated alias for this wizard session           |
+| `{{displayName}}`       | IdP display name — defaults to the wizard `title`, editable on the confirm step; falls back to `{{alias}}` when blank |
 | `{{state.metadata}}`    | The validated IDP config object from `import-config`  |
 | `{{form.fieldId}}`      | A field value from the currently active form          |
 | `{{item.*}}`            | Current item in a `foreach` action iteration          |
@@ -336,6 +344,7 @@ State lives in `WizardContext` and is managed by `wizardReducer` in `src/context
 ```ts
 interface WizardState {
   alias: string; // stable for the session
+  displayName: string; // IdP display name, seeded from definition.title
   currentStep: number; // the step currently displayed
   stepIdReached: number; // furthest step reached (controls canJumpTo)
   metadata: Record<string, unknown> | null; // from import-config response
@@ -350,6 +359,7 @@ interface WizardState {
 type WizardAction =
   | { type: "ADVANCE_STEP"; toStep: number }
   | { type: "SET_METADATA"; metadata: Record<string, unknown> }
+  | { type: "SET_DISPLAY_NAME"; displayName: string }
   | { type: "METADATA_VALIDATED" }
   | { type: "SUBMIT_START" }
   | { type: "SUBMIT_SUCCESS"; result: string; idpTestLink?: string }

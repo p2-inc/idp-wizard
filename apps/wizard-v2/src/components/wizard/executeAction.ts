@@ -29,6 +29,11 @@ import { resolveValue, buildTemplateContext } from "./resolveTemplate";
 import { clearAlias } from "@/lib/alias";
 import { resolveIdpTestLink } from "@/lib/idp-test-link";
 import { fetchWithAuth } from "@/oidc";
+import {
+  describeHttpError,
+  NETWORK_ERROR_MESSAGE,
+  type ErrorScope,
+} from "@/lib/http-error";
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -151,6 +156,18 @@ function resolveEndpoint(
   }
 }
 
+/** Endpoints that require the "manage-identity-providers" role. */
+const IDP_ENDPOINTS: ReadonlySet<EndpointSlot> = new Set([
+  "importConfig",
+  "createIdp",
+  "addMappers",
+]);
+
+/** Whether a request URL targets the org-scoped (Phase Two orgs) API. */
+function errorScopeFor(url: string, orgId: string | null): ErrorScope {
+  return orgId && url.includes(`/orgs/${orgId}/`) ? "organization" : "realm";
+}
+
 // ---------------------------------------------------------------------------
 // Feature-flag middleware
 // ---------------------------------------------------------------------------
@@ -236,6 +253,13 @@ function applyUsernameMapperImport(
 // HTTP helper
 // ---------------------------------------------------------------------------
 
+class NetworkError extends Error {
+  constructor(cause: unknown) {
+    super("Network request failed", { cause });
+    this.name = "NetworkError";
+  }
+}
+
 async function execHttp(
   url: string,
   method: string,
@@ -260,7 +284,13 @@ async function execHttp(
     options.body = JSON.stringify(body);
   }
 
-  const response = await fetchWithAuth(url, options);
+  let response: Response;
+  try {
+    response = await fetchWithAuth(url, options);
+  } catch (err) {
+    // fetch() rejects only when no response was received (offline, DNS, CORS)
+    throw new NetworkError(err);
+  }
 
   let data: unknown = null;
   const text = await response.text();
@@ -437,8 +467,15 @@ export async function executeAction(
       );
 
       if (!result.ok) {
-        const errorMsg =
-          httpAction.messages?.error ?? `Action failed (HTTP ${result.status})`;
+        const errorMsg = describeHttpError({
+          status: result.status,
+          data: result.data,
+          fallback: httpAction.messages?.error,
+          scope: errorScopeFor(url, params.orgId),
+          requiredRole: IDP_ENDPOINTS.has(httpAction.endpoint)
+            ? "manage-identity-providers"
+            : undefined,
+        });
         localDispatch({ type: "SUBMIT_ERROR", error: errorMsg });
         return { ok: false, message: errorMsg };
       }
@@ -510,9 +547,11 @@ export async function executeAction(
 
     const successMsg = httpAction.messages?.success;
     return { ok: true, message: successMsg };
-  } catch {
+  } catch (err) {
     const errorMsg =
-      httpAction.messages?.error ?? "An unexpected error occurred.";
+      err instanceof NetworkError
+        ? NETWORK_ERROR_MESSAGE
+        : (httpAction.messages?.error ?? "An unexpected error occurred.");
     localDispatch({ type: "SUBMIT_ERROR", error: errorMsg });
     return { ok: false, message: errorMsg };
   }
