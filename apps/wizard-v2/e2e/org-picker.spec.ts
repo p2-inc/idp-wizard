@@ -11,8 +11,9 @@ import {
 /**
  * Org picker defaults (issue #289).
  *
- * "Global (realm-wide)" is only offered to users with realm IdP roles; a user without
- * them who has exactly one eligible org gets that org selected by default.
+ * "Global (realm-wide)" can only be chosen by users with realm IdP roles (others see it
+ * disabled); a user without them who has exactly one eligible org gets that org
+ * selected by default. Disabled orgs and the wizard-route gate are in org-access.spec.ts.
  *
  * The UI tests run in mock-OIDC mode and set token claims through
  * `window.__WIZARD_MOCK_ID_TOKEN__` (see src/oidc.ts).
@@ -22,6 +23,11 @@ const REALM_IDP_ROLES = ["view-identity-providers", "manage-identity-providers"]
 
 const realmAdminClaims = {
   resource_access: { "realm-management": { roles: REALM_IDP_ROLES } },
+};
+
+/** Client roles that don't include the realm IdP roles: realm access is "denied". */
+const noRealmRoleClaims = {
+  resource_access: { account: { roles: ["view-profile"] } },
 };
 
 function org(name: string, roles: string[] = REQUIRED_ORG_ROLES) {
@@ -96,7 +102,10 @@ test.describe("org access logic", () => {
 
 test.describe("org picker", () => {
   test("org admin with one org gets it selected by default", async ({ page }) => {
-    await mockIdToken(page, { organizations: { "org-1": org("Acme") } });
+    await mockIdToken(page, {
+      ...noRealmRoleClaims,
+      organizations: { "org-1": org("Acme") },
+    });
     await page.goto("/");
 
     await expect(page).toHaveURL(/[?&]org_id=org-1/);
@@ -105,11 +114,14 @@ test.describe("org picker", () => {
 
     await picker.click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByText("Realm-wide configuration")).toHaveCount(0);
+    await expect(dialog.getByRole("button", { name: /^Global\b/ })).toBeDisabled();
   });
 
   test("org admin with one org starts wizards in that org", async ({ page }) => {
-    await mockIdToken(page, { organizations: { "org-1": org("Acme") } });
+    await mockIdToken(page, {
+      ...noRealmRoleClaims,
+      organizations: { "org-1": org("Acme") },
+    });
     await page.goto("/");
     await expect(page).toHaveURL(/[?&]org_id=org-1/);
 
@@ -117,10 +129,11 @@ test.describe("org picker", () => {
     await expect(page).toHaveURL(/\/wizard\/adfs.*[?&]org_id=org-1/);
   });
 
-  test("org admin with several orgs must pick one; Global is not offered", async ({
+  test("org admin with several orgs must pick one; Global is disabled", async ({
     page,
   }) => {
     await mockIdToken(page, {
+      ...noRealmRoleClaims,
       organizations: { "org-1": org("Acme"), "org-2": org("Globex") },
     });
     await page.goto("/");
@@ -132,7 +145,7 @@ test.describe("org picker", () => {
     await page.getByRole("button", { name: /ADFS/i }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByText("Realm-wide configuration")).toHaveCount(0);
+    await expect(dialog.getByRole("button", { name: /^Global\b/ })).toBeDisabled();
     expect(new URL(page.url()).pathname).toBe("/");
 
     await dialog.getByRole("button", { name: /Globex/ }).click();
@@ -158,6 +171,7 @@ test.describe("org picker", () => {
 
   test("an explicit org_id in the URL is kept", async ({ page }) => {
     await mockIdToken(page, {
+      ...noRealmRoleClaims,
       organizations: { "org-1": org("Acme"), "org-2": org("Globex") },
     });
     await page.goto("/?org_id=org-2");

@@ -30,14 +30,15 @@ import {
 } from "@/data/providers";
 import { useWizardConfig } from "@/hooks/useWizardConfig";
 import { useProtocolFilter } from "@/hooks/useProtocolFilter";
-import { useOidc } from "@/oidc";
 import { useOrgDisplayNames } from "@/hooks/useOrgDisplayNames";
-import { useRealmIdpAccess } from "@/hooks/useRealmIdpAccess";
+import { useOrgAccess } from "@/hooks/useOrgAccess";
 import {
   defaultOrgId,
-  eligibleOrgIds,
-  type OrgClaims,
+  isEligible,
+  type OrgOption,
+  type RealmIdpAccess,
 } from "@/lib/org-access";
+import { NoIdpAccessNotice } from "@/components/org-access";
 
 const searchSchema = z.object({
   org_id: z.string().optional(),
@@ -52,12 +53,8 @@ export const Route = createFileRoute("/_authenticated/")({
 // Org labels
 // ---------------------------------------------------------------------------
 /** Prefer the org's displayName, then its name, then its id. */
-function orgLabel(
-  id: string,
-  orgs: OrgClaims,
-  displayNames: Record<string, string>,
-): string {
-  return displayNames[id] || orgs[id]?.name || id;
+function orgLabel(org: OrgOption, displayNames: Record<string, string>): string {
+  return displayNames[org.id] || org.name;
 }
 
 // ---------------------------------------------------------------------------
@@ -123,39 +120,90 @@ function ProviderRow({
 // ---------------------------------------------------------------------------
 // Organization picker
 // ---------------------------------------------------------------------------
+function PickerOption({
+  title,
+  subtitle,
+  selected,
+  monoSubtitle,
+  disabledReason,
+  onSelect,
+}: {
+  title: string;
+  subtitle: string;
+  selected: boolean;
+  /** Render the subtitle in monospace (for ids). */
+  monoSubtitle?: boolean;
+  /** When set, the option is shown but cannot be chosen, with this explanation. */
+  disabledReason?: string;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      onClick={onSelect}
+      disabled={!!disabledReason}
+      className={cn(
+        "flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm transition-colors",
+        disabledReason ? "cursor-not-allowed opacity-60" : "hover:bg-accent",
+        selected && "bg-accent",
+      )}
+    >
+      <div>
+        <p className="font-medium">{title}</p>
+        <p
+          className={cn(
+            "text-muted-foreground text-xs",
+            monoSubtitle && "font-mono",
+          )}
+        >
+          {subtitle}
+        </p>
+        {disabledReason && (
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            {disabledReason}
+          </p>
+        )}
+      </div>
+      {selected && <Check className="h-4 w-4 text-primary" />}
+    </button>
+  );
+}
+
 function OrgPicker({
   orgId,
   orgs,
   displayNames,
-  eligibleIds,
-  canUseGlobal,
+  realmAccess,
   open,
-  onOpenChange: setOpen,
+  onOpenChange,
   onChange,
 }: {
   orgId: string | null;
-  orgs: OrgClaims;
+  orgs: OrgOption[];
   displayNames: Record<string, string>;
-  eligibleIds: string[];
-  /** Offer "Global (realm-wide)" — only for users with realm IdP roles. */
-  canUseGlobal: boolean;
+  realmAccess: RealmIdpAccess;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onChange: (id: string | null) => void;
 }) {
-  if (eligibleIds.length === 0) return null;
+  const globalDenied = realmAccess === "denied";
+  const current = orgs.find((o) => o.id === orgId);
+  const currentName = orgId
+    ? current
+      ? orgLabel(current, displayNames)
+      : orgId
+    : globalDenied
+      ? "Select an organization"
+      : "Global (realm-wide)";
 
-  const currentName =
-    orgId && orgs[orgId]
-      ? orgLabel(orgId, orgs, displayNames)
-      : canUseGlobal
-        ? "Global (realm-wide)"
-        : "Select an organization";
+  const choose = (id: string | null) => {
+    onChange(id);
+    onOpenChange(false);
+  };
 
   return (
     <div className="w-full max-w-sm">
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => onOpenChange(true)}
         className="border-border bg-card flex w-full items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm shadow-sm transition-colors hover:bg-accent"
       >
         <div className="flex items-center gap-2 truncate">
@@ -165,59 +213,41 @@ function OrgPicker({
         <ChevronDown className="text-muted-foreground h-4 w-4 shrink-0" />
       </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Select Organization</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-1 py-2">
-            {/* Realm-wide option — only with realm IdP roles */}
-            {canUseGlobal && (
-              <>
-                <button
-                  onClick={() => {
-                    onChange(null);
-                    setOpen(false);
-                  }}
-                  className={cn(
-                    "flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent",
-                    !orgId && "bg-accent",
-                  )}
-                >
-                  <div>
-                    <p className="font-medium">Global</p>
-                    <p className="text-muted-foreground text-xs">
-                      Realm-wide configuration
-                    </p>
-                  </div>
-                  {!orgId && <Check className="h-4 w-4 text-primary" />}
-                </button>
-                <div className="border-border my-1 border-t" />
-              </>
-            )}
+            {/* Realm-wide option — uses the Keycloak Admin API */}
+            <PickerOption
+              title="Global"
+              subtitle="Realm-wide configuration"
+              selected={!orgId}
+              disabledReason={
+                globalDenied
+                  ? "Requires the realm roles view-identity-providers and manage-identity-providers"
+                  : undefined
+              }
+              onSelect={() => choose(null)}
+            />
 
-            {eligibleIds.map((id) => (
-              <button
-                key={id}
-                onClick={() => {
-                  onChange(id);
-                  setOpen(false);
-                }}
-                className={cn(
-                  "flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent",
-                  orgId === id && "bg-accent",
-                )}
-              >
-                <div>
-                  <p className="font-medium">
-                    {orgLabel(id, orgs, displayNames)}
-                  </p>
-                  <p className="text-muted-foreground font-mono text-xs">
-                    {id}
-                  </p>
-                </div>
-                {orgId === id && <Check className="h-4 w-4 text-primary" />}
-              </button>
+            {orgs.length > 0 && <div className="border-border my-1 border-t" />}
+
+            {orgs.map((org) => (
+              <PickerOption
+                key={org.id}
+                title={orgLabel(org, displayNames)}
+                subtitle={org.id}
+                monoSubtitle
+                selected={orgId === org.id}
+                disabledReason={
+                  isEligible(org)
+                    ? undefined
+                    : `Missing organization role${org.missingRoles.length > 1 ? "s" : ""}: ${org.missingRoles.join(", ")}`
+                }
+                onSelect={() => choose(org.id)}
+              />
             ))}
           </div>
         </DialogContent>
@@ -292,20 +322,15 @@ function ProviderSelector() {
 
   // Org state — starts from URL param, can be changed via picker
   const [orgId, setOrgId] = useState<string | null>(initialOrgId ?? null);
-
-  // Read organizations from the OIDC token
-  const oidc = useOidc();
-  const orgs: OrgClaims =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ((oidc.decodedIdToken as any)?.organizations as OrgClaims) ?? {};
-  const eligibleIds = eligibleOrgIds(orgs);
-  const orgDisplayNames = useOrgDisplayNames(eligibleIds.length > 0);
-
-  // Global (realm-wide) mode calls the admin API, so only offer it to users who hold
-  // the realm IdP roles. null while the access token is being read.
-  const canUseGlobal = useRealmIdpAccess();
-  const mustPickOrg = canUseGlobal === false && eligibleIds.length > 0;
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  const { orgs, eligibleOrgs, realmAccess } = useOrgAccess();
+  const orgDisplayNames = useOrgDisplayNames(orgs.length > 0);
+
+  // Without realm identity-provider roles, Global (the Keycloak Admin API) can only end in
+  // a 403, so it must not be the silent default: the user has to be in an organization.
+  const globalDenied = realmAccess === "denied";
+  const needsOrg = globalDenied && !orgId;
 
   const { src: logoSrc, fallback: fallbackLogo } = useAppLogo();
 
@@ -339,7 +364,7 @@ function ProviderSelector() {
   const handleSelect = (provider: Provider) => {
     // Without realm IdP roles, a wizard started without an org would hit the admin
     // API and fail — ask for the org first.
-    if (mustPickOrg && !orgId) {
+    if (needsOrg && eligibleOrgs.length > 0) {
       setPickerOpen(true);
       return;
     }
@@ -369,12 +394,23 @@ function ProviderSelector() {
   };
 
   // Default to the user's only eligible org when Global is not an option for them.
-  const autoOrgId =
-    !orgId && canUseGlobal !== null ? defaultOrgId(eligibleIds, canUseGlobal) : null;
+  const autoOrgId = needsOrg
+    ? defaultOrgId(
+        eligibleOrgs.map((o) => o.id),
+        false,
+      )
+    : null;
   useEffect(() => {
     if (autoOrgId) handleOrgChange(autoOrgId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoOrgId]);
+
+  // The picker is useful when there is an org to switch to, or when the user can't
+  // configure Global and should see which orgs exist and what they lack. It waits for
+  // realm access so "Global" never flashes up first.
+  const showPicker =
+    realmAccess !== "loading" &&
+    (eligibleOrgs.length > 0 || (globalDenied && orgs.length > 0));
 
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center gap-6 p-6">
@@ -396,18 +432,25 @@ function ProviderSelector() {
         )}
       </div>
 
-      {/* Org picker — only shown when there are eligible orgs, once realm access is known */}
-      {canUseGlobal !== null && (
+      {showPicker && (
         <OrgPicker
           orgId={orgId}
           orgs={orgs}
           displayNames={orgDisplayNames}
-          eligibleIds={eligibleIds}
-          canUseGlobal={canUseGlobal}
+          realmAccess={realmAccess}
           open={pickerOpen}
           onOpenChange={setPickerOpen}
           onChange={handleOrgChange}
         />
+      )}
+
+      {globalDenied && eligibleOrgs.length === 0 && (
+        <NoIdpAccessNotice className="w-full max-w-sm" />
+      )}
+      {needsOrg && eligibleOrgs.length > 1 && (
+        <p className="text-muted-foreground w-full max-w-sm text-center text-xs">
+          Select the organization to configure identity providers for.
+        </p>
       )}
 
       {/* Provider search card */}

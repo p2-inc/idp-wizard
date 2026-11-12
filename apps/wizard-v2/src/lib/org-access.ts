@@ -1,19 +1,20 @@
 /**
- * Access checks that decide which scopes the org picker offers.
+ * Who may configure identity providers where, and which scopes the org picker offers.
  *
- * Two scopes exist:
- * - **Global (realm-wide)** — the wizard calls the Keycloak admin API, which needs the
- *   realm IdP roles on the realm's management client.
- * - **Organization** — the wizard calls the Phase Two Orgs API, which needs org roles
- *   from the `organizations` token claim.
+ * Two scopes, two different APIs:
+ *
+ * - **Organization** — Phase Two Orgs API (`/realms/{realm}/orgs/{orgId}/idps/...`).
+ *   The server only checks the org-level identity-provider roles (plus org membership,
+ *   which having roles in the `organizations` claim implies). `view-organization` and
+ *   `manage-organization` are *not* needed, so they are not required here either.
+ * - **Global (realm-wide)** — Keycloak Admin API (`/admin/realms/{realm}/identity-provider/...`).
+ *   Requires the realm IdP roles on the realm's management client.
  *
  * Kept free of React and app imports so the logic can be tested in isolation.
  */
 
-/** Roles needed in an org to manage its identity providers. */
+/** Org roles the Orgs API checks for viewing and creating an org's identity providers. */
 export const REQUIRED_ORG_ROLES = [
-  "view-organization",
-  "manage-organization",
   "view-identity-providers",
   "manage-identity-providers",
 ];
@@ -30,15 +31,32 @@ export type OrgClaims = Record<string, { name?: string; roles?: string[] }>;
 /** Shape of Keycloak's `resource_access` token claim. */
 export type ResourceAccess = Record<string, { roles?: string[] }>;
 
-export function hasAllOrgRoles(orgEntry: { roles?: string[] }): boolean {
-  return REQUIRED_ORG_ROLES.every((r) => orgEntry.roles?.includes(r));
+export interface OrgOption {
+  id: string;
+  /** The claim's `name`, falling back to the id. */
+  name: string;
+  /** Required org roles the user lacks; empty when the org can be configured. */
+  missingRoles: string[];
+}
+
+export function isEligible(org: OrgOption): boolean {
+  return org.missingRoles.length === 0;
+}
+
+/** Every org in the claim, in claim order, annotated with the roles it is missing. */
+export function listOrgOptions(orgs: OrgClaims | undefined | null): OrgOption[] {
+  return Object.entries(orgs ?? {}).map(([id, entry]) => ({
+    id,
+    name: entry?.name ?? id,
+    missingRoles: REQUIRED_ORG_ROLES.filter((r) => !entry?.roles?.includes(r)),
+  }));
 }
 
 /** Org ids the user can manage IdPs for, in claim order. */
-export function eligibleOrgIds(orgs: OrgClaims): string[] {
-  return Object.entries(orgs)
-    .filter(([, v]) => hasAllOrgRoles(v))
-    .map(([id]) => id);
+export function eligibleOrgIds(orgs: OrgClaims | undefined | null): string[] {
+  return listOrgOptions(orgs)
+    .filter(isEligible)
+    .map((o) => o.id);
 }
 
 /**
@@ -59,7 +77,8 @@ export function realmManagementClientId(
 /**
  * Whether any of the given `resource_access` claims grant all realm IdP roles on the
  * target realm's management client. Roles are merged across claims, so the access
- * token and ID token can be passed together.
+ * token and ID token can be passed together. Keycloak expands composite roles
+ * (e.g. `realm-admin`) into `resource_access`, so a plain lookup suffices.
  */
 export function hasRealmIdpRoles(
   resourceAccessClaims: Array<ResourceAccess | undefined>,
@@ -71,6 +90,32 @@ export function hasRealmIdpRoles(
     resourceAccessClaims.flatMap((ra) => ra?.[clientId]?.roles ?? []),
   );
   return REQUIRED_REALM_IDP_ROLES.every((r) => roles.has(r));
+}
+
+/**
+ * Whether the user can configure realm-wide identity providers.
+ *
+ * - `"granted"` / `"denied"` — determined from token claims.
+ * - `"unknown"` — no token told us (e.g. an opaque access token and no
+ *   `resource_access` in the ID token); callers must not restrict anything on this basis.
+ * - `"loading"` — the access token has not been read yet.
+ */
+export type RealmIdpAccess = "loading" | "granted" | "denied" | "unknown";
+
+/**
+ * Realm IdP access from the `resource_access` claims of the available tokens. Pass `{}`
+ * for a token that was read but carries no `resource_access`, and `undefined` for one
+ * that could not be read; only when every entry is `undefined` is the answer `"unknown"`.
+ */
+export function realmIdpAccess(
+  resourceAccessClaims: Array<ResourceAccess | undefined>,
+  authRealm: string,
+  targetRealm: string,
+): Exclude<RealmIdpAccess, "loading"> {
+  if (resourceAccessClaims.every((ra) => ra === undefined)) return "unknown";
+  return hasRealmIdpRoles(resourceAccessClaims, authRealm, targetRealm)
+    ? "granted"
+    : "denied";
 }
 
 /**

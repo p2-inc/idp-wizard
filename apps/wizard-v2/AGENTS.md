@@ -152,12 +152,13 @@ The `apiMode` can also be set via the realm config (`config.apiMode` from `useWi
 
 Both endpoint sets are fully typed via the generated OpenAPI clients.
 
-**Org picker** (provider selector, `src/lib/org-access.ts`):
+### Who can configure what (`src/lib/org-access.ts`, `useOrgAccess`, `useRealmIdpAccess`)
 
-- Lists orgs from the token's `organizations` claim where the user holds all of `REQUIRED_ORG_ROLES`.
-- Offers **Global (realm-wide)** only when the user holds `view-identity-providers` and `manage-identity-providers` on `realm-management` (or `{targetRealm}-realm` for master-realm users), read from `resource_access` in the access or ID token (`useRealmIdpAccess`).
-- Without those roles: a single eligible org is selected by default (`?org_id=` is set), and with several, picking a provider before an org opens the picker.
-- In mock-OIDC mode, e2e tests set token claims through `window.__WIZARD_MOCK_ID_TOKEN__` (see `e2e/org-picker.spec.ts`).
+- **An organization** is selectable in the org picker when the ID token's `organizations` claim gives the user the org roles in `REQUIRED_ORG_ROLES`: `view-identity-providers` and `manage-identity-providers`. Those are the only roles the Orgs API checks for its IdP endpoints; `view-organization` / `manage-organization` are not required. Orgs missing a role are still listed, disabled, with the missing roles named.
+- **Global (realm-wide)** uses the Admin API and needs the same two roles on `realm-management` (or `{targetRealm}-realm` for master-realm users), read from `resource_access` in the access token and the ID token (roles are merged).
+- When those realm roles are known to be missing, Global is shown disabled with the reason. A single eligible org is selected by default (`?org_id=` is set); with several, picking a provider before an org opens the picker; with none, a notice names the roles needed. The wizard route shows a "Pick an organization" gate instead of falling back to the Admin API, including on direct links.
+- Realm access is `"unknown"` when neither token can tell (an undecodable access token and no `resource_access` in the ID token). Nothing is restricted then.
+- In mock-OIDC mode, e2e tests set ID-token claims (including `resource_access`) through `window.__WIZARD_MOCK_ID_TOKEN__` (see `e2e/org-access.spec.ts`, `e2e/org-picker.spec.ts`). The mock access token is opaque, so the ID token decides.
 
 ---
 
