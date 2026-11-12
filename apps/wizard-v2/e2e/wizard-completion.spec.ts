@@ -76,7 +76,7 @@ test.describe("SAML wizard — Auth0", () => {
 
     // Step 1 — Create SAML Application (copy blocks, no user input needed)
     await wizard.waitForStep(/Create a SAML Application/i);
-    await expect(page.getByText(/ACS URL/i)).toBeVisible();
+    await expect(page.getByText("ACS URL", { exact: true })).toBeVisible();
     await expect(page.getByText("Entity ID", { exact: true })).toBeVisible();
     await wizard.clickNext();
 
@@ -89,7 +89,7 @@ test.describe("SAML wizard — Auth0", () => {
 
     // Step 3 — Configure Attribute Mapping (display-only)
     await wizard.waitForStep(/Configure Attribute Mapping/i);
-    await expect(page.getByText(/username/i)).toBeVisible();
+    await expect(page.getByText("username", { exact: true })).toBeVisible();
     await wizard.clickNext();
 
     // Step 4 — Configure User Access (display-only)
@@ -153,7 +153,7 @@ test.describe("OIDC wizard — Auth0", () => {
 
     // Step 3 — Configure Redirect URI (copy block)
     await wizard.waitForStep(/Configure Redirect URI/i);
-    await expect(page.getByText(/Redirect URI/i)).toBeVisible();
+    await expect(page.getByText("Redirect URI", { exact: true })).toBeVisible();
     await wizard.clickNext();
 
     // Step 4 — Confirmation
@@ -224,7 +224,9 @@ test.describe("Generic SAML wizard", () => {
     page,
   }) => {
     await providerSelector.goto();
-    await providerSelector.selectProvider("Generic SAML");
+    // The generic SAML row is named "SAML" under the "Generic" heading; anchor
+    // the match so provider rows that merely carry a "saml" badge don't match.
+    await providerSelector.selectProvider(/^SAML\b/);
     await expect(page).toHaveURL(/\/wizard\/saml\/saml/);
     await wizard.waitForStep(/.+/); // any step title = wizard rendered
   });
