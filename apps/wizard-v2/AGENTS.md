@@ -1,16 +1,16 @@
 # wizard-v2 — Agent Context
 
-This file is the authoritative context document for AI agents working on wizard-v2. Read it before making changes. It covers architecture decisions, key patterns, current state, and what comes next.
+This file is the authoritative context document for AI agents working on wizard-v2. Read it before making changes. It covers architecture decisions, key patterns, and known gaps. For setup and testing commands, see [README.md](README.md).
 
 ---
 
 ## What this project is
 
-wizard-v2 is a rewrite of the Phase Two IDP (Identity Provider) Wizard — a Keycloak extension that guides administrators through connecting an external identity provider (Okta, Entra ID, Google, etc.) to a Keycloak realm.
+wizard-v2 is the default frontend of the Phase Two IdP (Identity Provider) Wizard — a Keycloak extension that guides administrators through connecting an external identity provider (Okta, Entra ID, Google, etc.) to a Keycloak realm.
 
 **The core goal:** replace per-provider React component trees (wizard-v1) with a declarative JSON-driven model. Each wizard is a JSON file. A generic runtime engine reads the JSON and renders the wizard. Adding a new provider = writing a new JSON file, not writing new components.
 
-**Deployment context:** wizard-v2 is a Vite SPA bundled into a Keycloak JAR via Maven's `frontend-maven-plugin`. When deployed, it runs inside Keycloak at a URL like `https://keycloak.example.com/realms/{realm}/wizard/`. The root `pom.xml` controls which app gets built into the JAR (`workingDirectory` in the Maven config — currently pointing at `apps/wizard-v1`; switch to `apps/wizard-v2` when ready).
+**Deployment context:** wizard-v2 is a Vite SPA bundled into a Keycloak JAR via Maven's `frontend-maven-plugin`. When deployed, it runs inside Keycloak at a URL like `https://keycloak.example.com/realms/{realm}/wizard/`. The root `pom.xml` builds both wizard-v1 and wizard-v2 into the same JAR (`theme/wizard/login/resources/v1` and `.../v2`), and the extension picks one per request: the `_providerConfig.wizard.version` realm attribute, then the server-wide SPI default, then the built-in default `v2`. See [Choosing between wizard-v1 and wizard-v2](README.md#choosing-between-wizard-v1-and-wizard-v2).
 
 ---
 
@@ -18,11 +18,11 @@ wizard-v2 is a rewrite of the Phase Two IDP (Identity Provider) Wizard — a Key
 
 ```
 idp-wizard/                        ← Maven project root
-├── pom.xml                        ← Maven build; workingDirectory selects which app builds
+├── pom.xml                        ← Maven build; packages both apps into one JAR
 ├── pnpm-workspace.yaml            ← pnpm workspace: apps/*
 ├── apps/
-│   ├── wizard-v1/                 ← PatternFly + webpack + Redux (production)
-│   └── wizard-v2/                 ← Vite + shadcn + Tailwind (in development)
+│   ├── wizard-v1/                 ← PatternFly + webpack + Redux (legacy, opt-in via realm attribute)
+│   └── wizard-v2/                 ← Vite + shadcn + Tailwind (default)
 └── README.md
 ```
 
@@ -35,7 +35,7 @@ All work described in this file is inside `apps/wizard-v2/`.
 | Layer     | Choice                              | Why                                                        |
 | --------- | ----------------------------------- | ---------------------------------------------------------- |
 | Build     | Vite 8                              | Fast, modern, ESM-native                                   |
-| UI        | React 19 + shadcn/ui (new-york)     | Component library matching Phase Two dashboard-v2          |
+| UI        | React 19 + shadcn/ui (new-york)     | Component library matching the Phase Two dashboard         |
 | Styling   | Tailwind CSS v4                     | CSS-first, no separate config file; OKLCH color tokens     |
 | Routing   | TanStack Router (file-based)        | Full type-safe routing with `validateSearch`, `beforeLoad` |
 | Auth      | oidc-spa v10                        | OIDC against Keycloak; `withAutoLogin()`, no token schema  |
@@ -50,59 +50,72 @@ All work described in this file is inside `apps/wizard-v2/`.
 ```
 apps/wizard-v2/
 ├── docker/
-│   ├── docker-compose.yml            # Dev Keycloak (Phase Two image, pre-configured)
-│   └── realm-export.json             # Auto-imported: realm "wizard", client "wizard-v2-dev", test user
+│   ├── docker-compose.yml            # Dev Keycloak (Phase Two image, pre-configured, :8080/auth)
+│   └── realm-export.json             # Auto-imported: realm "wizard", client "wizard-v2-dev", test users
 ├── e2e/
+│   ├── external-providers/           # Opt-in full-loop tests against real Auth0 / Okta tenants
 │   ├── fixtures/test.ts              # Extended Playwright fixture with typed page objects
-│   ├── pages/
-│   │   ├── ProviderSelectorPage.ts   # Page object: landing page
-│   │   └── WizardPage.ts            # Page object: wizard + protocol picker
-│   └── provider-selector.spec.ts     # Smoke tests (navigation, search, help dialog)
+│   ├── pages/                        # Page objects: KeycloakLoginPage, ProviderSelectorPage, WizardPage
+│   ├── auth.setup.ts                 # Integration mode: real OIDC login, saves storage state
+│   ├── global-setup.ts               # Integration mode: creates test orgs, assigns users
+│   ├── organizations.spec.ts         # Integration mode: org context and org-scoped API calls
+│   ├── provider-selector.spec.ts     # Smoke tests (navigation, search, help dialog)
+│   └── wizard-completion.spec.ts     # Full SAML/OIDC/LDAP flows (API mocked) + wizard load smoke tests
 ├── openapi-codegen/
 │   └── gen.ts                        # Fetches both OpenAPI specs and generates src/api/types/
 ├── public/
 │   ├── favicons/                     # Browser favicon assets
-│   ├── phasetwo-logos/               # Phase Two brand SVGs (logo_phase_slash.svg is default)
+│   ├── phasetwo-logos/               # Phase Two brand SVGs ({light,dark}/logo_phase_slash.svg is default)
 │   ├── provider-logos/               # Per-provider logos for the selector UI
 │   └── wizards/                      # Step screenshots: /wizards/{provider}/saml/step1.png etc.
+├── scripts/
+│   └── optimize-screenshots.sh       # `pnpm optimize:screenshots` (see Screenshots)
 ├── src/
 │   ├── api/
 │   │   ├── clients.ts                # createOrgsClient() + createAdminClient() — typed, auth-injecting
 │   │   └── types/
 │   │       ├── orgs.d.ts             # Generated: Phase Two Orgs API (org-scoped IDPs)
 │   │       └── admin.d.ts            # Generated: Keycloak Admin API (realm-wide IDPs)
-│   ├── components/ui/                # shadcn/ui components (button, dialog, input, …)
+│   ├── components/
+│   │   ├── ui/                       # shadcn/ui components (button, dialog, input, …)
+│   │   └── wizard/                   # WizardRunner, WizardStep, executeAction, resolveTemplate, types
 │   ├── context/
 │   │   └── WizardContext.tsx         # WizardContextValue, WizardState, WizardAction, wizardReducer
 │   ├── data/
 │   │   └── providers.ts              # Provider registry: id, name, logo, protocols[]
 │   ├── hooks/
-│   │   ├── useWizardConfig.ts        # Fetches {issuerUri}/wizard/config.json (logoUrl, appName, apiMode…)
-│   │   └── useWizardApi.ts           # Derives API context from env + orgId + config
+│   │   ├── useWizardConfig.ts        # Fetches {target realm}/wizard/config.json (logoUrl, appName, apiMode…)
+│   │   ├── useWizardApi.ts           # Derives API context from runtime config + orgId + config
+│   │   ├── useAppLogo.ts             # Logo cascade (theme override → logoUrl → Phase Two fallback)
+│   │   └── useUnsavedChangesGuard.ts # Leave-wizard confirmation prompt
 │   ├── lib/
 │   │   ├── alias.ts                  # getOrCreateAlias() + clearAlias() — sessionStorage
+│   │   ├── http-error.ts             # Maps HTTP status to specific action error messages
+│   │   ├── idp-test-link.ts          # Post-creation IdP test link via the idp-tester client
 │   │   └── utils.ts                  # cn() helper (clsx + tailwind-merge)
 │   ├── routes/
 │   │   ├── __root.tsx                                    # Root: OidcInitializationGate + devtools
 │   │   ├── _authenticated.tsx                            # Layout: home button (hidden on index)
 │   │   ├── _authenticated.index.tsx                      # Provider selector (/)
-│   │   ├── _authenticated.wizard.$providerId.tsx         # Protocol picker
+│   │   ├── _authenticated.wizard.$providerId.tsx         # Layout wrapper: validates provider, Outlet only
+│   │   ├── _authenticated.wizard.$providerId.index.tsx   # Protocol picker
 │   │   └── _authenticated.wizard.$providerId.$protocol.tsx  # Wizard runner ← main work area
+│   ├── bootstrap.ts                  # oidc-spa early init, then loads main.tsx
 │   ├── index.css                     # Tailwind v4 + Phase Two OKLCH color tokens
 │   ├── main.tsx                      # RouterProvider entry point
-│   └── oidc.ts                       # oidc-spa: useOidc, fetchWithAuth, OidcInitializationGate
+│   ├── oidc.ts                       # oidc-spa: useOidc, fetchWithAuth, OidcInitializationGate
+│   └── runtime-config.ts             # Server URL, auth vs. target realm, client ID, assetUrl()
 ├── wizards/
-│   ├── saml/
-│   │   └── saml.json                 # Generic SAML wizard (id="saml") ← canonical schema reference
-│   ├── openid/
-│   │   └── oidc.json                 # Generic OpenID wizard (id="openid") — not yet written
-│   ├── ldap/
-│   │   └── ldap.json                 # Generic LDAP wizard (id="ldap") — not yet written
+│   ├── saml/saml.json                # Generic SAML wizard (id="generic-saml") ← canonical schema reference
+│   ├── openid/oidc.json              # Generic OpenID Connect wizard
+│   ├── ldap/ldap.json                # Generic LDAP user federation wizard
+│   ├── scim/scim.json                # Generic SCIM wizard
+│   ├── MIGRATION.md                  # v1 → v2 provider inventory, mapper conventions, patterns
 │   └── {providerId}/
-│       └── {protocol}.json           # e.g. okta/saml.json, entraid/saml.json — not yet written
+│       └── {protocol}.json           # e.g. okta/saml.json, entraid/oidc.json, github/oauth.json
 ├── .env.local.sample                 # Environment variable template
 ├── components.json                   # shadcn/ui config
-├── playwright.config.ts              # Playwright E2E config (mock OIDC, auto-starts Vite)
+├── playwright.config.ts              # Playwright E2E config (mock or integration mode, auto-starts Vite)
 └── AGENTS.md                         # ← this file
 ```
 
@@ -111,16 +124,17 @@ apps/wizard-v2/
 ## Environment
 
 ```
-VITE_OIDC_USE_MOCK=true              # Skip Keycloak entirely (UI-only dev)
-VITE_OIDC_ISSUER_URI=http://localhost:8180/realms/wizard
+VITE_OIDC_USE_MOCK=false             # "true" skips Keycloak entirely (UI-only dev, mock-mode e2e)
+VITE_OIDC_ISSUER_URI=http://localhost:8080/auth/realms/wizard
 VITE_OIDC_CLIENT_ID=wizard-v2-dev
 VITE_OIDC_SPA_DEBUG=false
+VITE_WIZARD_DISABLE_LEAVE_GUARD=false
 ```
 
-Parse `VITE_OIDC_ISSUER_URI` to get `serverUrl` and `realm` — the regex in `useWizardApi.ts` handles both `/auth/realms/` (legacy) and `/realms/` (modern) Keycloak paths.
+These `VITE_OIDC_*` values are a `vite dev` fallback only. In production, `src/runtime-config.ts` reads the server URL, auth realm, and client ID from the `keycloak.json` the extension serves, and the target realm from the page URL. `parseIssuerUri()` in the same file handles both `/auth/realms/` and `/realms/` Keycloak paths.
 
-Dev Keycloak: `cd docker && docker compose up`
-Test user: `wizard` / `password` with `realm-admin` role.
+- Dev Keycloak: `cd docker && docker compose up` (or `pnpm docker:up`), served at `http://localhost:8080/auth`; admin console `admin` / `admin` (local-only).
+- Test user (local Docker realm only): `wizard` / `password` with the `realm-admin` role. `org-admin` and `org-member` (same password) exist for org tests.
 
 ---
 
@@ -132,7 +146,8 @@ TanStack Router file-based routing. The flat file naming convention uses dots fo
 | ------------------------------------------------- | ------------------------------------------ |
 | `_authenticated.tsx`                              | Layout wrapper (no path segment, pathless) |
 | `_authenticated.index.tsx`                        | `/`                                        |
-| `_authenticated.wizard.$providerId.tsx`           | `/wizard/:providerId`                      |
+| `_authenticated.wizard.$providerId.tsx`           | Layout for `/wizard/:providerId/*`         |
+| `_authenticated.wizard.$providerId.index.tsx`     | `/wizard/:providerId` (protocol picker)    |
 | `_authenticated.wizard.$providerId.$protocol.tsx` | `/wizard/:providerId/:protocol`            |
 
 **Critical gotcha — parent `beforeLoad` runs for child routes.** `$protocol` is a child of `$providerId` in the route tree. So the `$providerId` route's `beforeLoad` runs when navigating to `/wizard/adfs/saml`. Do not add redirects in `$providerId`'s `beforeLoad` that could target child routes — this causes infinite redirect loops. The `$providerId` route's `beforeLoad` only validates that the provider exists.
@@ -198,7 +213,7 @@ Key endpoints:
 
 ---
 
-## Wizard JSON schema (`wizards/generic/saml.json`)
+## Wizard JSON schema (`wizards/saml/saml.json`)
 
 This is the canonical reference. All wizard JSON files follow this schema.
 
@@ -245,34 +260,24 @@ Block types:
 - `copy` — copyable value: `{ type: "copy", label: "ACS URL", value: "{{api.ssoUrl}}", hint: "..." }`
 - `formGroup` — renders a tabbed/exclusive set of forms: `{ type: "formGroup", id: "metadataInput", exclusive: true, forms: ["metadataUrl", "metadataFile", "metadataManual"] }`
 - `attributeTable` — two-column mapping display
+- `secretReveal` — shows a server-generated secret (e.g. a SCIM bearer token) that the user must copy before leaving the step
 - `image` — step screenshot: `{ type: "image", src: "/wizards/{provider}/{protocol}/step1.png", alt: "...", caption: "...", fullWidth: true }`
 - `confirm` — final step confirmation button + result display. When the confirm action's body sends `"displayName": "{{displayName}}"`, an editable "Display name" field is shown above the button. Always use `{{displayName}}` (not `{{alias}}`) for `createIdp` display names so admins and users see a readable name.
 
 ### Screenshots
 
-`src` is written root-relative (`/wizards/...`), but the wizard is not served from the
-server root in production — it is mounted at `/realms/{realm}/wizard/{version}/`. Paths are
-resolved through `assetUrl()` (`src/runtime-config.ts`) against the `wizard-asset-base` meta
-tag the theme template supplies. Use root-relative paths in the JSON and never hardcode a
-prefix; anything bypassing `assetUrl()` will work under `vite dev` and 404 in production.
+`src` is written root-relative (`/wizards/...`), but the wizard is not served from the server root in production — it is mounted at `/realms/{realm}/wizard/{version}/`. Paths are resolved through `assetUrl()` (`src/runtime-config.ts`) against the `wizard-asset-base` meta tag the theme template supplies. Use root-relative paths in the JSON and never hardcode a prefix; anything bypassing `assetUrl()` will work under `vite dev` and 404 in production.
 
-**Optimize every screenshot you add.** These files ship inside the Keycloak extension JAR,
-which lands in every Keycloak image, so an unoptimized capture is paid for on every image
-pull rather than just by the browser. Straight from a Retina screen they run 2–3 MB each;
-optimized they are 40–300 KB with no visible difference at display size.
+**Optimize every screenshot you add.** These files ship inside the Keycloak extension JAR, which lands in every Keycloak image, so an unoptimized capture is paid for on every image pull rather than just by the browser. Straight from a Retina screen they run 2–3 MB each; optimized they are 40–300 KB with no visible difference at display size.
 
 ```sh
 pnpm optimize:screenshots            # whole public/wizards tree, safe to re-run
 pnpm optimize:screenshots path/to/dir
 ```
 
-It downscales so neither side exceeds 1400px, then runs `pngquant` and `oxipng`. Requires
-`brew install imagemagick pngquant oxipng`. Override with `MAX_DIM` / `QUALITY` if a
-particular screenshot needs more detail.
+It downscales so neither side exceeds 1400px, then runs `pngquant` and `oxipng`. Requires `brew install imagemagick pngquant oxipng`. Override with `MAX_DIM` / `QUALITY` if a particular screenshot needs more detail.
 
-Keep screenshots as PNG. Do not commit multi-megabyte captures — the whole tree was 92 MB
-before it was first optimized down to 14 MB, and it regressed once already when a batch of
-AVIFs was replaced with full-resolution PNGs.
+Keep screenshots as PNG. Do not commit multi-megabyte captures — the whole tree was 92 MB before it was first optimized down to 14 MB, and it regressed once already when a batch of AVIFs was replaced with full-resolution PNGs.
 
 ### Template variables available in blocks and actions
 
@@ -295,7 +300,7 @@ Each form in the `forms` dictionary has:
 
 - `title`, `description`
 - `fields` — array of `{ id, type, label, required, placeholder?, accept?, ... }`
-  - Field types: `text`, `url`, `file`
+  - Field types: `text`, `url`, `file`, `password`, `textarea`
 - `submit` — `{ label: "Validate URL", action: "actionKey" }`
 
 ### Actions
@@ -350,23 +355,22 @@ interface WizardState {
   stepIdReached: number; // furthest step reached (controls canJumpTo)
   metadata: Record<string, unknown> | null; // from import-config response
   metadataValidated: boolean;
+  credentialsProvided: boolean; // OIDC credentials step
+  connectionTested: boolean; // LDAP connection test
+  authTested: boolean; // LDAP bind test
   submitting: boolean;
   submitted: boolean;
   error: string | null;
   result: string | null;
   idpTestLink: string | null;
+  formValues: Record<string, unknown>; // accumulated by saveForm actions
+  succeededForms: Record<string, boolean>; // keyed by formKey
+  clientId: string | null;
+  clientSecret: string | null;
 }
-
-type WizardAction =
-  | { type: "ADVANCE_STEP"; toStep: number }
-  | { type: "SET_METADATA"; metadata: Record<string, unknown> }
-  | { type: "SET_DISPLAY_NAME"; displayName: string }
-  | { type: "METADATA_VALIDATED" }
-  | { type: "SUBMIT_START" }
-  | { type: "SUBMIT_SUCCESS"; result: string; idpTestLink?: string }
-  | { type: "SUBMIT_ERROR"; error: string }
-  | { type: "CLEAR_ERROR" };
 ```
+
+`WizardAction` covers step navigation (`ADVANCE_STEP`), validation flags (`METADATA_VALIDATED`, `CREDENTIALS_PROVIDED`, `CONNECTION_TESTED`, `AUTH_TESTED`, `SCHEMA_SAVED`), form state (`SET_METADATA`, `SET_DISPLAY_NAME`, `SAVE_FORM_VALUES`, `FORM_SUCCEEDED`), and submission (`SUBMIT_START`, `SUBMIT_SUCCESS`, `SUBMIT_ERROR`, `CLEAR_ERROR`, `RESET_SUBMITTING`). `src/context/WizardContext.tsx` is the source of truth.
 
 ---
 
@@ -384,15 +388,18 @@ Session key format: `p2_{providerId}_{protocol}` — e.g. `p2_saml_saml`, `p2_ok
 
 ## Wizard config (realm attributes)
 
-`useWizardConfig()` fetches `{issuerUri}/wizard/config.json` on load. This endpoint is served by the Keycloak extension and contains realm-level settings:
+`useWizardConfig()` fetches `config.json` for the target realm (`{serverUrl}/realms/{targetRealm}/wizard/config.json`) on load. This endpoint is served by the Keycloak extension and contains realm-level settings:
 
 ```ts
 interface WizardConfig {
   appName: string | null; // displayed above the provider selector card
   logoUrl: string | null; // displayed above the provider selector card
+  logoUrlLight: string | null; // optional light-mode override
+  logoUrlDark: string | null; // optional dark-mode override
   displayName: string;
   apiMode: "cloud" | "onprem" | "";
   emailAsUsername: boolean; // affects SAML attribute mapper creation
+  usernameMapperImport: boolean; // IMPORT vs. INHERIT sync mode on the username mapper
   enableDashboard: boolean;
   enableLdap: boolean;
   enableGroupMapping: boolean;
@@ -400,7 +407,7 @@ interface WizardConfig {
 }
 ```
 
-If the endpoint is unreachable (local dev without the extension), all values fall back to safe defaults. The logo falls back to `/phasetwo-logos/logo_phase_slash.svg`.
+If the endpoint is unreachable (local dev without the extension), all values fall back to safe defaults. The logo falls back to `/phasetwo-logos/{light|dark}/logo_phase_slash.svg`.
 
 ---
 
@@ -431,50 +438,41 @@ If the endpoint is unreachable (local dev without the extension), all values fal
 | `CreateIdp()` / `SamlAttributeMapper()` utility functions | `orgsClient.POST(...)` / `adminClient.POST(...)` typed calls |
 | Per-provider React component trees                        | Single `WizardRunner` + JSON wizard definition               |
 | RTK Query hooks for feature flags                         | `useWizardConfig()` hook                                     |
-| `usePrompt` for leave warning                             | Not yet implemented in v2                                    |
-| `useCreateTestIdpLink`                                    | Not yet implemented in v2                                    |
+| `usePrompt` for leave warning                             | `useUnsavedChangesGuard()` (TanStack Router `useBlocker`)    |
+| `useCreateTestIdpLink`                                    | `src/lib/idp-test-link.ts` (via the `idp-tester` client)     |
 
 ---
 
-## What is built
+## Current state
 
-- [x] Vite + React + Tailwind v4 + shadcn/ui project
-- [x] pnpm workspace monorepo (v1 and v2 side by side)
-- [x] TanStack Router file-based routing
-- [x] oidc-spa authentication (mock mode + real Keycloak)
-- [x] Dev Keycloak via Docker Compose (Phase Two image, auto-imported realm)
-- [x] Provider selector UI (fuzzy search, protocol badges, grouped list, help dialog)
-- [x] Protocol picker route
-- [x] Org context (`org_id` search param, apiMode switching)
-- [x] WizardContext with useReducer state
-- [x] Alias management (sessionStorage)
-- [x] useWizardApi — derives all API context from env + org_id + config
-- [x] Typed API clients (openapi-fetch + generated types from Phase Two + Keycloak OpenAPI specs)
-- [x] Wizard JSON schema (defined and documented, `wizards/generic/saml.json`)
-- [x] Playwright E2E scaffold (Page Object Model, mock OIDC, smoke tests)
-- [x] Home/back button in layout when inside a wizard
+wizard-v2 is the default frontend. The runner, action executor (HTTP calls, `then` chaining, `foreach`, `mergeIntoMetadata`, `saveForm`, LDAP `testLdapConnection` / `createComponent` / `triggerSync`), block and form renderers, step navigation with `enableNextWhen` gating, leave-wizard prompt, IdP test link, and the `emailAsUsername`, `usernameMapperImport`, and `trustEmail` realm flags are all implemented. Per-provider review status is tracked in the root README's "Wizard implementation status" table.
 
-## What is not yet built
+Known gaps:
 
-- [ ] **Wizard runner** — the component that reads a wizard JSON file and renders steps, forms, and blocks. This is the main remaining work.
-- [ ] **Action executor** — the runtime that resolves template variables and executes `actions` from the JSON (makes API calls, dispatches reducer actions, chains follow-up actions)
-- [ ] **Block renderers** — React components for each block type: `text`, `copy`, `formGroup`, `attributeTable`, `confirm`
-- [ ] **Form renderer** — renders form fields from the JSON `forms` dictionary, handles validation and submission
-- [ ] **Step navigation UI** — sidebar/stepper nav, next/back buttons, `enableNextWhen` gating
-- [ ] **Company-specific wizard JSON files** — `wizards/okta/saml.json`, `wizards/entraid/saml.json`, etc.
-- [ ] **OIDC wizard JSON** — `wizards/generic/oidc.json` (different flow: discovery URL + client credentials)
-- [ ] **LDAP wizard JSON** — `wizards/generic/ldap.json` (different API: LDAP component, not IDP)
-- [ ] **Leave-wizard confirmation prompt** (v1 used `usePrompt`)
-- [ ] **IDP test link** (post-creation link to test the IDP login, v1 used `useCreateTestIdpLink`)
-- [ ] **`emailAsUsername` + `usernameMapperImport` flag handling** in the mapper action
+- **Setup dashboard** — v1's view of existing setup (`enableDashboard`) has no v2 equivalent.
+- **SCIM wizards** — `scim/scim.json`, `entraid/scim.json`, and `okta/scim.json` exist but are still in progress.
+- **Okta LDAP auto-fill** — v1 derived DN fields from the `*.ldap.okta.com` host; v2 uses placeholders instead (see `wizards/okta/README.md`).
+
+---
+
+## Testing
+
+Commands run from `apps/wizard-v2/`; details are in [README.md](README.md#testing).
+
+- `pnpm test:e2e` — mock mode, no Keycloak needed. OIDC is mocked and API calls are intercepted with `page.route()`. Run this for every change.
+- `pnpm test:integration` — real Keycloak (`docker compose up -d` in `docker/` first); adds `auth.setup.ts`, `global-setup.ts`, and `organizations.spec.ts`.
+- `pnpm test:external` — opt-in full loops against real Auth0 / Okta tenants; skipped unless their credentials are exported.
+- `pnpm build` (runs `tsc -b`) and `pnpm lint` — there is no separate unit-test runner.
+
+The repo's GitHub Actions CI runs the Maven build only, so run the Playwright suites locally. When adding a wizard JSON, add its route to the load smoke tests in `e2e/wizard-completion.spec.ts`.
 
 ---
 
 ## Key decisions and rationale
 
-**No Redux in v2.** The dashboard-v2 uses RTK Query because it has complex server state with caching needs. The wizard is a linear flow — `useReducer` is sufficient and keeps the dependency footprint small.
+**No Redux in v2.** The Phase Two dashboard uses RTK Query because it has complex server state with caching needs. The wizard is a linear flow — `useReducer` is sufficient and keeps the dependency footprint small.
 
-**`openapi-fetch` over hand-written URLs.** Eliminates a category of bugs (wrong path, wrong body shape) and auto-updates when specs change. The same OpenAPI specs used by dashboard-v2.
+**`openapi-fetch` over hand-written URLs.** Eliminates a category of bugs (wrong path, wrong body shape) and auto-updates when specs change. The same OpenAPI specs used by the Phase Two dashboard.
 
 **`sessionStorage` for alias.** v1 used `localStorage` which could leave stale aliases across browser sessions. `sessionStorage` scopes to the tab, so a new session always starts fresh.
 

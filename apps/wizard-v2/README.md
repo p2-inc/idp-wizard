@@ -1,6 +1,6 @@
 # wizard-v2
 
-A rewrite of the Phase Two IDP Wizard. Wizards are defined declaratively as JSON files and rendered by a generic runtime engine — no per-provider component trees. This replaces wizard-v1 once complete.
+The default frontend of the Phase Two IdP Wizard. Wizards are defined declaratively as JSON files and rendered by a generic runtime engine — no per-provider component trees. It ships in the same extension JAR as the legacy wizard-v1; see [Choosing between wizard-v1 and wizard-v2](#choosing-between-wizard-v1-and-wizard-v2).
 
 ## Stack
 
@@ -18,25 +18,8 @@ A rewrite of the Phase Two IDP Wizard. Wizards are defined declaratively as JSON
 wizard-v2/
 ├── docker/
 │   ├── docker-compose.yml      # Dev Keycloak (Phase Two image, pre-configured)
-│   └── realm-export.json       # Auto-imported on first start: realm, client, test user
-├── e2e/
-│   ├── .auth/                  # Saved login state (gitignored); .gitkeep tracks the dir
-│   ├── external-providers/
-│   │   ├── Auth0Page.ts        # POM for Auth0 Dashboard
-│   │   ├── OktaPage.ts         # POM for Okta Admin Console
-│   │   └── external-provider.spec.ts
-│   ├── fixtures/
-│   │   ├── test.ts             # Playwright fixture with typed page objects
-│   │   └── test-saml-metadata.xml  # Minimal SAML metadata for file upload tests
-│   ├── pages/
-│   │   ├── KeycloakLoginPage.ts
-│   │   ├── ProviderSelectorPage.ts
-│   │   └── WizardPage.ts
-│   ├── auth.setup.ts           # OIDC login setup — saves storage state
-│   ├── global-setup.ts         # Creates orgs + assigns users (integration mode)
-│   ├── organizations.spec.ts   # Org management + org-scoped wizard tests
-│   ├── provider-selector.spec.ts
-│   └── wizard-completion.spec.ts  # Full flow tests for all 21 wizards
+│   └── realm-export.json       # Auto-imported on first start: realm, client, test users
+├── e2e/                        # Playwright tests (see Testing below)
 ├── openapi-codegen/
 │   └── gen.ts                  # Generates typed API clients from OpenAPI specs
 ├── public/
@@ -44,6 +27,8 @@ wizard-v2/
 │   ├── phasetwo-logos/         # Phase Two brand assets
 │   ├── provider-logos/         # Per-provider logos for the selector UI
 │   └── wizards/                # Step screenshots, one folder per provider
+├── scripts/
+│   └── optimize-screenshots.sh # Downscales and compresses step screenshots
 ├── src/
 │   ├── api/
 │   │   ├── clients.ts          # createOrgsClient / createAdminClient (openapi-fetch)
@@ -55,7 +40,7 @@ wizard-v2/
 │   │   └── wizard/
 │   │       ├── types.ts        # TypeScript types for wizard JSON schema
 │   │       ├── resolveTemplate.ts  # {{token}} template resolver
-│   │       ├── executeAction.ts    # Action executor (HTTP calls, alias cleanup)
+│   │       ├── executeAction.ts    # Action executor (HTTP calls, feature flags, chaining)
 │   │       ├── WizardRunner.tsx    # Loads JSON, renders steps + navigation
 │   │       └── WizardStep.tsx      # Renders individual step blocks
 │   ├── context/
@@ -64,9 +49,13 @@ wizard-v2/
 │   │   └── providers.ts        # Provider registry (id, name, logo, protocols)
 │   ├── hooks/
 │   │   ├── useWizardApi.ts     # Resolves API clients, endpoints, apiMode
-│   │   └── useWizardConfig.ts  # Fetches realm config.json (logoUrl, appName…)
+│   │   ├── useWizardConfig.ts  # Fetches realm config.json (logoUrl, appName…)
+│   │   ├── useAppLogo.ts       # Logo resolution (see Logo resolution)
+│   │   └── useUnsavedChangesGuard.ts  # "Leave this wizard?" prompt
 │   ├── lib/
 │   │   ├── alias.ts            # sessionStorage alias helpers
+│   │   ├── http-error.ts       # Maps HTTP failures to user-facing messages
+│   │   ├── idp-test-link.ts    # Post-creation IdP test link (idp-tester client)
 │   │   └── utils.ts            # cn() helper (clsx + tailwind-merge)
 │   ├── routes/
 │   │   ├── __root.tsx                                        # Root — OidcInitializationGate
@@ -75,14 +64,17 @@ wizard-v2/
 │   │   ├── _authenticated.wizard.$providerId.tsx             # Layout wrapper — Outlet only
 │   │   ├── _authenticated.wizard.$providerId.index.tsx       # Protocol picker
 │   │   └── _authenticated.wizard.$providerId.$protocol.tsx   # Wizard page
+│   ├── bootstrap.ts            # oidc-spa early init, then loads main.tsx
 │   ├── index.css               # Tailwind + Phase Two color scheme (OKLCH tokens)
 │   ├── main.tsx                # TanStack RouterProvider entry point
-│   └── oidc.ts                 # oidc-spa setup: useOidc, fetchWithAuth, OidcInitializationGate
+│   ├── oidc.ts                 # oidc-spa setup: useOidc, fetchWithAuth, OidcInitializationGate
+│   └── runtime-config.ts       # Server URL, auth/target realm, client ID, asset base
 ├── wizards/
-│   ├── saml/
-│   │   └── saml.json           # Generic SAML wizard definition
+│   ├── MIGRATION.md            # v1 → v2 provider inventory and patterns
+│   ├── saml/saml.json          # Generic SAML wizard definition
 │   └── <provider>/
-│       └── <protocol>.json     # Provider-specific wizard definitions
+│       ├── <protocol>.json     # Provider-specific wizard definitions
+│       └── README.md           # Provider notes (some providers)
 ├── .env.local.sample           # Environment variable template
 ├── playwright.config.ts        # Playwright E2E config
 └── components.json             # shadcn/ui config
@@ -145,11 +137,11 @@ The wizard operates in one of two API modes depending on how it is launched:
 
 ### Realm and server URL
 
-Both are parsed from `VITE_OIDC_ISSUER_URI` at startup. The parser handles both legacy Keycloak paths (`/auth/realms/<realm>`) and modern paths (`/realms/<realm>`).
+In production the server URL, auth realm, and client ID come from the `keycloak.json` the extension serves next to the app, and the target realm comes from the page URL (`src/runtime-config.ts`). The two realms differ when `_providerConfig.wizard.auth-realm-override` is set. Under `vite dev` neither exists, so they are parsed from `VITE_OIDC_ISSUER_URI` instead; the parser handles both `/auth/realms/<realm>` and `/realms/<realm>` paths.
 
 ### Realm config
 
-`useWizardConfig` fetches `{issuerUri}/wizard/config.json` and exposes optional realm-level overrides:
+`useWizardConfig` fetches `{serverUrl}/realms/{targetRealm}/wizard/config.json` and exposes optional realm-level overrides:
 
 | Key               | Description                                                                   |
 | ----------------- | ----------------------------------------------------------------------------- |
@@ -159,6 +151,8 @@ Both are parsed from `VITE_OIDC_ISSUER_URI` at startup. The parser handles both 
 | `appName`         | Shown above the provider search card                                          |
 | `apiMode`         | Override the auto-detected mode (`"cloud"` or `"onprem"`)                     |
 | `emailAsUsername` | Adds an email→username mapper when creating the IDP                           |
+| `trustEmail`      | Sets `trustEmail: true` on the created IDP                                    |
+| `usernameMapperImport` | Uses `IMPORT` instead of `INHERIT` sync mode for the username mapper     |
 
 If the file is missing or the fetch fails, defaults are used silently.
 
@@ -185,7 +179,7 @@ Each wizard session generates a unique IDP alias (e.g. `saml-saml-a1b2c3`) store
 
 ### 1. Environment
 
-Copy the env sample. The defaults match the local Docker Keycloak setup:
+Install dependencies from the repo root (`pnpm install`), then copy the env sample. The defaults match the local Docker Keycloak setup:
 
 ```bash
 cp .env.local.sample .env.local
@@ -196,6 +190,8 @@ cp .env.local.sample .env.local
 | `VITE_OIDC_ISSUER_URI` | `http://localhost:8080/auth/realms/wizard` | Keycloak realm URL           |
 | `VITE_OIDC_CLIENT_ID`  | `wizard-v2-dev`                            | Keycloak client ID           |
 | `VITE_OIDC_SPA_DEBUG`  | `false`                                    | Enable verbose oidc-spa logs |
+| `VITE_OIDC_USE_MOCK`   | `false`                                    | Skip Keycloak and use a mock user (see [Mock mode](#mock-mode)) |
+| `VITE_WIZARD_DISABLE_LEAVE_GUARD` | `false`                         | Suppress the "Leave this wizard?" prompt (already off under `vite dev`) |
 
 ### 2. Start Keycloak
 
@@ -203,6 +199,8 @@ cp .env.local.sample .env.local
 cd docker
 docker compose up
 ```
+
+Keycloak listens on `http://localhost:8080/auth` (relative path `/auth`); the admin console login is `admin` / `admin` (local dev container only). The `package.json` scripts wrap the same compose file: `pnpm docker:up` (starts it detached, waits for the realm, and opens the admin console on macOS), `pnpm docker:logs`, `pnpm docker:down`, and `pnpm docker:reset` (also deletes the data volume). They can be run from the repo root as well.
 
 On first run, Keycloak auto-imports `realm-export.json` which creates:
 
@@ -220,6 +218,8 @@ Keycloak data persists in a named Docker volume between restarts.
 
 #### Dev test users
 
+These accounts exist only in the local Docker realm imported from `docker/realm-export.json`; they are not used anywhere else.
+
 | Username     | Password   | Email                    | Roles         |
 | ------------ | ---------- | ------------------------ | ------------- |
 | `wizard`     | `password` | `wizard@example.com`     | `realm-admin` |
@@ -230,9 +230,7 @@ Keycloak data persists in a named Docker volume between restarts.
 
 #### SCIM
 
-Enable SCIM on the Organizations > Gear icon > Select SCIM checkbox.
-
-More SCIM details: https://github.com/p2-inc/keycloak-orgs/blob/main/docs/scim.md
+To try the SCIM wizards, enable SCIM for the realm's organizations in the admin console (Organizations, gear icon, SCIM checkbox). See the [keycloak-orgs SCIM docs](https://github.com/p2-inc/keycloak-orgs/blob/main/docs/scim.md) for details.
 
 ### 3. Start the dev server
 
@@ -240,7 +238,7 @@ More SCIM details: https://github.com/p2-inc/keycloak-orgs/blob/main/docs/scim.m
 pnpm dev
 ```
 
-The app runs at `http://localhost:5173`. Log in with `wizard` / `password`.
+The app runs at `http://localhost:5173`. Log in with the local test user `wizard` / `password`.
 
 To test organization (cloud) mode, append `?org_id=<your-org-id>` to the URL. The debug strip in dev mode shows the resolved `apiMode`, `orgId`, `realm`, alias, and endpoint URLs.
 
@@ -271,14 +269,14 @@ Example reference in a wizard JSON: `"/wizards/okta/saml/step1.png"`
 
 ## Testing
 
-E2E tests use [Playwright](https://playwright.dev/) and the Page Object Model pattern. There are two test modes — a fast mock mode for everyday development and a full integration mode that drives a real Keycloak server.
+E2E tests use [Playwright](https://playwright.dev/) and the Page Object Model pattern. There are two test modes — a fast mock mode for everyday development and a full integration mode that drives a real Keycloak server. There is no separate unit-test runner; `pnpm build` (which runs `tsc -b`) and `pnpm lint` are the static checks.
 
 ### Intent
 
 The test suite is designed to verify the wizard at every layer:
 
 - **UI and navigation** — does the step sequencing work? Are copy blocks, forms, and attribute tables rendered correctly? Does search and help work on the provider selector?
-- **Wizard completion** — can each provider's wizard flow be driven from start to finish, including form submission and final IDP creation? This covers all 21 wizard files.
+- **Wizard completion** — can a wizard flow be driven from start to finish, including form submission and final IDP creation? Full flows cover SAML, OIDC, and LDAP; a smoke test loads 21 representative wizard routes.
 - **API routing** — does the wizard call the right endpoints (org-scoped vs. realm-wide) depending on how it was launched?
 - **Organization context** — does the `?org_id=` launch mode work correctly? Are org memberships, roles, and API routes all correct?
 - **External provider loop** _(optional)_ — can the browser automate the external provider setup (Auth0, Okta) and feed the resulting credentials directly into the wizard, end-to-end?
@@ -326,10 +324,12 @@ Requires Keycloak to be running:
 cd docker && docker compose up -d
 ```
 
+Defaults match `docker/docker-compose.yml`. Override them with `KC_BASE_URL` (default `http://localhost:8080/auth`) and `KC_ADMIN_USER` / `KC_ADMIN_PASS` (default `admin` / `admin`, used by `global-setup.ts`).
+
 The Playwright run has three phases:
 
 1. **`auth:setup` project** — opens a browser, follows the OIDC redirect to Keycloak, logs in as `wizard`/`password`, and saves the browser storage state to `e2e/.auth/admin.json`. Subsequent test contexts load this state instead of re-authenticating.
-2. **`global-setup.ts`** — runs once before the test suite. Uses the Keycloak admin API to create two test organizations (`test-org-alpha`, `test-org-beta`) and assign the `org-admin` and `org-member` test users to them. Org IDs are exposed via `process.env` so tests can reference them without hardcoding.
+2. **`global-setup.ts`** — runs once before the test suite. Uses the Phase Two Orgs API to create two test organizations (`test-org-alpha`, `test-org-beta`) and assign the `org-admin` and `org-member` test users to them. Org IDs are exposed via `process.env` so tests can reference them without hardcoding.
 3. **Test projects** — run with the saved auth state and real API endpoints.
 
 ### Test structure
@@ -374,7 +374,7 @@ Full wizard flow tests. Runs in mock mode with API interception. Covers:
 - **Auth0 SAML** — file upload flow: upload test metadata XML, validate, advance through attribute mapping and user access steps, confirm IDP creation
 - **Auth0 OIDC** — credentials flow: fill domain, client ID, and secret, verify against the discovery endpoint, configure redirect URI, confirm
 - **Okta LDAP** — connection flow: fill LDAP host and base DN, test connection, fill bind credentials, test authentication, confirm user federation creation
-- **All 21 providers** — parametrized "loads without error" tests that navigate to every wizard and assert that at least one step renders. This ensures no wizard JSON has a syntax or schema error.
+- **Wizard load smoke tests** — parametrized "loads without error" tests that navigate to 21 wizard routes (18 providers, including the generic SAML, OIDC, and LDAP wizards) and assert that at least one step renders, catching syntax or schema errors in those definitions. Add a route to the list in `wizard-completion.spec.ts` when you add a wizard.
 
 Back-navigation and `enableNextWhen` gating (Next disabled until validation passes) are also tested.
 
@@ -389,7 +389,7 @@ Integration-mode tests (requires Keycloak). Covers:
 
 #### `external-providers/external-provider.spec.ts`
 
-Full end-to-end tests that drive an external identity provider's admin UI and then complete the corresponding wizard. These are **skipped by default** — they run only when the relevant credential environment variables are set.
+Full end-to-end tests that drive an external identity provider's admin UI and then complete the corresponding wizard. These are **skipped by default** — they run only when the relevant credential environment variables are set. `pnpm test:external` runs in integration mode, so the dev Keycloak must be running too. Export the variables in your shell; Playwright does not read `.env.local`.
 
 Each test follows the same pattern:
 
@@ -407,26 +407,17 @@ Each test follows the same pattern:
 
 > These tests create real applications in your provider accounts. Clean them up manually afterward.
 
-### Dev test users
+### Test users
 
-The `wizard` realm is pre-seeded with three test users (created from `docker/realm-export.json`):
-
-| Username     | Password   | Role          | Purpose                                                                            |
-| ------------ | ---------- | ------------- | ---------------------------------------------------------------------------------- |
-| `wizard`     | `password` | `realm-admin` | Main admin — can call any Keycloak admin API. Used by `auth:setup` and most tests. |
-| `org-admin`  | `password` | —             | Org-level admin. Assigned as admin of `test-org-alpha` by `global-setup.ts`.       |
-| `org-member` | `password` | —             | Regular org member. Assigned as member of `test-org-alpha` by `global-setup.ts`.   |
+Tests use the users seeded from `docker/realm-export.json` (see [Dev test users](#dev-test-users)): `wizard` for `auth:setup` and most tests, and `org-admin` / `org-member`, which `global-setup.ts` adds to `test-org-alpha` as admin and member.
 
 ### Keycloak admin theme
 
-Both the `wizard` realm and the `master` realm are configured to use the `phasetwo.v2` admin theme. This is set via:
-
-- `adminTheme: "phasetwo.v2"` in `docker/realm-export.json` for the wizard realm
-- `docker/master-realm-export.json` (a minimal export mounted alongside the wizard realm) for the master realm — Keycloak merges it into the existing master realm on startup
+The `wizard` realm sets `adminTheme: "phasetwo.v2"` in `docker/realm-export.json`.
 
 ### CI
 
-In CI (`CI=true`), the web server is always started fresh, tests are retried up to 2 times, and the reporter uses GitHub annotations. Integration tests are not run in CI by default — set `PLAYWRIGHT_INTEGRATION=true` and ensure a Keycloak service is available to enable them.
+With `CI=true`, Playwright always starts a fresh dev server, retries failed tests up to 2 times, runs on 1 worker, forbids `test.only`, and uses the GitHub reporter. The repository's GitHub Actions workflow runs the Maven build only and does not run Playwright, so run `pnpm test:e2e` (and `pnpm test:integration` for changes that touch auth, org handling, or API calls) locally before opening a PR.
 
 ## Building
 
@@ -434,14 +425,11 @@ In CI (`CI=true`), the web server is always started fresh, tests are retried up 
 pnpm build
 ```
 
-Output goes to `dist/`. The root `mvn package` runs this build and bundles the output into the Keycloak JAR alongside wizard-v1 (see below).
+Output goes to `dist/`. The root `mvn package` runs this build and bundles the output into the Keycloak JAR alongside wizard-v1 (see below). Run `pnpm build` before pushing: it type-checks the app, so it catches errors that `pnpm dev` does not.
 
 ## Choosing between wizard-v1 and wizard-v2
 
-Both frontends are built into the same JAR and the extension picks one per request, so
-there is no packaging pivot and no cut-over release. `mvn package` builds both apps and
-copies them to `theme/wizard/login/resources/v1` and `.../v2`; `WizardResourceProvider`
-serves `./{version}/...` and renders the matching template.
+Both frontends are built into the same JAR and the extension picks one per request, so there is no packaging pivot and no cut-over release. `mvn package` builds both apps and copies them to `theme/wizard/login/resources/v1` and `.../v2`; `WizardResourceProvider` serves `./{version}/...` and renders the matching template.
 
 Selection is most specific first:
 
@@ -449,46 +437,16 @@ Selection is most specific first:
 2. `--spi-realm-restapi-extension-wizard-default-version`;
 3. the built-in default, `v2`.
 
-Because the route (`/realms/{realm}/wizard`), the `idp-wizard` client, and its redirect
-URIs are identical for both, moving a realm between versions is an attribute change — no
-redeploy, no client edits, and rollback is unsetting the attribute.
+Because the route (`/realms/{realm}/wizard`), the `idp-wizard` client, and its redirect URIs are identical for both, moving a realm between versions is an attribute change — no redeploy, no client edits, and rollback is unsetting the attribute.
 
-### Staging the default
+### The built-in default
 
-`DEFAULT_VERSION` in `WizardResourceProviderFactory` is a single constant. It shipped as
-`VERSION_V1` while v2 was proven on opt-in realms, and is now `VERSION_V2`. Realms that
-need the old wizard set `_providerConfig.wizard.version` to `v1`; a whole server can be
-kept on v1 with `--spi-realm-restapi-extension-wizard-default-version=v1`.
+`DEFAULT_VERSION` in `WizardResourceProviderFactory` is a single constant. It shipped as `VERSION_V1` while v2 was proven on opt-in realms, and is now `VERSION_V2`. Realms that need the old wizard set `_providerConfig.wizard.version` to `v1`; a whole server can be kept on v1 with `--spi-realm-restapi-extension-wizard-default-version=v1`.
 
 ### What differs between the two
 
-- **Base path** — v1 sets `ASSET_PATH` at build time (the Maven build passes `auto`); v2
-  builds with a relative Vite `base` and takes the router basepath from `<base href>`.
-- **Bundle names** — v1 emits `main.bundle.js`/`main.css`; v2 pins the same names via
-  `rollupOptions.output` with `cssCodeSplit: false`, so each template can reference its
-  bundle without a manifest lookup.
-- **Auth** — v1 uses `keycloak-js` with the SPI's `keycloak.json`; v2 uses `oidc-spa`
-  bootstrapped from the same endpoint (see `src/runtime-config.ts`). Both authenticate as
-  the `idp-wizard` client against the realm the server names.
-- **Provider coverage** — v2 is a superset of v1; see the status table in the root README.
-  Providers without a definition show a "not yet available" message rather than erroring.
-
-## Migration check
-
-- Existing provider setup is displayed
-- Ability to change organizations if you are not in organization mode (as in if you were sent a link generated for a specific org, you can only view that org)
-
-## Wizard Review
-
-- AWS: complete
-- Microsoft Entra ID: complete
-- ADFS: complete
-- Oracle: complete
-- Salesforce (SAML): complete
-- JumpCloud: complete
-- Okta (SAML): complete
-- Cloudflare: complete
-- LastPass: complete
-- OneLogin: complete
-- CyberArk: complete
-- Google Workspace (SAML): complete
+- **Base path** — v1 sets `ASSET_PATH` at build time (the Maven build passes `auto`); v2 builds with a relative Vite `base` and takes the router basepath from `<base href>`.
+- **Bundle names** — v1 emits `main.bundle.js` / `main.css`; v2 pins fixed names (`main.js` / `main.css`) via `rollupOptions.output` with `cssCodeSplit: false`, so each template can reference its bundle without a manifest lookup.
+- **Auth** — v1 uses `keycloak-js` with the SPI's `keycloak.json`; v2 uses `oidc-spa` bootstrapped from the same endpoint (see `src/runtime-config.ts`). Both authenticate as the `idp-wizard` client against the realm the server names.
+- **Provider coverage** — v2 is a superset of v1; see the status table in the root README. Providers without a definition show a "not yet available" message rather than erroring.
+- **Setup dashboard** — v1's dashboard of existing setup (`_providerConfig.wizard.enableDashboard`) has no v2 equivalent yet.

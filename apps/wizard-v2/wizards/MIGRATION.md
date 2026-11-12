@@ -1,6 +1,6 @@
 # Wizard Migration Summary
 
-Migrated from wizard-v1 (per-provider React component trees) to wizard-v2 (declarative JSON definitions rendered by a generic runtime engine).
+How the wizard-v1 providers (per-provider React component trees) map onto wizard-v2 (declarative JSON definitions rendered by a generic runtime engine). The inventory covers the providers ported from v1; wizards added in v2 (OAuth social providers, SCIM, and other vendors) follow the same schema and are listed in the root README's implementation status table.
 
 ## Provider inventory
 
@@ -116,33 +116,30 @@ Migrated from wizard-v1 (per-provider React component trees) to wizard-v2 (decla
 - **URL regex validation**: Wizard-v1 escaped forward slashes in the ACS URL for display. This was a display-only concern and is not needed in v2 since the copy block handles URL display natively.
 - **Handled in JSON**: Not needed.
 
-## Not yet handled (requires executeAction implementation)
+## Runtime features used by these definitions
 
-The following features are defined in the JSON schema but require the `executeAction` function (currently a stub) to be implemented:
+The definitions rely on these `executeAction` features (`src/components/wizard/executeAction.ts`):
 
-1. **HTTP action execution** — all `importConfig`, `createIdp`, `addMappers` calls
+1. **HTTP action execution** — `importConfig`, `createIdp`, `addMappers` calls, resolved to org-scoped or realm-wide endpoints
 2. **`then` chaining** — e.g. `createIdp → addSamlMappers → clearAlias`
 3. **`foreach` iteration** — mapper creation loops
 4. **`mergeIntoMetadata`** — storing API responses in wizard state
 5. **`saveForm` actions** — saving form values to state (OIDC credential step)
-6. **LDAP-specific endpoints** — `testLdapConnection`, `createComponent`, `triggerSync`
-7. **`triggerSync` needs component ID** — the sync endpoint requires the ID returned by `createComponent`, which must be passed from the response
+6. **LDAP-specific endpoints** — `testLdapConnection`, `createComponent`, `triggerSync` (the sync call uses the component ID returned by `createComponent`)
 
-## Feature flags not yet migrated
+## Realm feature flags
 
-Wizard-v1 supported several feature flags from `config.json` that affect mapper creation:
+wizard-v1 read several flags from `config.json` that affect IdP and mapper creation. wizard-v2 applies them in `executeAction` at action time, not in the JSON definitions, since they are realm-level configuration:
 
-| Flag | Effect | Status |
-|------|--------|--------|
-| `emailAsUsername` | Creates an `idpUsername` mapper and remaps the username attribute to use email | Not yet implemented in executeAction |
-| `usernameMapperImport` | Sets username mapper syncMode to `"IMPORT"` instead of `"INHERIT"` | Not yet implemented in executeAction |
-| `trustEmail` | Sets `trustEmail: true` on the IDP creation payload | Not yet implemented in executeAction |
-
-These flags should be applied at action execution time, not in the JSON definitions, since they are realm-level configuration.
+| Flag | Effect |
+|------|--------|
+| `emailAsUsername` | Creates an `idpUsername` mapper and remaps the username attribute to use email |
+| `usernameMapperImport` | Sets username mapper syncMode to `"IMPORT"` instead of `"INHERIT"` |
+| `trustEmail` | Sets `trustEmail: true` on the IDP creation payload |
 
 ## Template patterns
 
-All wizard JSONs follow one of four repeatable patterns:
+The ported wizards follow one of four repeatable patterns:
 
 ### Pattern 1: SAML with URL metadata
 Steps: SP info → metadata URL form → attribute mapping → user access → confirm

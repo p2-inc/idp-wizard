@@ -12,11 +12,17 @@ import { defineConfig, devices } from "@playwright/test";
  *   Covers: provider-selector smoke tests, wizard-completion flow tests (API mocked via page.route).
  *
  * Integration (real Keycloak):
- *   PLAYWRIGHT_INTEGRATION=true pnpm test:e2e
+ *   pnpm test:integration   (sets PLAYWRIGHT_INTEGRATION=true)
  *   Requires: `cd docker && docker compose up -d` before running.
  *   Runs auth:setup first (browser OIDC login → saves storageState).
  *   Then runs global-setup.ts (creates test organizations via Phase Two API).
  *   Covers: organization management tests + all mock tests with real auth.
+ *   KC_BASE_URL, KC_ADMIN_USER and KC_ADMIN_PASS override the docker defaults.
+ *
+ * External providers (real Auth0 / Okta tenants, opt-in):
+ *   pnpm test:external   (integration mode; skipped unless credentials are set)
+ *
+ * See README.md#testing for details.
  */
 
 const isIntegration = !!process.env.PLAYWRIGHT_INTEGRATION;

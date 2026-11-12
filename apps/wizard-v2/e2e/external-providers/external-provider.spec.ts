@@ -11,7 +11,8 @@ import { OktaPage } from "./OktaPage";
  *
  * !! THESE TESTS REQUIRE REAL CREDENTIALS AND LIVE PROVIDER ACCOUNTS !!
  *
- * Environment variables required (set in .env.local or CI secrets):
+ * Environment variables required (export them in the shell or set them as CI
+ * secrets; Playwright does not read .env.local):
  *
  *   Auth0:
  *     AUTH0_DOMAIN      your-tenant.auth0.com
@@ -23,9 +24,8 @@ import { OktaPage } from "./OktaPage";
  *     OKTA_EMAIL        admin email
  *     OKTA_PASSWORD     admin password
  *
- * Running:
- *   PLAYWRIGHT_INTEGRATION=true AUTH0_EMAIL=... AUTH0_PASSWORD=... AUTH0_DOMAIN=...
- *   pnpm test:e2e --project=chromium e2e/external-providers/
+ * Running (the dev Keycloak in docker/ must be up):
+ *   AUTH0_EMAIL=... AUTH0_PASSWORD=... AUTH0_DOMAIN=... pnpm test:external
  *
  * CAUTION: These tests create real applications and IDPs in your provider
  * accounts. Clean up manually afterward, or add afterAll teardown below.

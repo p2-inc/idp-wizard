@@ -10,11 +10,11 @@ Selection is most specific first:
 2. **Server-wide default** — the SPI option `--spi-realm-restapi-extension-wizard-default-version`, i.e. the env var `KC_SPI_REALM_RESTAPI_EXTENSION_WIZARD_DEFAULT_VERSION` on the Keycloak container.
 3. **Built-in default** — currently `v2`.
 
-An unrecognised value is not an error: the request falls back to the default and Keycloak logs a warning (`requests unsupported wizard version`), so a typo degrades to a working wizard.
+An unrecognized value is not an error: the request falls back to the default and Keycloak logs a warning (`requests unsupported wizard version`), so a typo degrades to a working wizard.
 
 The wizard URL is identical for both versions: `https://{keycloak-host}{relative-path}/realms/{realm}/wizard/` (where `{relative-path}` is `KC_HTTP_RELATIVE_PATH`, often `/auth` or empty). The `idp-wizard` client, its redirect URIs, and the `idp-tester` client are also shared, so switching versions never requires client or GitOps changes.
 
-## Flipping a realm to v2
+## Setting a realm's wizard version
 
 Realm attributes are not exposed in the Keycloak admin console; set them through the admin REST API. **Update the full realm representation** — a partial `PUT` that includes `attributes` replaces the whole attributes map, so always fetch, merge, and put back:
 
@@ -27,18 +27,18 @@ TOKEN=$(curl -s "$HOST/realms/master/protocol/openid-connect/token" \
   -d grant_type=password -d client_id=admin-cli \
   -d username={admin-user} -d password={admin-password} | jq -r .access_token)
 
-# fetch → merge the attribute → put back
+# fetch → merge the attribute → put back (v1 shown; use "v2" to pin the new wizard explicitly)
 curl -s -H "Authorization: Bearer $TOKEN" "$HOST/admin/realms/$REALM" \
-  | jq '.attributes["_providerConfig.wizard.version"] = "v2"' \
+  | jq '.attributes["_providerConfig.wizard.version"] = "v1"' \
   | curl -s -X PUT -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
       -d @- "$HOST/admin/realms/$REALM"
 ```
 
-To roll back, set the value to `"v1"` or delete the key the same way (`jq 'del(.attributes["_providerConfig.wizard.version"])'`). The change is per-request — no restart, no cache to clear; a browser reload is enough.
+To return the realm to the server default, delete the key the same way (`jq 'del(.attributes["_providerConfig.wizard.version"])'`). The change is per-request — no restart, no cache to clear; a browser reload is enough.
 
 ## A counterpart IdP for end-to-end runs
 
-Completing a wizard needs something on the other side to federate with. The easiest counterpart is a second realm on the same Keycloak server acting as the IdP via the **generic OIDC** wizard: create a confidential client in realm B (any redirect URI under realm A's broker endpoint, `https://{keycloak-host}{relative-path}/realms/{realmA}/broker/*`), then feed realm B's issuer (`.../realms/{realmB}`), client id, and secret into realm A's wizard. The same trick works for generic SAML using realm B's SAML descriptor. If you have credentials for a real vendor tenant (Okta, Entra ID, …), running one vendor-specific wizard on v2 is a worthwhile bonus — v2's provider definitions are the new declarative JSON engine, so vendor wizards exercise code paths the generic ones don't — but generic OIDC/SAML is the required minimum.
+Completing a wizard needs something on the other side to federate with. The easiest counterpart is a second realm on the same Keycloak server acting as the IdP via the **generic OIDC** wizard: create a confidential client in realm B (any redirect URI under realm A's broker endpoint, `https://{keycloak-host}{relative-path}/realms/{realmA}/broker/*`), then feed realm B's issuer (`.../realms/{realmB}`), client id, and secret into realm A's wizard. The same trick works for generic SAML using realm B's SAML descriptor. If you have credentials for a real vendor tenant (Okta, Entra ID, …), running one vendor-specific wizard on v2 is a worthwhile addition — vendor definitions exercise provider-specific config overrides and mappers that the generic ones don't — but generic OIDC/SAML is the required minimum. For automated coverage, see the Playwright suites in [apps/wizard-v2/README.md](../apps/wizard-v2/README.md#testing); this page covers manual verification of a deployed extension.
 
 ## What to test
 
