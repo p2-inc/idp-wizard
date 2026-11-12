@@ -1,6 +1,8 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures/test";
+import type { WizardPage } from "./pages/WizardPage";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -225,6 +227,78 @@ test.describe("Generic SAML wizard", () => {
     await providerSelector.selectProvider("Generic SAML");
     await expect(page).toHaveURL(/\/wizard\/saml\/saml/);
     await wizard.waitForStep(/.+/); // any step title = wizard rendered
+  });
+});
+
+// ── hideOnLogin depends on IdP scope (#290) ──────────────────────────────────
+
+test.describe("hideOnLogin follows IdP scope", () => {
+  // Drives the Auth0 SAML wizard to the confirm step and submits it.
+  async function completeAuth0Saml(
+    page: Page,
+    wizard: WizardPage,
+    url: string,
+  ) {
+    await page.goto(url);
+    await wizard.waitForStep(/Create a SAML Application/i);
+    await wizard.clickNext();
+    await wizard.waitForStep(/Upload Identity Provider Metadata/i);
+    await wizard.uploadFile(/Metadata File/i, SAML_METADATA_FILE);
+    await wizard.submitForm(/Validate File/i);
+    await expect(wizard.nextButton).toBeEnabled({ timeout: 5_000 });
+    await wizard.clickNext();
+    await wizard.waitForStep(/Configure Attribute Mapping/i);
+    await wizard.clickNext();
+    await wizard.waitForStep(/Configure User Access/i);
+    await wizard.clickNext();
+    await wizard.waitForStep(/Confirmation/i);
+    await wizard.confirm(/Create SAML Identity Provider/i);
+    await wizard.waitForSuccess(/SAML Identity Provider created successfully/i);
+  }
+
+  test("realm-wide IdP is created with hideOnLogin=false", async ({
+    page,
+    wizard,
+  }) => {
+    let createBody: Record<string, unknown> | null = null;
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.fulfill({ json: MOCK_SAML_IMPORT_CONFIG })
+    );
+    await page.route("**/identity-provider/instances", (route) => {
+      createBody = route.request().postDataJSON();
+      return route.fulfill({ status: 201, json: MOCK_IDP_CREATED });
+    });
+    await page.route("**/identity-provider/instances/*/mappers", (route) =>
+      route.fulfill({ status: 201, json: MOCK_MAPPER_CREATED })
+    );
+
+    await completeAuth0Saml(page, wizard, "/wizard/auth0/saml");
+
+    expect(createBody).not.toBeNull();
+    expect(createBody!.hideOnLogin).toBe(false);
+  });
+
+  test("org-scoped IdP is created with hideOnLogin=true", async ({
+    page,
+    wizard,
+  }) => {
+    const orgId = "test-org-id";
+    let createBody: Record<string, unknown> | null = null;
+    await page.route(`**/orgs/${orgId}/idps/import-config`, (route) =>
+      route.fulfill({ json: MOCK_SAML_IMPORT_CONFIG })
+    );
+    await page.route(`**/orgs/${orgId}/idps`, (route) => {
+      createBody = route.request().postDataJSON();
+      return route.fulfill({ status: 201, json: MOCK_IDP_CREATED });
+    });
+    await page.route(`**/orgs/${orgId}/idps/*/mappers`, (route) =>
+      route.fulfill({ status: 201, json: MOCK_MAPPER_CREATED })
+    );
+
+    await completeAuth0Saml(page, wizard, `/wizard/auth0/saml?org_id=${orgId}`);
+
+    expect(createBody).not.toBeNull();
+    expect(createBody!.hideOnLogin).toBe(true);
   });
 });
 
