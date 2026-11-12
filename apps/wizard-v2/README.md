@@ -302,6 +302,14 @@ pnpm test:integration
 pnpm test:external
 ```
 
+#### Running several checkouts at once
+
+Mock mode doesn't use the default Vite port 5173. It derives a stable port (20000–29999) from the checkout path, so several worktrees can run `pnpm test:e2e` at the same time without colliding, and each one reuses only its own dev server. Set `E2E_PORT` to choose a port explicitly. Integration mode stays on 5173, because the Keycloak realm's redirect URI and CORS origin are pinned to it, so only one checkout at a time can run integration tests.
+
+#### Browsers and Ubuntu 26.04
+
+Install the browser once with `pnpm exec playwright install chromium --only-shell`. Playwright 1.65 is the first release that supports Ubuntu 26.04 natively, and 1.63+ installs cleanly under Node 26. With Playwright ≤ 1.59, the install hangs while extracting under Node 26 and is refused outright on Ubuntu 26.04. Older checkouts needed two workarounds: `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64` and running the install with Node 22. Once every checkout and branch on a machine is on 1.65+, drop both workarounds and any installer wrappers that apply them.
+
 ### Test modes
 
 #### Mock mode (default)
