@@ -107,7 +107,7 @@ Each wizard JSON has four top-level keys:
 | `actions` | Named action definitions (HTTP calls, alias cleanup) invoked on form submit or confirm                                 |
 | `alias`   | Alias configuration — `sessionKey` for sessionStorage, `prefix` for generated alias strings                            |
 
-Template tokens in JSON values (`{{api.entityId}}`, `{{form.fieldId}}`, `{{state.metadata}}`, `{{alias}}`, `{{item.*}}`) are resolved at runtime from the wizard context.
+Template tokens in JSON values (`{{api.entityId}}`, `{{form.fieldId}}`, `{{state.metadata}}`, `{{alias}}`, `{{displayName}}`, `{{item.*}}`) are resolved at runtime from the wizard context.
 
 ## API clients
 

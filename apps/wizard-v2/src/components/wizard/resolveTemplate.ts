@@ -110,8 +110,15 @@ export function buildTemplateContext(params: {
 }): Record<string, unknown> {
   const { alias, api, idpProviderId, state, formValues = {}, foreachItem } = params;
 
+  // Fall back to the alias so an IdP never gets created with a blank name.
+  const displayName =
+    typeof state.displayName === "string" && state.displayName.trim()
+      ? state.displayName.trim()
+      : alias;
+
   const ctx: Record<string, unknown> = {
     alias,
+    displayName,
     "api.entityId": api.entityId,
     "api.ssoUrl": api.ssoUrl(alias),
     "api.samlMetadata": api.samlMetadata,

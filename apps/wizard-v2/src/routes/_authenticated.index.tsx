@@ -30,6 +30,7 @@ import {
 } from "@/data/providers";
 import { useWizardConfig } from "@/hooks/useWizardConfig";
 import { useOidc } from "@/oidc";
+import { useOrgDisplayNames } from "@/hooks/useOrgDisplayNames";
 
 const searchSchema = z.object({
   org_id: z.string().optional(),
@@ -57,6 +58,15 @@ type OrgClaims = Record<string, { name?: string; roles?: string[] }>;
 
 function hasAllRoles(orgEntry: { roles?: string[] }): boolean {
   return REQUIRED_ORG_ROLES.every((r) => orgEntry.roles?.includes(r));
+}
+
+/** Prefer the org's displayName, then its name, then its id. */
+function orgLabel(
+  id: string,
+  orgs: OrgClaims,
+  displayNames: Record<string, string>,
+): string {
+  return displayNames[id] || orgs[id]?.name || id;
 }
 
 // ---------------------------------------------------------------------------
@@ -125,10 +135,12 @@ function ProviderRow({
 function OrgPicker({
   orgId,
   orgs,
+  displayNames,
   onChange,
 }: {
   orgId: string | null;
   orgs: OrgClaims;
+  displayNames: Record<string, string>;
   onChange: (id: string | null) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -137,7 +149,9 @@ function OrgPicker({
   if (eligibleOrgs.length === 0) return null;
 
   const currentName =
-    orgId && orgs[orgId] ? (orgs[orgId].name ?? orgId) : "Global (realm-wide)";
+    orgId && orgs[orgId]
+      ? orgLabel(orgId, orgs, displayNames)
+      : "Global (realm-wide)";
 
   return (
     <div className="w-full max-w-sm">
@@ -182,7 +196,7 @@ function OrgPicker({
               <div className="border-border my-1 border-t" />
             )}
 
-            {eligibleOrgs.map(([id, org]) => (
+            {eligibleOrgs.map(([id]) => (
               <button
                 key={id}
                 onClick={() => {
@@ -195,7 +209,9 @@ function OrgPicker({
                 )}
               >
                 <div>
-                  <p className="font-medium">{org.name ?? id}</p>
+                  <p className="font-medium">
+                    {orgLabel(id, orgs, displayNames)}
+                  </p>
                   <p className="text-muted-foreground font-mono text-xs">
                     {id}
                   </p>
@@ -281,6 +297,8 @@ function ProviderSelector() {
   const orgs: OrgClaims =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ((oidc.decodedIdToken as any)?.organizations as OrgClaims) ?? {};
+  const hasEligibleOrgs = Object.values(orgs).some(hasAllRoles);
+  const orgDisplayNames = useOrgDisplayNames(hasEligibleOrgs);
 
   const { src: logoSrc, fallback: fallbackLogo } = useAppLogo();
 
@@ -344,8 +362,13 @@ function ProviderSelector() {
       </div>
 
       {/* Org picker — only shown when there are eligible orgs */}
-      {Object.keys(orgs).some((id) => hasAllRoles(orgs[id])) && (
-        <OrgPicker orgId={orgId} orgs={orgs} onChange={handleOrgChange} />
+      {hasEligibleOrgs && (
+        <OrgPicker
+          orgId={orgId}
+          orgs={orgs}
+          displayNames={orgDisplayNames}
+          onChange={handleOrgChange}
+        />
       )}
 
       {/* Provider search card */}

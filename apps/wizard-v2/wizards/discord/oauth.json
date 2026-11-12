@@ -107,7 +107,7 @@
       "contentType": "json",
       "body": {
         "alias": "{{alias}}",
-        "displayName": "{{alias}}",
+        "displayName": "{{displayName}}",
         "providerId": "oidc",
         "hideOnLogin": true,
         "config": {

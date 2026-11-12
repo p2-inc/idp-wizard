@@ -68,3 +68,23 @@ test.describe("provider navigation", () => {
     await expect(providerSelector.page).toHaveURL("/");
   });
 });
+
+test.describe("organization context", () => {
+  test("Providers breadcrumb on the protocol picker keeps org_id", async ({
+    page,
+    wizard,
+  }) => {
+    await page.goto("/wizard/okta?org_id=test-org-123");
+    await wizard.goHome();
+    await expect(page).toHaveURL(/\/\?org_id=test-org-123$/);
+  });
+
+  test("Providers breadcrumb without an org stays realm-wide", async ({
+    page,
+    wizard,
+  }) => {
+    await page.goto("/wizard/okta");
+    await wizard.goHome();
+    await expect(page).toHaveURL(/\/$/);
+  });
+});
