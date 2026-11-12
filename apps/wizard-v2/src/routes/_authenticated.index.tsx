@@ -69,11 +69,14 @@ const protocolBadgeClass: Record<Protocol, string> = {
   scim: "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300",
   "saml-idp-initiated":
     "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  "oidc-idp-initiated":
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
 };
 
 /** Badge text; protocols without an entry show their id. */
 const protocolBadgeLabel: Partial<Record<Protocol, string>> = {
   "saml-idp-initiated": "idp-initiated",
+  "oidc-idp-initiated": "idp-initiated",
 };
 
 function ProtocolBadge({ protocol }: { protocol: Protocol }) {

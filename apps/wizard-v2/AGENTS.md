@@ -286,6 +286,7 @@ Keep screenshots as PNG. Do not commit multi-megabyte captures — the whole tre
 | `{{api.entityId}}`      | `{serverUrl}/realms/{realm}`                          |
 | `{{api.ssoUrl}}`        | `{serverUrl}/realms/{realm}/broker/{alias}/endpoint`  |
 | `{{api.idpInitiatedAcsUrl}}` | `{serverUrl}/realms/{realm}/broker/{alias}/endpoint/clients/idp-initiated-{alias}` — where the upstream IdP posts IdP-initiated logins |
+| `{{api.idpInitiatedLoginUrl}}` | `{serverUrl}/realms/{realm}/protocol/saml/clients/idp-initiated-{alias}?kc_idp_hint={alias}` — the initiate-login URL for an OIDC upstream; runs the browser flow, whose Identity Provider Redirector sends the user to `{alias}` |
 | `{{idpInitiatedClientId}}` | `idp-initiated-{alias}` — clientId and IdP-initiated SSO URL name of the paired SAML client |
 | `{{api.samlMetadata}}`  | `{serverUrl}/realms/{realm}/protocol/saml/descriptor` |
 | `{{api.adminLinkSaml}}` | Keycloak admin console link for the SAML IDP          |
