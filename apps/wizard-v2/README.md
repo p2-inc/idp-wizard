@@ -426,7 +426,7 @@ In CI (`CI=true`), the web server is always started fresh, tests are retried up 
 pnpm build
 ```
 
-Output goes to `dist/`. When wizard-v2 is ready for production, the root `pom.xml` `workingDirectory` will be updated to `apps/wizard-v2` and `mvn package` will bundle it into the Keycloak JAR.
+Output goes to `dist/`. The root `mvn package` runs this build and bundles the output into the Keycloak JAR alongside wizard-v1 (see below).
 
 ## Choosing between wizard-v1 and wizard-v2
 
@@ -439,7 +439,7 @@ Selection is most specific first:
 
 1. `_providerConfig.wizard.version` realm attribute (`v1` or `v2`);
 2. `--spi-realm-restapi-extension-wizard-default-version`;
-3. the built-in default, `v1`.
+3. the built-in default, `v2`.
 
 Because the route (`/realms/{realm}/wizard`), the `idp-wizard` client, and its redirect
 URIs are identical for both, moving a realm between versions is an attribute change — no
@@ -447,11 +447,10 @@ redeploy, no client edits, and rollback is unsetting the attribute.
 
 ### Staging the default
 
-`DEFAULT_VERSION` in `WizardResourceProviderFactory` is a single constant, currently
-`VERSION_V1`: the whole mechanism ships as a behavioural no-op, so the plumbing can be
-proven by opt-in realms (or a server-wide SPI override) before it changes what everyone
-else gets. Flipping it to `VERSION_V2` is then the only change in the release that makes
-v2 the default.
+`DEFAULT_VERSION` in `WizardResourceProviderFactory` is a single constant. It shipped as
+`VERSION_V1` while v2 was proven on opt-in realms, and is now `VERSION_V2`. Realms that
+need the old wizard set `_providerConfig.wizard.version` to `v1`; a whole server can be
+kept on v1 with `--spi-realm-restapi-extension-wizard-default-version=v1`.
 
 ### What differs between the two
 
