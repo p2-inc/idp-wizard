@@ -491,7 +491,7 @@ export async function executeAction(
             ) {
               const idpTestLink = await resolveIdpTestLink({
                 getIdpUrl: params.api.endpoints.getIdp(currentState.alias),
-                testLoginUrl: params.api.testLoginUrl(currentState.alias),
+                testLoginUrl: () => params.api.testLoginUrl(currentState.alias),
               });
               localDispatch({ ...reducerAction, idpTestLink });
               continue;
