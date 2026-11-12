@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useBlocker } from "@tanstack/react-router";
 
 /**
@@ -31,7 +30,6 @@ export type UnsavedChangesGuard = {
  */
 export function useUnsavedChangesGuard(when: boolean): UnsavedChangesGuard {
   const active = when && isGuardEnabled();
-  const [isOpen, setIsOpen] = useState(false);
 
   const blocker = useBlocker({
     shouldBlockFn: () => active,
@@ -39,19 +37,14 @@ export function useUnsavedChangesGuard(when: boolean): UnsavedChangesGuard {
     withResolver: true,
   });
 
-  // Surface the paused intent to the consumer when the router pauses navigation.
-  useEffect(() => {
-    if (blocker.status === "blocked") setIsOpen(true);
-  }, [blocker.status]);
-
+  // The dialog is open exactly while the router holds a paused navigation;
+  // proceed()/reset() move the blocker out of "blocked", which closes it.
   return {
-    isOpen,
+    isOpen: blocker.status === "blocked",
     confirm: () => {
-      setIsOpen(false);
       if (blocker.status === "blocked") blocker.proceed();
     },
     cancel: () => {
-      setIsOpen(false);
       if (blocker.status === "blocked") blocker.reset();
     },
   };

@@ -31,7 +31,7 @@ export class ProviderSelectorPage {
     await this.searchInput.clear();
   }
 
-  async selectProvider(name: string) {
+  async selectProvider(name: string | RegExp) {
     await this.page.getByRole("button", { name }).click();
   }
 

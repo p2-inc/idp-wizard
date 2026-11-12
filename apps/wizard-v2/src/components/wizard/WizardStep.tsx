@@ -5,7 +5,7 @@
  * appropriate block renderer. This component is stateless — all state lives
  * in WizardContext.
  */
-import { useState } from "react";
+import { useId, useState } from "react";
 import { CheckCircle2, Copy, Check } from "lucide-react";
 import type {
   WizardStep as WizardStepDef,
@@ -421,16 +421,20 @@ function FieldRenderer({
     "focus:ring-2 focus:ring-ring focus:ring-offset-1",
     error && "border-destructive focus:ring-destructive",
   );
+  // Associates the visible label with its control so it is announced by
+  // screen readers (and resolvable via getByLabel in tests).
+  const inputId = useId();
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-base font-medium">
+      <label htmlFor={inputId} className="text-base font-medium">
         {field.label}
         {field.required && <span className="text-destructive ml-0.5">*</span>}
       </label>
 
       {field.type === "file" ? (
         <FileInput
+          id={inputId}
           accept={field.accept}
           required={field.required}
           value={(value as File) ?? null}
@@ -438,6 +442,7 @@ function FieldRenderer({
         />
       ) : field.type === "textarea" ? (
         <textarea
+          id={inputId}
           placeholder={field.placeholder}
           required={field.required}
           value={(value as string) ?? ""}
@@ -447,6 +452,7 @@ function FieldRenderer({
         />
       ) : (
         <input
+          id={inputId}
           type={
             field.type === "password"
               ? "password"

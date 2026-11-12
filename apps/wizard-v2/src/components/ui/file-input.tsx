@@ -3,6 +3,7 @@ import { Upload, X, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FileInputProps {
+  id?: string;
   label?: string;
   accept?: string;
   required?: boolean;
@@ -12,6 +13,7 @@ interface FileInputProps {
 }
 
 export function FileInput({
+  id,
   label,
   accept,
   required,
@@ -96,6 +98,7 @@ export function FileInput({
         )}
       </div>
       <input
+        id={id}
         ref={inputRef}
         type="file"
         accept={accept}

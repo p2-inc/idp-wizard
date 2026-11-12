@@ -219,7 +219,7 @@ This is the canonical reference. All wizard JSON files follow this schema.
 
   "idpConfig": {                 // merged into the IDP creation request
     "providerId": "saml",
-    "hideOnLogin": true,
+    "hideOnLogin": true,         // overridden at runtime by scope — see below
     "defaults": { ... }          // merged into metadata before sending to Keycloak
   },
 
@@ -326,6 +326,11 @@ Named endpoint slots (`endpoint` key):
 - `importConfig` — validates metadata; returns raw IDP config object
 - `createIdp` — creates the identity provider
 - `addMappers` — adds attribute mapper to an existing IDP
+
+`hideOnLogin` on the `createIdp` body is set by the executor from the IdP's scope,
+regardless of what the JSON declares: `true` for org-scoped IdPs (reached via home-IdP
+discovery) and `false` for realm-wide IdPs (no discovery domain, so they must be visible
+on the login page). See `applyHideOnLogin` in `src/components/wizard/executeAction.ts`.
 
 Special action types (no `endpoint`):
 

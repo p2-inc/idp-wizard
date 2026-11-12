@@ -7,6 +7,7 @@
  *
  * Feature-flag middleware is applied automatically:
  *   - trustEmail    → injects trustEmail:true into createIdp body
+ *   - hideOnLogin   → set on createIdp body from scope (org-scoped vs realm-wide)
  *   - emailAsUsername → adds idpUsername mapper, remaps username to email attr
  *   - usernameMapperImport → sets username mapper syncMode to IMPORT
  */
@@ -178,6 +179,21 @@ function applyTrustEmail(
 ): Record<string, unknown> {
   if (!config.trustEmail) return body;
   return { ...body, trustEmail: true };
+}
+
+/**
+ * Sets hideOnLogin on the createIdp body according to the IdP's scope.
+ *
+ * Org-scoped IdPs are reached through home-IdP discovery, so they are hidden
+ * from the login page. Realm-wide IdPs have no discovery domain, so hiding
+ * them would leave them reachable only via kc_idp_hint — they must be shown.
+ * This overrides whatever the wizard JSON declares.
+ */
+function applyHideOnLogin(
+  body: Record<string, unknown>,
+  orgScoped: boolean,
+): Record<string, unknown> {
+  return { ...body, hideOnLogin: orgScoped };
 }
 
 /**
@@ -430,6 +446,12 @@ export async function executeAction(
       // Feature flag: trustEmail on createIdp
       if (httpAction.endpoint === "createIdp") {
         resolvedBody = applyTrustEmail(resolvedBody, config);
+        // Mirrors the endpoint selection in useWizardApi: the Orgs API is used
+        // only when in cloud mode with an org_id; otherwise the IdP is realm-wide.
+        resolvedBody = applyHideOnLogin(
+          resolvedBody,
+          params.apiMode === "cloud" && !!params.orgId,
+        );
       }
 
       // Feature flag: usernameMapperImport on mapper creation
