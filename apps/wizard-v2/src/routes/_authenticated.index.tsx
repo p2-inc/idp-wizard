@@ -29,6 +29,7 @@ import {
   type Provider,
 } from "@/data/providers";
 import { useWizardConfig } from "@/hooks/useWizardConfig";
+import { useProtocolFilter } from "@/hooks/useProtocolFilter";
 import { useOidc } from "@/oidc";
 
 const searchSchema = z.object({
@@ -271,6 +272,7 @@ function ProviderSelector() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const { config } = useWizardConfig();
+  const { filterProviders } = useProtocolFilter();
   const { org_id: initialOrgId } = Route.useSearch();
 
   // Org state — starts from URL param, can be changed via picker
@@ -284,13 +286,27 @@ function ProviderSelector() {
 
   const { src: logoSrc, fallback: fallbackLogo } = useAppLogo();
 
+  // Drop protocols the realm has disabled (e.g. LDAP), and providers left with none.
+  const visiblePopular = useMemo(
+    () => filterProviders(popularProviders),
+    [filterProviders],
+  );
+  const visibleProviders = useMemo(
+    () => filterProviders(providers),
+    [filterProviders],
+  );
+  const visibleGeneric = useMemo(
+    () => filterProviders(genericProviders),
+    [filterProviders],
+  );
+
   const fuse = useMemo(
     () =>
-      new Fuse([...popularProviders, ...providers, ...genericProviders], {
+      new Fuse([...visiblePopular, ...visibleProviders, ...visibleGeneric], {
         keys: ["name"],
         threshold: 0.4,
       }),
-    [],
+    [visiblePopular, visibleProviders, visibleGeneric],
   );
 
   const filteredProviders = query
@@ -386,7 +402,7 @@ function ProviderSelector() {
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Popular
               </div>
-              {popularProviders.map((provider) => (
+              {visiblePopular.map((provider) => (
                 <ProviderRow
                   key={provider.id}
                   provider={provider}
@@ -399,7 +415,7 @@ function ProviderSelector() {
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Providers
               </div>
-              {providers.map((provider) => (
+              {visibleProviders.map((provider) => (
                 <ProviderRow
                   key={provider.id}
                   provider={provider}
@@ -412,12 +428,12 @@ function ProviderSelector() {
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Generic
               </div>
-              {genericProviders.map((provider, i) => (
+              {visibleGeneric.map((provider, i) => (
                 <ProviderRow
                   key={provider.id}
                   provider={provider}
                   onSelect={handleSelect}
-                  isLast={i === genericProviders.length - 1}
+                  isLast={i === visibleGeneric.length - 1}
                 />
               ))}
             </>

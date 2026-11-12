@@ -1,5 +1,10 @@
 import { useReducer, useEffect } from "react";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Navigate,
+  redirect,
+} from "@tanstack/react-router";
 import { Building2 } from "lucide-react";
 import { WizardRunner } from "@/components/wizard/WizardRunner";
 import { z } from "zod";
@@ -10,6 +15,7 @@ import {
   makeInitialWizardState,
 } from "@/context/WizardContext";
 import { useWizardApi } from "@/hooks/useWizardApi";
+import { useProtocolFilter } from "@/hooks/useProtocolFilter";
 import { getOrCreateAlias } from "@/lib/alias";
 
 const searchSchema = z.object({
@@ -33,7 +39,22 @@ export const Route = createFileRoute(
 function WizardPage() {
   const { providerId, protocol } = Route.useParams();
   const { org_id: orgId = null } = Route.useSearch();
-  const provider = allProviders.find((p) => p.id === providerId)!;
+  const { isEnabled, loading } = useProtocolFilter();
+
+  // Protocols can be disabled per realm (e.g. enableLdap=false). Wait for the
+  // config before deciding, then send direct links back to the protocol picker,
+  // which in turn falls back to the provider list when nothing is left.
+  if (!isEnabled(protocol as Protocol)) {
+    if (loading) return null;
+    return (
+      <Navigate
+        to="/wizard/$providerId"
+        params={{ providerId }}
+        search={orgId ? { org_id: orgId } : {}}
+        replace
+      />
+    );
+  }
 
   // SCIM is configured per-organization on the Phase Two backend. There is no
   // realm-wide path today, so block the wizard with a clear message when no
@@ -41,6 +62,14 @@ function WizardPage() {
   if (protocol === "scim" && !orgId) {
     return <ScimRequiresOrgGate />;
   }
+
+  return <WizardSession />;
+}
+
+function WizardSession() {
+  const { providerId, protocol } = Route.useParams();
+  const { org_id: orgId = null } = Route.useSearch();
+  const provider = allProviders.find((p) => p.id === providerId)!;
 
   const sessionKey = `p2_${providerId}_${protocol}`;
   const alias = getOrCreateAlias(sessionKey, `${providerId}-${protocol}`);
