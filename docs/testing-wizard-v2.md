@@ -1,6 +1,6 @@
 # Testing wizard v2
 
-As of release 0.53, both wizard frontends ship in the same extension JAR: `wizard-v1` (the wizard that has always shipped) and `wizard-v2` (the rewrite). Which one a realm gets is decided per request — there is no separate build, image, or deployment for v2. The compiled-in default is **v1**, so upgrading to 0.53 changes nothing by itself; v2 is opt-in until we flip the default in a later release.
+As of release 0.53, both wizard frontends ship in the same extension JAR: `wizard-v1` (the wizard that has always shipped) and `wizard-v2` (the rewrite). Which one a realm gets is decided per request — there is no separate build, image, or deployment for v2. The compiled-in default was **v1** through 0.57 and is now **v2**; realms (or a whole server) can opt back into v1.
 
 ## How version selection works
 
@@ -8,7 +8,7 @@ Selection is most specific first:
 
 1. **Realm attribute** `_providerConfig.wizard.version` — `v1` or `v2`. Wins over everything; lets you flip one realm at a time.
 2. **Server-wide default** — the SPI option `--spi-realm-restapi-extension-wizard-default-version`, i.e. the env var `KC_SPI_REALM_RESTAPI_EXTENSION_WIZARD_DEFAULT_VERSION` on the Keycloak container.
-3. **Built-in default** — currently `v1`.
+3. **Built-in default** — currently `v2`.
 
 An unrecognised value is not an error: the request falls back to the default and Keycloak logs a warning (`requests unsupported wizard version`), so a typo degrades to a working wizard.
 
@@ -42,9 +42,9 @@ Completing a wizard needs something on the other side to federate with. The easi
 
 ## What to test
 
-**1. v1 regression (default path).** Before touching any attribute, load `/realms/{realm}/wizard/` on a realm with no version attribute. It must look and behave exactly as before the upgrade — this proves the 0.53 rollout is the no-op it claims to be. Walk at least one wizard through to a created IdP config.
+**1. v1 opt-out.** Set the attribute to `v1`, reload the wizard URL. It must look and behave exactly as the original wizard. Walk at least one wizard through to a created IdP config.
 
-**2. v2 opt-in.** Set the attribute to `v2`, reload the wizard URL. You should get the new UI (Tailwind styling, TanStack router — visually unmistakable from v1). Verify:
+**2. v2 (default path).** On a realm with no version attribute (or with it set to `v2`), load `/realms/{realm}/wizard/`. You should get the new UI (Tailwind styling, TanStack router — visually unmistakable from v1). Verify:
 
 - The provider list renders and the realm's branding/config comes through (the config is fetched at runtime from the extension, so broken branding or all-default feature flags means the runtime-config fetch failed — check the browser console for the `keycloak.json` / `config.json` requests).
 - Walk one full wizard (e.g. a generic SAML or OIDC provider) to a created IdP, then run the validation step (the `idp-tester` flow).
@@ -59,4 +59,4 @@ Completing a wizard needs something on the other side to federate with. The easi
 
 ## Testing the server-wide default
 
-Only needed when testing the fleet-level flip rather than per-realm opt-in: set `KC_SPI_REALM_RESTAPI_EXTENSION_WIZARD_DEFAULT_VERSION=v2` on the container and restart. Realms with an explicit `v1` attribute must stay on v1 — that's the override working in the protective direction.
+Only needed when testing a fleet-level override rather than per-realm selection: set `KC_SPI_REALM_RESTAPI_EXTENSION_WIZARD_DEFAULT_VERSION=v1` on the container and restart. Realms with no attribute must now get v1, while realms with an explicit `v2` attribute must stay on v2 — the realm attribute always wins.

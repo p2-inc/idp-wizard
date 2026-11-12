@@ -32,33 +32,24 @@ This is a pnpm workspace monorepo. The frontend apps live under `apps/`, the Jav
 ```
 idp-wizard/
 ├── apps/
-│   ├── wizard-v1/              # Original PatternFly + webpack app (current production build)
-│   └── wizard-v2/              # New Vite + Tailwind + shadcn + TanStack Router app (in development)
+│   ├── wizard-v1/              # Original PatternFly + webpack app (legacy; opt-in via `v1`)
+│   └── wizard-v2/              # Vite + Tailwind + shadcn + TanStack Router app (default)
 │       ├── docker/             # Dev Keycloak setup with pre-configured realm and client
 │       ├── public/             # Static assets (favicons, logos, provider images, wizard screenshots)
 │       ├── src/                # Application source
 │       └── wizards/            # Declarative JSON wizard definitions
-├── ext/                        # Java Keycloak SPI extensionprivate static final String ENV_SENDGRID_HAS_CLUSTER_FIELD_ID = "SENDGRID_HAS_CLUSTER_FIELD_ID";
-
-  /**
-   * SendGrid custom-field ID (not name) for the {@code has_cluster} attribute used to segment
-   * onboarding automations. Fetch from {@code GET /v3/marketing/field_definitions}. When unset, the
-   * attribute is not written (the upsert still proceeds without it).
-   */
-  public static String sendgridHasClusterFieldId() {
-    return System.getenv(ENV_SENDGRID_HAS_CLUSTER_FIELD_ID);
-  }
-├── pom.xml                     # Maven build — packages the active frontend into a Keycloak JAR
+├── ext/                        # Java Keycloak SPI extension
+├── pom.xml                     # Maven build — packages both frontends into a Keycloak JAR
 └── pnpm-workspace.yaml
 ```
 
 ### wizard-v1
 
-The original implementation. Each identity provider has its own set of per-step React components built on PatternFly 4. This is the currently deployed version.
+The original implementation. Each identity provider has its own set of per-step React components built on PatternFly 4. Still shipped in the JAR and served to realms that set `_providerConfig.wizard.version` to `v1`.
 
 ### wizard-v2
 
-A rewrite in progress. Wizards are defined declaratively as JSON files (see `apps/wizard-v2/wizards/`) and rendered by a generic runtime engine, eliminating the need for per-provider component trees. Built with Vite, Tailwind CSS, shadcn/ui, TanStack Router, and oidc-spa for authentication. See [apps/wizard-v2/README.md](apps/wizard-v2/README.md) for full details.
+The rewrite, and the default frontend. Wizards are defined declaratively as JSON files (see `apps/wizard-v2/wizards/`) and rendered by a generic runtime engine, eliminating the need for per-provider component trees. Built with Vite, Tailwind CSS, shadcn/ui, TanStack Router, and oidc-spa for authentication. See [apps/wizard-v2/README.md](apps/wizard-v2/README.md) for full details.
 
 ## Quick start
 
@@ -130,7 +121,7 @@ This extension depends on 2 other extensions. You must install all of the jars o
 - [keycloak-orgs](https://github.com/p2-inc/keycloak-orgs)
 - [keycloak-scim](https://github.com/p2-inc/keycloak-scim) (not currently used or required)
 
-> :information_source: How the two wizard versions differ, and how to stage making v2 the default, is documented in [apps/wizard-v2/README.md](apps/wizard-v2/README.md#choosing-between-wizard-v1-and-wizard-v2).
+> :information_source: How the two wizard versions differ, and how the default is chosen, is documented in [apps/wizard-v2/README.md](apps/wizard-v2/README.md#choosing-between-wizard-v1-and-wizard-v2).
 
 ### Compatibility
 
