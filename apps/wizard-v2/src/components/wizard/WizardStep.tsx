@@ -11,12 +11,14 @@ import type {
   WizardStep as WizardStepDef,
   WizardBlock,
   WizardForm,
+  WizardAction,
   FormField,
 } from "./types";
 import { resolveTemplate, buildTemplateContext } from "./resolveTemplate";
 import { useWizardContext } from "@/context/WizardContext";
 import { CopyField } from "@/components/ui/copy-field";
 import { FileInput } from "@/components/ui/file-input";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -33,11 +35,12 @@ import { assetUrl } from "@/runtime-config";
 interface Props {
   step: WizardStepDef;
   forms: Record<string, WizardForm>;
+  actions?: Record<string, WizardAction>;
   onAction: (actionKey: string, formValues?: Record<string, unknown>) => Promise<boolean>;
   idpProviderId?: string;
 }
 
-export function WizardStep({ step, forms, onAction, idpProviderId }: Props) {
+export function WizardStep({ step, forms, actions = {}, onAction, idpProviderId }: Props) {
   const { state, api } = useWizardContext();
   const ctx = buildTemplateContext({ alias: state.alias, api, state, idpProviderId });
 
@@ -50,6 +53,7 @@ export function WizardStep({ step, forms, onAction, idpProviderId }: Props) {
           block={block}
           ctx={ctx}
           forms={forms}
+          actions={actions}
           onAction={onAction}
         />
       ))}
@@ -65,13 +69,14 @@ interface BlockProps {
   block: WizardBlock;
   ctx: Record<string, unknown>;
   forms: Record<string, WizardForm>;
+  actions: Record<string, WizardAction>;
   onAction: (
     actionKey: string,
     formValues?: Record<string, unknown>,
   ) => Promise<boolean>;
 }
 
-function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
+function BlockRenderer({ block, ctx, forms, actions, onAction }: BlockProps) {
   switch (block.type) {
     case "text":
       return <TextBlockRenderer content={block.content} />;
@@ -105,7 +110,12 @@ function BlockRenderer({ block, ctx, forms, onAction }: BlockProps) {
 
     case "confirm":
       return (
-        <ConfirmBlockRenderer block={block} ctx={ctx} onAction={onAction} />
+        <ConfirmBlockRenderer
+          block={block}
+          ctx={ctx}
+          editableDisplayName={usesDisplayName(actions[block.action])}
+          onAction={onAction}
+        />
       );
 
     case "secretReveal":
@@ -566,19 +576,31 @@ function AttributeTableRenderer({
   );
 }
 
+/**
+ * True when the action's request body sends the `{{displayName}}` template,
+ * i.e. the confirmation step should let the admin edit the IdP display name.
+ */
+function usesDisplayName(action: WizardAction | undefined): boolean {
+  if (!action || !("body" in action) || !action.body) return false;
+  const value = action.body.displayName;
+  return typeof value === "string" && value.includes("{{displayName}}");
+}
+
 function ConfirmBlockRenderer({
   block,
   ctx,
+  editableDisplayName,
   onAction,
 }: {
   block: import("./types").ConfirmBlock;
   ctx: Record<string, unknown>;
+  editableDisplayName: boolean;
   onAction: (
     actionKey: string,
     formValues?: Record<string, unknown>,
   ) => Promise<boolean>;
 }) {
-  const { state, apiMode } = useWizardContext();
+  const { state, dispatch, apiMode } = useWizardContext();
   const adminLink =
     block.adminLink && apiMode === "onprem"
       ? resolveTemplate(block.adminLink, ctx)
@@ -592,6 +614,26 @@ function ConfirmBlockRenderer({
           {block.description}
         </p>
       </div>
+
+      {editableDisplayName && (
+        <div className="flex max-w-md flex-col gap-1.5">
+          <label htmlFor="idp-display-name" className="text-sm font-medium">
+            Display name
+          </label>
+          <Input
+            id="idp-display-name"
+            value={state.displayName}
+            onChange={(e) =>
+              dispatch({ type: "SET_DISPLAY_NAME", displayName: e.target.value })
+            }
+            disabled={state.submitting || state.submitted}
+            maxLength={255}
+          />
+          <p className="text-muted-foreground text-sm">
+            Shown in the admin console and on login pages where this provider appears.
+          </p>
+        </div>
+      )}
 
       {state.error && (
         <p className="rounded-md bg-destructive/10 px-3 py-2 text-base text-destructive">
