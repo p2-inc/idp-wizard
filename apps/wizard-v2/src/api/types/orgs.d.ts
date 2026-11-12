@@ -697,6 +697,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/{realm}/orgs/{orgId}/idps/clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description realm name (not id!) */
+                realm: string;
+                /** @description organization id */
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create the client for IdP-initiated login through this organization's identity provider
+         * @description Creates a SAML client that accepts IdP-initiated logins brokered through an identity provider of this organization. Create the client before the identity provider it is paired with.
+         */
+        post: operations["createIdpInitiatedClient"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/{realm}/orgs/{orgId}/idps/link": {
         parameters: {
             query?: never;
@@ -1427,6 +1452,36 @@ export interface components {
             post_broker_flow?: string;
             sync_mode?: string;
         };
+        /** @description SAML client that receives IdP-initiated logins brokered through an identity provider of this organization and sends the user on to the target application. */
+        IdpInitiatedClientRepresentation: {
+            /** @enum {string} */
+            protocol: "saml";
+            /**
+             * @description Must start with `idp-initiated-`. By convention `idp-initiated-{alias}`, where `{alias}` is the identity provider alias.
+             * @example idp-initiated-generic-saml-a1b2c3
+             */
+            clientId: string;
+            name?: string;
+            description?: string;
+            /** @description String values only, including booleans ("true"/"false"). */
+            attributes?: {
+                /** @description Must equal `clientId`. The identity provider posts to `/realms/{realm}/broker/{alias}/endpoint/clients/{value}`. */
+                saml_idp_initiated_sso_url_name?: string;
+                /** @description RelayState sent to the target application. */
+                saml_idp_initiated_sso_relay_state?: string;
+                /**
+                 * @description Send the response to the target application with the POST binding.
+                 * @enum {string}
+                 */
+                "saml.force.post.binding"?: "true" | "false";
+                /** @description Where to send the user after login. For an OIDC application, its home page; for a SAML application using the Redirect binding, its ACS URL. */
+                saml_assertion_consumer_url_redirect?: string;
+                /** @description ACS URL of a SAML application using the POST binding. */
+                saml_assertion_consumer_url_post?: string;
+                /** @description Alias of the identity provider this client is paired with. */
+                "phasetwo.idp-initiated.alias"?: string;
+            };
+        };
         RealmAttributeRepresentation: {
             name?: string;
             value?: string;
@@ -1519,22 +1574,21 @@ export interface components {
         };
         SwitchOrganizationRepresentation: {
             /** @description The ID of the organization to switch to */
-            id?: string;
+            id: string;
         };
-        ActiveOrganizationRepresentation: {
-            /** @description The ID of the active organization */
-            organizationId?: string;
-            /** @description The name of the active organization */
-            organizationName?: string;
-            /** @description The display name of the active organization */
-            displayName?: string;
-            /** @description User's roles in the active organization */
-            roles?: string[];
-            /**
-             * Format: date-time
-             * @description When the organization was last switched to
-             */
-            switchedAt?: string;
+        /** @description A freshly issued OIDC token set, reflecting the user's new active organization. The `refresh_token` is only present when the client is configured to use refresh tokens, and `id_token` only for OIDC requests. */
+        AccessTokenResponse: {
+            access_token?: string;
+            /** Format: int64 */
+            expires_in?: number;
+            /** Format: int64 */
+            refresh_expires_in?: number;
+            refresh_token?: string;
+            token_type?: string;
+            id_token?: string;
+            "not-before-policy"?: number;
+            session_state?: string;
+            scope?: string;
         };
         OrganizationDomainRepresentation: {
             domain_name: string;
@@ -1816,6 +1870,8 @@ export interface operations {
                 max?: number;
                 /** @description search by attributes using the format (space separated) `k1:v1 k2:v2` */
                 q?: string;
+                /** @description search parameter exact match */
+                exact?: string;
             };
             header?: never;
             path: {
@@ -1870,6 +1926,8 @@ export interface operations {
                 search?: string;
                 /** @description search by attributes using the format (space separated) `k1:v1 k2:v2` */
                 q?: string;
+                /** @description exact search */
+                exact?: string;
             };
             header?: never;
             path: {
@@ -3074,6 +3132,57 @@ export interface operations {
             };
         };
     };
+    createIdpInitiatedClient: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description realm name (not id!) */
+                realm: string;
+                /** @description organization id */
+                orgId: string;
+            };
+            cookie?: never;
+        };
+        /** @description JSON body */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdpInitiatedClientRepresentation"];
+            };
+        };
+        responses: {
+            /** @description success */
+            201: {
+                headers: {
+                    /** @description URL of the created client */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description invalid client representation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description not authorized to manage identity providers for this organization */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description a client with the same clientId already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     linkIdp: {
         parameters: {
             query?: never;
@@ -3531,22 +3640,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Active organization switched successfully */
-            204: {
+            /** @description Active organization switched successfully. Returns a new token set reflecting the updated active organization; clients should replace their stored tokens with these. */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AccessTokenResponse"];
+                };
             };
-            /** @description Invalid organization or user is not a member */
+            /** @description Malformed request body */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content?: never;
             };
-            /** @description User does not have access to the organization */
-            403: {
+            /** @description User is not a member of this organization */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3579,7 +3690,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActiveOrganizationRepresentation"];
+                    "application/json": components["schemas"]["OrganizationRepresentation"];
                 };
             };
             /** @description No active organization set */
