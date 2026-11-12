@@ -25,6 +25,9 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const orgId = useRouterState({
+    select: (s) => (s.location.search as { org_id?: string }).org_id,
+  });
   const params = useRouterState({
     select: (s) => s.matches.at(-1)?.params as Record<string, string> | undefined,
   });
@@ -46,6 +49,7 @@ function AuthenticatedLayout() {
           >
             <Link
               to="/"
+              search={orgId ? { org_id: orgId } : {}}
               className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />

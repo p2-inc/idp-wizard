@@ -106,7 +106,7 @@
       "contentType": "json",
       "body": {
         "alias": "{{alias}}",
-        "displayName": "{{alias}}",
+        "displayName": "{{displayName}}",
         "providerId": "linkedin-openid-connect",
         "hideOnLogin": true,
         "config": {

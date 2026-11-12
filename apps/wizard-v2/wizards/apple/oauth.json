@@ -210,7 +210,7 @@
       "contentType": "json",
       "body": {
         "alias": "{{alias}}",
-        "displayName": "{{alias}}",
+        "displayName": "{{displayName}}",
         "providerId": "apple",
         "hideOnLogin": true,
         "config": {
