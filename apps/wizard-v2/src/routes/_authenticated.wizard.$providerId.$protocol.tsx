@@ -1,15 +1,21 @@
 import { useReducer, useEffect, type ReactNode } from "react";
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Link,
+  Navigate,
+  redirect,
+} from "@tanstack/react-router";
 import { Building2 } from "lucide-react";
 import { WizardRunner } from "@/components/wizard/WizardRunner";
 import { z } from "zod";
-import { allProviders, type Protocol, type Provider } from "@/data/providers";
+import { allProviders, type Protocol } from "@/data/providers";
 import {
   WizardContext,
   wizardReducer,
   makeInitialWizardState,
 } from "@/context/WizardContext";
 import { useWizardApi } from "@/hooks/useWizardApi";
+import { useProtocolFilter } from "@/hooks/useProtocolFilter";
 import { useOrgAccess } from "@/hooks/useOrgAccess";
 import { GlobalAccessDeniedGate } from "@/components/org-access";
 import { getOrCreateAlias } from "@/lib/alias";
@@ -35,7 +41,22 @@ export const Route = createFileRoute(
 function WizardPage() {
   const { providerId, protocol } = Route.useParams();
   const { org_id: orgId = null } = Route.useSearch();
-  const provider = allProviders.find((p) => p.id === providerId)!;
+  const { isEnabled, loading } = useProtocolFilter();
+
+  // Protocols can be disabled per realm (e.g. enableLdap=false). Wait for the
+  // config before deciding, then send direct links back to the protocol picker,
+  // which in turn falls back to the provider list when nothing is left.
+  if (!isEnabled(protocol as Protocol)) {
+    if (loading) return null;
+    return (
+      <Navigate
+        to="/wizard/$providerId"
+        params={{ providerId }}
+        search={orgId ? { org_id: orgId } : {}}
+        replace
+      />
+    );
+  }
 
   // SCIM is configured per-organization on the Phase Two backend. There is no
   // realm-wide path today, so block the wizard with a clear message when no
@@ -46,12 +67,7 @@ function WizardPage() {
 
   return (
     <OrgScopeGate orgId={orgId}>
-      <WizardSession
-        providerId={providerId}
-        protocol={protocol}
-        provider={provider}
-        orgId={orgId}
-      />
+      <WizardSession />
     </OrgScopeGate>
   );
 }
@@ -77,17 +93,11 @@ function OrgScopeGate({
   return children;
 }
 
-function WizardSession({
-  providerId,
-  protocol,
-  provider,
-  orgId,
-}: {
-  providerId: string;
-  protocol: string;
-  provider: Provider;
-  orgId: string | null;
-}) {
+function WizardSession() {
+  const { providerId, protocol } = Route.useParams();
+  const { org_id: orgId = null } = Route.useSearch();
+  const provider = allProviders.find((p) => p.id === providerId)!;
+
   const sessionKey = `p2_${providerId}_${protocol}`;
   const alias = getOrCreateAlias(sessionKey, `${providerId}-${protocol}`);
 

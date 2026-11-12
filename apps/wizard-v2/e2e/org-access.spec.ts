@@ -1,31 +1,24 @@
 import { test, expect } from "./fixtures/test";
 import type { Page } from "@playwright/test";
-import {
-  decodeJwtPayload,
-  listOrgOptions,
-  realmIdpAccessFromClaims,
-  realmManagementClient,
-} from "../src/lib/org-access";
+import { listOrgOptions, realmIdpAccess } from "../src/lib/org-access";
 
 /**
  * Which scope (organization vs. Global/realm-wide) a user may configure identity
  * providers in — see src/lib/org-access.ts and issue #287.
  *
- * The UI tests run in mock OIDC mode and inject token claims through the mock-only
- * `wizard-v2:mock-claims` localStorage key (see src/oidc.ts).
+ * The UI tests run in mock OIDC mode and set ID-token claims through
+ * `window.__WIZARD_MOCK_ID_TOKEN__` (see src/oidc.ts). The mock access token is opaque,
+ * so realm roles come from the ID token's `resource_access`.
  */
 
 const IDP_ROLES = ["view-identity-providers", "manage-identity-providers"];
 const REALM_ADMIN = { resource_access: { "realm-management": { roles: IDP_ROLES } } };
 const NO_REALM_ROLES = { resource_access: { account: { roles: ["view-profile"] } } };
 
-async function signInAs(
-  page: Page,
-  claims: { idToken?: Record<string, unknown>; accessToken?: Record<string, unknown> },
-) {
-  await page.addInitScript((value) => {
-    localStorage.setItem("wizard-v2:mock-claims", value);
-  }, JSON.stringify(claims));
+async function signInAs(page: Page, idToken: Record<string, unknown>) {
+  await page.addInitScript((c) => {
+    (globalThis as { __WIZARD_MOCK_ID_TOKEN__?: unknown }).__WIZARD_MOCK_ID_TOKEN__ = c;
+  }, idToken);
 }
 
 // ── Pure rules ─────────────────────────────────────────────────────────────
@@ -43,38 +36,17 @@ test.describe("org access rules", () => {
     expect(listOrgOptions(undefined)).toEqual([]);
   });
 
-  test("realm roles come from realm-management, or {realm}-realm via master", () => {
-    expect(realmManagementClient("demo", "demo")).toBe("realm-management");
-    expect(realmManagementClient("master", "demo")).toBe("demo-realm");
-    expect(realmManagementClient("master", "master")).toBe("realm-management");
-
-    expect(realmIdpAccessFromClaims(REALM_ADMIN, "demo", "demo")).toBe("granted");
-    expect(realmIdpAccessFromClaims(NO_REALM_ROLES, "demo", "demo")).toBe("denied");
-    expect(realmIdpAccessFromClaims(REALM_ADMIN, "master", "demo")).toBe("denied");
+  test("realm access is unknown only when no token could be read", () => {
+    const admin = REALM_ADMIN.resource_access;
+    expect(realmIdpAccess([admin, undefined], "demo", "demo")).toBe("granted");
+    expect(realmIdpAccess([undefined, admin], "demo", "demo")).toBe("granted");
+    // A readable access token without client roles is a real "no".
+    expect(realmIdpAccess([{}, undefined], "demo", "demo")).toBe("denied");
     expect(
-      realmIdpAccessFromClaims(
-        { resource_access: { "demo-realm": { roles: IDP_ROLES } } },
-        "master",
-        "demo",
-      ),
-    ).toBe("granted");
-    expect(
-      realmIdpAccessFromClaims(
-        { resource_access: { "realm-management": { roles: ["view-identity-providers"] } } },
-        "demo",
-        "demo",
-      ),
+      realmIdpAccess([NO_REALM_ROLES.resource_access, undefined], "demo", "demo"),
     ).toBe("denied");
-    expect(realmIdpAccessFromClaims(undefined, "demo", "demo")).toBe("unknown");
-  });
-
-  test("decodes JWT payloads, including base64url and UTF-8", () => {
-    const payload = { sub: "ü-user", resource_access: { x: { roles: ["r"] } } };
-    const b64url = Buffer.from(JSON.stringify(payload)).toString("base64url");
-    expect(decodeJwtPayload(`h.${b64url}.s`)).toEqual(payload);
-    expect(decodeJwtPayload("mock-access-token")).toBeUndefined();
-    expect(decodeJwtPayload("h.%%%.s")).toBeUndefined();
-    expect(decodeJwtPayload(undefined)).toBeUndefined();
+    expect(realmIdpAccess([admin, undefined], "master", "demo")).toBe("denied");
+    expect(realmIdpAccess([undefined, undefined], "demo", "demo")).toBe("unknown");
   });
 });
 
@@ -86,8 +58,8 @@ test.describe("org picker", () => {
     providerSelector,
   }) => {
     await signInAs(page, {
-      idToken: { organizations: { "org-a": { name: "Acme", roles: IDP_ROLES } } },
-      accessToken: NO_REALM_ROLES,
+      ...NO_REALM_ROLES,
+      organizations: { "org-a": { name: "Acme", roles: IDP_ROLES } },
     });
     await providerSelector.goto();
 
@@ -108,13 +80,11 @@ test.describe("org picker", () => {
     providerSelector,
   }) => {
     await signInAs(page, {
-      idToken: {
-        organizations: {
-          "org-a": { name: "Acme", roles: IDP_ROLES },
-          "org-b": { name: "Beta", roles: ["view-identity-providers"] },
-        },
+      ...REALM_ADMIN,
+      organizations: {
+        "org-a": { name: "Acme", roles: IDP_ROLES },
+        "org-b": { name: "Beta", roles: ["view-identity-providers"] },
       },
-      accessToken: REALM_ADMIN,
     });
     await providerSelector.goto();
 
@@ -133,13 +103,11 @@ test.describe("org picker", () => {
     providerSelector,
   }) => {
     await signInAs(page, {
-      idToken: {
-        organizations: {
-          "org-a": { name: "Acme", roles: IDP_ROLES },
-          "org-c": { name: "Gamma", roles: IDP_ROLES },
-        },
+      ...NO_REALM_ROLES,
+      organizations: {
+        "org-a": { name: "Acme", roles: IDP_ROLES },
+        "org-c": { name: "Gamma", roles: IDP_ROLES },
       },
-      accessToken: NO_REALM_ROLES,
     });
     await providerSelector.goto();
 
@@ -161,8 +129,8 @@ test.describe("org picker", () => {
     providerSelector,
   }) => {
     await signInAs(page, {
-      idToken: { organizations: { "org-b": { name: "Beta", roles: [] } } },
-      accessToken: NO_REALM_ROLES,
+      ...NO_REALM_ROLES,
+      organizations: { "org-b": { name: "Beta", roles: [] } },
     });
     await providerSelector.goto();
     await expect(page.getByRole("alert")).toContainText(
@@ -170,12 +138,13 @@ test.describe("org picker", () => {
     );
   });
 
-  test("unreadable token claims leave the default Global behavior alone", async ({
+  test("no readable realm roles leaves the default Global behavior alone", async ({
     page,
     providerSelector,
   }) => {
+    // Opaque mock access token and no resource_access in the ID token: "unknown".
     await signInAs(page, {
-      idToken: { organizations: { "org-a": { name: "Acme", roles: IDP_ROLES } } },
+      organizations: { "org-a": { name: "Acme", roles: IDP_ROLES } },
     });
     await providerSelector.goto();
     await expect(page.getByRole("button", { name: "Global (realm-wide)" })).toBeVisible();
@@ -190,8 +159,8 @@ test.describe("wizard without org_id", () => {
     page,
   }) => {
     await signInAs(page, {
-      idToken: { organizations: { "org-a": { name: "Acme", roles: IDP_ROLES } } },
-      accessToken: NO_REALM_ROLES,
+      ...NO_REALM_ROLES,
+      organizations: { "org-a": { name: "Acme", roles: IDP_ROLES } },
     });
     const adminCalls: string[] = [];
     page.on("request", (r) => {
@@ -206,7 +175,7 @@ test.describe("wizard without org_id", () => {
   });
 
   test("still runs for a realm admin", async ({ page, wizard }) => {
-    await signInAs(page, { accessToken: REALM_ADMIN });
+    await signInAs(page, REALM_ADMIN);
     await page.goto("/wizard/adfs/saml");
     await wizard.waitForStep(/.+/);
     await expect(page.getByRole("heading", { name: "Pick an organization" })).toHaveCount(0);

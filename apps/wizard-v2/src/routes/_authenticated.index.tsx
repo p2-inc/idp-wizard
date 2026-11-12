@@ -29,8 +29,15 @@ import {
   type Provider,
 } from "@/data/providers";
 import { useWizardConfig } from "@/hooks/useWizardConfig";
+import { useProtocolFilter } from "@/hooks/useProtocolFilter";
+import { useOrgDisplayNames } from "@/hooks/useOrgDisplayNames";
 import { useOrgAccess } from "@/hooks/useOrgAccess";
-import { isEligible, type OrgOption, type RealmIdpAccess } from "@/lib/org-access";
+import {
+  defaultOrgId,
+  isEligible,
+  type OrgOption,
+  type RealmIdpAccess,
+} from "@/lib/org-access";
 import { NoIdpAccessNotice } from "@/components/org-access";
 
 const searchSchema = z.object({
@@ -41,6 +48,14 @@ export const Route = createFileRoute("/_authenticated/")({
   validateSearch: searchSchema,
   component: ProviderSelector,
 });
+
+// ---------------------------------------------------------------------------
+// Org labels
+// ---------------------------------------------------------------------------
+/** Prefer the org's displayName, then its name, then its id. */
+function orgLabel(org: OrgOption, displayNames: Record<string, string>): string {
+  return displayNames[org.id] || org.name;
+}
 
 // ---------------------------------------------------------------------------
 // Protocol badges
@@ -156,6 +171,7 @@ function PickerOption({
 function OrgPicker({
   orgId,
   orgs,
+  displayNames,
   realmAccess,
   open,
   onOpenChange,
@@ -163,6 +179,7 @@ function OrgPicker({
 }: {
   orgId: string | null;
   orgs: OrgOption[];
+  displayNames: Record<string, string>;
   realmAccess: RealmIdpAccess;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -171,7 +188,9 @@ function OrgPicker({
   const globalDenied = realmAccess === "denied";
   const current = orgs.find((o) => o.id === orgId);
   const currentName = orgId
-    ? (current?.name ?? orgId)
+    ? current
+      ? orgLabel(current, displayNames)
+      : orgId
     : globalDenied
       ? "Select an organization"
       : "Global (realm-wide)";
@@ -218,7 +237,7 @@ function OrgPicker({
             {orgs.map((org) => (
               <PickerOption
                 key={org.id}
-                title={org.name}
+                title={orgLabel(org, displayNames)}
                 subtitle={org.id}
                 monoSubtitle
                 selected={orgId === org.id}
@@ -298,6 +317,7 @@ function ProviderSelector() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const { config } = useWizardConfig();
+  const { filterProviders } = useProtocolFilter();
   const { org_id: initialOrgId } = Route.useSearch();
 
   // Org state — starts from URL param, can be changed via picker
@@ -305,6 +325,7 @@ function ProviderSelector() {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const { orgs, eligibleOrgs, realmAccess } = useOrgAccess();
+  const orgDisplayNames = useOrgDisplayNames(orgs.length > 0);
 
   // Without realm identity-provider roles, Global (the Keycloak Admin API) can only end in
   // a 403, so it must not be the silent default: the user has to be in an organization.
@@ -313,13 +334,27 @@ function ProviderSelector() {
 
   const { src: logoSrc, fallback: fallbackLogo } = useAppLogo();
 
+  // Drop protocols the realm has disabled (e.g. LDAP), and providers left with none.
+  const visiblePopular = useMemo(
+    () => filterProviders(popularProviders),
+    [filterProviders],
+  );
+  const visibleProviders = useMemo(
+    () => filterProviders(providers),
+    [filterProviders],
+  );
+  const visibleGeneric = useMemo(
+    () => filterProviders(genericProviders),
+    [filterProviders],
+  );
+
   const fuse = useMemo(
     () =>
-      new Fuse([...popularProviders, ...providers, ...genericProviders], {
+      new Fuse([...visiblePopular, ...visibleProviders, ...visibleGeneric], {
         keys: ["name"],
         threshold: 0.4,
       }),
-    [],
+    [visiblePopular, visibleProviders, visibleGeneric],
   );
 
   const filteredProviders = query
@@ -327,6 +362,8 @@ function ProviderSelector() {
     : null;
 
   const handleSelect = (provider: Provider) => {
+    // Without realm IdP roles, a wizard started without an org would hit the admin
+    // API and fail — ask for the org first.
     if (needsOrg && eligibleOrgs.length > 0) {
       setPickerOpen(true);
       return;
@@ -356,18 +393,24 @@ function ProviderSelector() {
     });
   };
 
-  // With exactly one usable organization there is nothing to choose — select it.
-  const onlyOrgId =
-    needsOrg && eligibleOrgs.length === 1 ? eligibleOrgs[0].id : null;
+  // Default to the user's only eligible org when Global is not an option for them.
+  const autoOrgId = needsOrg
+    ? defaultOrgId(
+        eligibleOrgs.map((o) => o.id),
+        false,
+      )
+    : null;
   useEffect(() => {
-    if (onlyOrgId) handleOrgChange(onlyOrgId);
+    if (autoOrgId) handleOrgChange(autoOrgId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onlyOrgId]);
+  }, [autoOrgId]);
 
   // The picker is useful when there is an org to switch to, or when the user can't
-  // configure Global and should see which orgs exist and what they lack.
+  // configure Global and should see which orgs exist and what they lack. It waits for
+  // realm access so "Global" never flashes up first.
   const showPicker =
-    eligibleOrgs.length > 0 || (globalDenied && orgs.length > 0);
+    realmAccess !== "loading" &&
+    (eligibleOrgs.length > 0 || (globalDenied && orgs.length > 0));
 
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center gap-6 p-6">
@@ -393,6 +436,7 @@ function ProviderSelector() {
         <OrgPicker
           orgId={orgId}
           orgs={orgs}
+          displayNames={orgDisplayNames}
           realmAccess={realmAccess}
           open={pickerOpen}
           onOpenChange={setPickerOpen}
@@ -447,7 +491,7 @@ function ProviderSelector() {
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Popular
               </div>
-              {popularProviders.map((provider) => (
+              {visiblePopular.map((provider) => (
                 <ProviderRow
                   key={provider.id}
                   provider={provider}
@@ -460,7 +504,7 @@ function ProviderSelector() {
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Providers
               </div>
-              {providers.map((provider) => (
+              {visibleProviders.map((provider) => (
                 <ProviderRow
                   key={provider.id}
                   provider={provider}
@@ -473,12 +517,12 @@ function ProviderSelector() {
               <div className="text-muted-foreground px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-widest">
                 Generic
               </div>
-              {genericProviders.map((provider, i) => (
+              {visibleGeneric.map((provider, i) => (
                 <ProviderRow
                   key={provider.id}
                   provider={provider}
                   onSelect={handleSelect}
-                  isLast={i === genericProviders.length - 1}
+                  isLast={i === visibleGeneric.length - 1}
                 />
               ))}
             </>

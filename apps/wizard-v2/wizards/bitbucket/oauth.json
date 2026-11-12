@@ -154,7 +154,7 @@
       "contentType": "json",
       "body": {
         "alias": "{{alias}}",
-        "displayName": "{{alias}}",
+        "displayName": "{{displayName}}",
         "providerId": "bitbucket",
         "hideOnLogin": true,
         "config": {

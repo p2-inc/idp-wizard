@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { defineConfig, devices } from "@playwright/test";
 
 /**
@@ -23,6 +24,20 @@ const isIntegration = !!process.env.PLAYWRIGHT_INTEGRATION;
 const KC_BASE = process.env.KC_BASE_URL ?? "http://localhost:8080/auth";
 const ISSUER_URI = `${KC_BASE}/realms/wizard`;
 
+// Port for the Vite dev server under test. Several worktrees may run this
+// suite at once on one machine, so mock mode does not use the shared default
+// 5173: it derives a stable port (20000-29999) from the checkout path, so each
+// worktree gets its own port and reuses only its own server. Integration mode
+// stays on 5173 because the Keycloak realm's redirect URI and CORS origin are
+// pinned to it. E2E_PORT overrides both.
+const PORT =
+  Number(process.env.E2E_PORT) ||
+  (isIntegration
+    ? 5173
+    : 20000 +
+      (parseInt(createHash("sha1").update(process.cwd()).digest("hex").slice(0, 8), 16) % 10000));
+const BASE_URL = `http://localhost:${PORT}`;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: !isIntegration,
@@ -34,7 +49,7 @@ export default defineConfig({
   globalSetup: isIntegration ? "./e2e/global-setup.ts" : undefined,
 
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: BASE_URL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -69,12 +84,14 @@ export default defineConfig({
   ],
 
   webServer: {
-    // Always pass ISSUER_URI so wizard runner resolves API URLs correctly,
-    // even in mock mode where the API calls are intercepted by page.route().
+    // Always pass ISSUER_URI and CLIENT_ID so the runtime config resolves a server
+    // URL and realm (runtime-config.ts ignores the issuer without a client id). That
+    // lets the wizard runner build API URLs and fetch wizard/config.json even in mock
+    // mode, where those requests are intercepted by page.route().
     command: isIntegration
-      ? `VITE_OIDC_ISSUER_URI=${ISSUER_URI} VITE_OIDC_CLIENT_ID=wizard-v2-dev pnpm dev`
-      : `VITE_OIDC_USE_MOCK=true VITE_OIDC_ISSUER_URI=${ISSUER_URI} pnpm dev`,
-    url: "http://localhost:5173",
+      ? `VITE_OIDC_ISSUER_URI=${ISSUER_URI} VITE_OIDC_CLIENT_ID=wizard-v2-dev pnpm dev --port ${PORT} --strictPort`
+      : `VITE_OIDC_USE_MOCK=true VITE_OIDC_ISSUER_URI=${ISSUER_URI} VITE_OIDC_CLIENT_ID=wizard-v2-dev pnpm dev --port ${PORT} --strictPort`,
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
   },

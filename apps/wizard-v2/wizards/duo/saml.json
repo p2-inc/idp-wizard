@@ -209,7 +209,7 @@
       "contentType": "json",
       "body": {
         "alias": "{{alias}}",
-        "displayName": "{{alias}}",
+        "displayName": "{{displayName}}",
         "providerId": "saml",
         "hideOnLogin": true,
         "config": "{{state.metadata}}"

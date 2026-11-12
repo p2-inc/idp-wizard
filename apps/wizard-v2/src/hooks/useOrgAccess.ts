@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { getAccessTokenClaims, useOidc } from "@/oidc";
-import { getRuntimeConfig } from "@/runtime-config";
+import { useMemo } from "react";
+import { useOidc } from "@/oidc";
+import { useRealmIdpAccess } from "@/hooks/useRealmIdpAccess";
 import {
   isEligible,
   listOrgOptions,
-  realmIdpAccessFromClaims,
   type OrgClaims,
   type OrgOption,
   type RealmIdpAccess,
@@ -22,28 +21,13 @@ export interface OrgAccess {
 /** Where the signed-in user may configure identity providers. See `lib/org-access.ts`. */
 export function useOrgAccess(): OrgAccess {
   const oidc = useOidc();
-  const orgClaims =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ((oidc.decodedIdToken as any)?.organizations as OrgClaims | undefined) ??
-    undefined;
+  const orgClaims = (
+    oidc.decodedIdToken as { organizations?: OrgClaims } | undefined
+  )?.organizations;
 
   const orgs = useMemo(() => listOrgOptions(orgClaims), [orgClaims]);
   const eligibleOrgs = useMemo(() => orgs.filter(isEligible), [orgs]);
-
-  const [realmAccess, setRealmAccess] = useState<RealmIdpAccess>("loading");
-  useEffect(() => {
-    let cancelled = false;
-    const { authRealm, targetRealm } = getRuntimeConfig();
-    getAccessTokenClaims()
-      .then((claims) => realmIdpAccessFromClaims(claims, authRealm, targetRealm))
-      .catch((): RealmIdpAccess => "unknown")
-      .then((access) => {
-        if (!cancelled) setRealmAccess(access);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const realmAccess = useRealmIdpAccess();
 
   return { orgs, eligibleOrgs, realmAccess };
 }

@@ -1,7 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { allProviders, type Protocol } from "@/data/providers";
 import { useProviderLogo } from "@/hooks/useProviderLogo";
+import { useProtocolFilter } from "@/hooks/useProtocolFilter";
 
 const searchSchema = z.object({
   org_id: z.string().optional(),
@@ -41,6 +42,14 @@ function ProtocolPicker() {
   const navigate = useNavigate();
   const provider = allProviders.find((p) => p.id === providerId)!;
   const logo = useProviderLogo(provider.logo);
+  const { isEnabled, loading } = useProtocolFilter();
+  const protocols = provider.protocols.filter(isEnabled);
+
+  // Every protocol this provider offers is disabled for the realm (e.g. the
+  // generic LDAP provider with enableLdap=false) — nothing to pick.
+  if (!loading && protocols.length === 0) {
+    return <Navigate to="/" search={orgId ? { org_id: orgId } : {}} replace />;
+  }
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 py-10">
@@ -57,7 +66,7 @@ function ProtocolPicker() {
       </div>
 
       <div className="border-border bg-card overflow-hidden rounded-lg border shadow-sm">
-        {provider.protocols.map((protocol, i) => {
+        {protocols.map((protocol, i) => {
           const meta = protocolLabels[protocol];
           return (
             <button
@@ -71,7 +80,7 @@ function ProtocolPicker() {
               }
               className={[
                 "flex w-full flex-col gap-1 px-4 py-4 text-left transition-colors hover:bg-accent",
-                i !== provider.protocols.length - 1 ? "border-border border-b" : "",
+                i !== protocols.length - 1 ? "border-border border-b" : "",
               ].join(" ")}
             >
               <span className="text-sm font-medium">{meta.label}</span>
