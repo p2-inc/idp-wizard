@@ -1,0 +1,498 @@
+{
+  "schemaVersion": "1.0",
+  "id": "okta-saml-idp-initiated",
+  "providerId": "okta",
+  "protocol": "saml-idp-initiated",
+  "title": "Okta SAML (IdP-initiated)",
+  "alias": {
+    "prefix": "okta-saml-idp-initiated",
+    "sessionKey": "p2_okta_saml-idp-initiated"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a New SAML Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Sign in to the Okta Admin Console and navigate to Applications → Applications."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_1.png",
+          "alt": "Okta Admin Console Applications page"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Create App Integration\" to start adding a new application."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_2.png",
+          "alt": "Create App Integration button"
+        },
+        {
+          "type": "text",
+          "content": "Select \"SAML 2.0\" as the Sign-in method and click \"Next\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_3.png",
+          "alt": "SAML 2.0 sign-in method selected"
+        },
+        {
+          "type": "text",
+          "content": "On the \"General Settings\" step, enter an App name. Users see this name on the application tile in their Okta dashboard, so leave \"Do not display application icon to users\" unchecked. Click \"Next\"."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure SAML Service Provider Settings",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the \"Configure SAML\" step, enter the values below. The Single sign-on URL is specific to IdP-initiated login for this connection and differs from the one used when sign-in starts at Keycloak."
+        },
+        {
+          "type": "copy",
+          "label": "Single sign-on URL",
+          "value": "{{api.idpInitiatedAcsUrl}}",
+          "hint": "Keep \"Use this for Recipient URL and Destination URL\" checked"
+        },
+        {
+          "type": "copy",
+          "label": "Audience URI (SP Entity ID)",
+          "value": "{{api.entityId}}",
+          "hint": "Okta calls this the Audience URI"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_4.png",
+          "alt": "Okta Configure SAML step with the Single sign-on URL and Audience URI fields"
+        },
+        {
+          "type": "text",
+          "content": "Leave \"Default RelayState\" empty, \"Name ID format\" as \"Unspecified\", and \"Application username\" as \"Okta username\"."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Configure Attribute Statements",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Further down the \"Configure SAML\" step, open \"Show legacy configuration\" under \"Attribute statements\" and add the following profile attribute statements so Okta sends user attributes in the SAML assertion."
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "Name",
+            "keycloakAttribute": "Value"
+          },
+          "rows": [
+            {
+              "idpAttribute": "id",
+              "keycloakAttribute": "user.login"
+            },
+            {
+              "idpAttribute": "email",
+              "keycloakAttribute": "user.email"
+            },
+            {
+              "idpAttribute": "firstName",
+              "keycloakAttribute": "user.firstName"
+            },
+            {
+              "idpAttribute": "lastName",
+              "keycloakAttribute": "user.lastName"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_5.png",
+          "alt": "Okta profile attribute statements"
+        },
+        {
+          "type": "text",
+          "content": "Click \"Next\". On the \"Feedback\" step, select \"This is an internal app that we have created\", then click \"Finish\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_6.png",
+          "alt": "Okta Feedback step"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Import Okta IdP Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "After the application is saved, open its \"Sign On\" tab and copy the \"Metadata URL\" under \"Metadata details\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_8.png",
+          "alt": "Okta Sign On tab showing the Metadata URL"
+        },
+        {
+          "type": "text",
+          "content": "Paste the metadata URL below. If you downloaded the metadata XML instead, use the \"Metadata File\" tab."
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": true,
+          "forms": [
+            "metadataUrl",
+            "metadataFile"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Choose the Target Application",
+      "enableNextWhen": "state.targetAppConfigured",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Choose the application users land in after they click the Okta tile, and save where to send them."
+        },
+        {
+          "type": "formGroup",
+          "id": "targetApp",
+          "exclusive": true,
+          "forms": [
+            "targetOidc",
+            "targetSamlRedirect",
+            "targetSamlPost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Assign Users and Groups",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In Okta, switch to the application's \"Assignments\" tab and click \"Assign\" → \"Assign to People\" or \"Assign to Groups\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_7.png",
+          "alt": "Okta Assignments tab with the Assign menu open"
+        },
+        {
+          "type": "text",
+          "content": "Select the users or groups who should be able to launch the application, then click \"Done\". The application tile then appears on their Okta dashboard."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/okta/saml/okta_saml_7a.png",
+          "alt": "Okta assign users dialog"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Set Up IdP-Initiated SAML Login",
+          "description": "Configuration is complete. This creates the login client, the Okta identity provider, and its attribute mappers in Keycloak. Afterwards, users can launch the application from its tile in their Okta dashboard.",
+          "buttonText": "Create IdP-Initiated Login",
+          "action": "createClient",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the Metadata URL from the Okta application's Sign On tab.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://your-org.okta.com/app/your-app-id/sso/saml/metadata",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    },
+    "metadataFile": {
+      "title": "Metadata File",
+      "description": "Upload the SAML metadata XML file downloaded from Okta.",
+      "fields": [
+        {
+          "id": "file",
+          "type": "file",
+          "label": "Metadata File",
+          "accept": "text/xml,application/xml,.xml",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate File",
+        "action": "validateMetadataFile"
+      }
+    },
+    "targetOidc": {
+      "title": "OIDC application",
+      "description": "Most applications. After login, users are sent to the application's home page, where the application signs them in with OpenID Connect using the Keycloak session they now have.",
+      "fields": [
+        {
+          "id": "appHomeUrl",
+          "type": "url",
+          "label": "Application home page",
+          "placeholder": "https://app.example.com/",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save",
+        "action": "saveTargetOidc"
+      }
+    },
+    "targetSamlRedirect": {
+      "title": "SAML application (Redirect)",
+      "description": "For a SAML application that receives assertions with the HTTP-Redirect binding. Enter the application's Assertion Consumer Service URL.",
+      "fields": [
+        {
+          "id": "appAcsRedirectUrl",
+          "type": "url",
+          "label": "Application ACS URL",
+          "placeholder": "https://app.example.com/saml/acs",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save",
+        "action": "saveTargetSamlRedirect"
+      }
+    },
+    "targetSamlPost": {
+      "title": "SAML application (POST)",
+      "description": "For a SAML application that receives assertions with the HTTP-POST binding. Enter the application's Assertion Consumer Service URL.",
+      "fields": [
+        {
+          "id": "appAcsPostUrl",
+          "type": "url",
+          "label": "Application ACS URL",
+          "placeholder": "https://app.example.com/saml/acs",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save",
+        "action": "saveTargetSamlPost"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
+    "validateMetadataFile": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "multipart",
+      "body": {
+        "providerId": "saml",
+        "file": "{{form.file}}"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata file validated. Continue to the next step.",
+        "error": "Validation failed. Check the file and try again."
+      }
+    },
+    "saveTargetOidc": {
+      "type": "saveForm",
+      "dispatch": [
+        "TARGET_APP_CONFIGURED"
+      ],
+      "fields": [
+        "appHomeUrl"
+      ],
+      "set": {
+        "targetRedirectUrl": "{{form.appHomeUrl}}",
+        "targetPostUrl": "",
+        "targetForcePost": "false"
+      }
+    },
+    "saveTargetSamlRedirect": {
+      "type": "saveForm",
+      "dispatch": [
+        "TARGET_APP_CONFIGURED"
+      ],
+      "fields": [
+        "appAcsRedirectUrl"
+      ],
+      "set": {
+        "targetRedirectUrl": "{{form.appAcsRedirectUrl}}",
+        "targetPostUrl": "",
+        "targetForcePost": "false"
+      }
+    },
+    "saveTargetSamlPost": {
+      "type": "saveForm",
+      "dispatch": [
+        "TARGET_APP_CONFIGURED"
+      ],
+      "fields": [
+        "appAcsPostUrl"
+      ],
+      "set": {
+        "targetRedirectUrl": "",
+        "targetPostUrl": "{{form.appAcsPostUrl}}",
+        "targetForcePost": "true"
+      }
+    },
+    "createClient": {
+      "endpoint": "createClient",
+      "method": "POST",
+      "contentType": "json",
+      "allowStatuses": [
+        409
+      ],
+      "body": {
+        "protocol": "saml",
+        "clientId": "{{idpInitiatedClientId}}",
+        "name": "",
+        "description": "Generated by the IdP wizard for identity provider {{alias}}",
+        "attributes": {
+          "saml_idp_initiated_sso_url_name": "{{idpInitiatedClientId}}",
+          "saml_idp_initiated_sso_relay_state": "",
+          "saml.force.post.binding": "{{state.formValues.targetForcePost}}",
+          "saml_assertion_consumer_url_redirect": "{{state.formValues.targetRedirectUrl}}",
+          "saml_assertion_consumer_url_post": "{{state.formValues.targetPostUrl}}",
+          "phasetwo.idp-initiated.alias": "{{alias}}"
+        }
+      },
+      "onSuccess": {
+        "then": [
+          "createIdp"
+        ]
+      },
+      "messages": {
+        "error": "Error creating the IdP-initiated login client."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{displayName}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "IdP-initiated SAML login is configured. Users can now launch the application from their Okta dashboard."
+          }
+        ],
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "id",
+          "friendlyName": "id",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "email",
+          "friendlyName": "email",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    }
+  }
+}

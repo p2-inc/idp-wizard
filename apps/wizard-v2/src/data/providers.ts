@@ -52,7 +52,7 @@ export const popularProviders: Provider[] = [
     id: "okta",
     name: "Okta",
     logo: "okta.svg",
-    protocols: ["saml", "oidc", "ldap", "scim"],
+    protocols: ["saml", "saml-idp-initiated", "oidc", "ldap", "scim"],
   },
   {
     id: "google",
