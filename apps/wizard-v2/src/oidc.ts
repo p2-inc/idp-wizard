@@ -1,5 +1,6 @@
 import { oidcSpa } from "oidc-spa/react-spa";
 import type { RuntimeConfig } from "./runtime-config";
+import { decodeJwtPayload } from "./lib/org-access";
 
 export const {
   bootstrapOidc,
@@ -11,6 +12,27 @@ export const {
   .createUtils();
 
 const isMock = import.meta.env.VITE_OIDC_USE_MOCK === "true";
+
+/**
+ * Mock mode only: extra token claims read from `localStorage["wizard-v2:mock-claims"]`
+ * as `{ "idToken": {...}, "accessToken": {...} }`, so E2E tests can simulate users with
+ * different organization and realm roles. Never consulted outside mock mode.
+ */
+export const MOCK_CLAIMS_STORAGE_KEY = "wizard-v2:mock-claims";
+
+function readMockClaims(
+  token: "idToken" | "accessToken",
+): Record<string, unknown> | undefined {
+  try {
+    const raw = localStorage.getItem(MOCK_CLAIMS_STORAGE_KEY);
+    const value = raw ? (JSON.parse(raw) as Record<string, unknown>)[token] : undefined;
+    return value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Boots oidc-spa from runtime configuration.
@@ -30,6 +52,7 @@ export function initOidc(config: RuntimeConfig): Promise<void> {
             preferred_username: "wizard",
             email: "wizard@example.com",
             organizations: {} as Record<string, unknown>,
+            ...readMockClaims("idToken"),
           },
         }
       : {
@@ -58,3 +81,15 @@ export const fetchWithAuth: typeof fetch = async (input, init) => {
 
   return fetch(input, init);
 };
+
+/**
+ * Decoded claims of the current access token, or undefined when they cannot be read
+ * (not logged in, or a token that is not a JWT). The signature is not verified — use
+ * this only to shape the UI; the server remains the authority on access.
+ */
+export async function getAccessTokenClaims(): Promise<Record<string, unknown> | undefined> {
+  if (isMock) return readMockClaims("accessToken");
+  const oidc = await getOidc();
+  if (!oidc.isUserLoggedIn) return undefined;
+  return decodeJwtPayload(await oidc.getAccessToken());
+}

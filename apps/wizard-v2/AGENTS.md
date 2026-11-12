@@ -152,6 +152,12 @@ The `apiMode` can also be set via the realm config (`config.apiMode` from `useWi
 
 Both endpoint sets are fully typed via the generated OpenAPI clients.
 
+### Who can configure what (`src/lib/org-access.ts`, `useOrgAccess`)
+
+- **An organization** is listed as selectable in the org picker when the ID token's `organizations` claim gives the user the org roles `view-identity-providers` and `manage-identity-providers`. Those are the only roles the Orgs API checks for its IdP endpoints; `view-organization` / `manage-organization` are not required. Orgs missing a role are still listed, disabled, with the missing roles named.
+- **Global (realm-wide)** uses the Admin API and needs the `realm-management` client roles of the same names (`{realm}-realm` when authenticating via `master`), read from the access token. When they are known to be missing, Global is disabled. A single usable org is then auto-selected, several require a choice, and the wizard route shows a "Pick an organization" gate instead of falling back to the Admin API. If the access token can't be decoded, nothing is restricted.
+- Mock mode: E2E tests inject claims via `localStorage["wizard-v2:mock-claims"] = {"idToken": {...}, "accessToken": {...}}` (see `src/oidc.ts`, `e2e/org-access.spec.ts`).
+
 ---
 
 ## API clients

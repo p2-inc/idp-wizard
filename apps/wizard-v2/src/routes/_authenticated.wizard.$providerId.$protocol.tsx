@@ -1,15 +1,17 @@
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, type ReactNode } from "react";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Building2 } from "lucide-react";
 import { WizardRunner } from "@/components/wizard/WizardRunner";
 import { z } from "zod";
-import { allProviders, type Protocol } from "@/data/providers";
+import { allProviders, type Protocol, type Provider } from "@/data/providers";
 import {
   WizardContext,
   wizardReducer,
   makeInitialWizardState,
 } from "@/context/WizardContext";
 import { useWizardApi } from "@/hooks/useWizardApi";
+import { useOrgAccess } from "@/hooks/useOrgAccess";
+import { GlobalAccessDeniedGate } from "@/components/org-access";
 import { getOrCreateAlias } from "@/lib/alias";
 
 const searchSchema = z.object({
@@ -42,6 +44,50 @@ function WizardPage() {
     return <ScimRequiresOrgGate />;
   }
 
+  return (
+    <OrgScopeGate orgId={orgId}>
+      <WizardSession
+        providerId={providerId}
+        protocol={protocol}
+        provider={provider}
+        orgId={orgId}
+      />
+    </OrgScopeGate>
+  );
+}
+
+/**
+ * Without `org_id` the wizard uses the realm-wide Keycloak Admin API. Block that for a
+ * user known to lack realm identity-provider roles instead of letting every call 403.
+ * If the token can't tell us ("unknown"), proceed and let the server decide.
+ */
+function OrgScopeGate({
+  orgId,
+  children,
+}: {
+  orgId: string | null;
+  children: ReactNode;
+}) {
+  const { eligibleOrgs, realmAccess } = useOrgAccess();
+  if (orgId) return children;
+  if (realmAccess === "loading") return null;
+  if (realmAccess === "denied") {
+    return <GlobalAccessDeniedGate hasOrgs={eligibleOrgs.length > 0} />;
+  }
+  return children;
+}
+
+function WizardSession({
+  providerId,
+  protocol,
+  provider,
+  orgId,
+}: {
+  providerId: string;
+  protocol: string;
+  provider: Provider;
+  orgId: string | null;
+}) {
   const sessionKey = `p2_${providerId}_${protocol}`;
   const alias = getOrCreateAlias(sessionKey, `${providerId}-${protocol}`);
 
