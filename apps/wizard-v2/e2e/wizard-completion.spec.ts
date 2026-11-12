@@ -1,6 +1,8 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures/test";
+import type { WizardPage } from "./pages/WizardPage";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -190,6 +192,77 @@ test.describe("SAML wizard — Auth0", () => {
     await wizard.waitForStep(/Upload Identity Provider Metadata/i);
     // Next should be disabled or absent before validation
     await expect(wizard.nextButton).toBeDisabled();
+  });
+});
+
+// ── Metadata validation errors ──────────────────────────────────────────────
+
+test.describe("SAML metadata validation errors — Auth0", () => {
+  async function validateWith(
+    page: Page,
+    wizard: WizardPage,
+  ) {
+    await page.goto("/wizard/auth0/saml");
+    await wizard.waitForStep(/Create a SAML Application/i);
+    await wizard.clickNext();
+    await wizard.waitForStep(/Upload Identity Provider Metadata/i);
+    await wizard.uploadFile(/Metadata File/i, SAML_METADATA_FILE);
+    await wizard.submitForm(/Validate File/i);
+  }
+
+  test("403 shows a permission error instead of the file hint", async ({
+    page,
+    wizard,
+  }) => {
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.fulfill({ status: 403, json: { error: "unknown_error" } })
+    );
+    await validateWith(page, wizard);
+    await expect(
+      page.getByText(
+        /don't have permission to manage identity providers for this realm/i
+      )
+    ).toBeVisible();
+    await expect(page.getByText(/manage-identity-providers/)).toBeVisible();
+    await expect(page.getByText(/Check the file/i)).toHaveCount(0);
+    await expect(wizard.nextButton).toBeDisabled();
+  });
+
+  test("4xx with a server message shows that message", async ({
+    page,
+    wizard,
+  }) => {
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.fulfill({
+        status: 400,
+        json: { errorMessage: "Invalid SAML metadata: missing IDPSSODescriptor" },
+      })
+    );
+    await validateWith(page, wizard);
+    await expect(
+      page.getByText("Invalid SAML metadata: missing IDPSSODescriptor")
+    ).toBeVisible();
+  });
+
+  test("5xx falls back to the wizard's error message", async ({
+    page,
+    wizard,
+  }) => {
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.fulfill({ status: 500, body: "<html>Internal error</html>" })
+    );
+    await validateWith(page, wizard);
+    await expect(
+      page.getByText("Validation failed. Check the file and try again.")
+    ).toBeVisible();
+  });
+
+  test("network failure shows a retry message", async ({ page, wizard }) => {
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.abort("connectionrefused")
+    );
+    await validateWith(page, wizard);
+    await expect(page.getByText(/Could not reach the server/i)).toBeVisible();
   });
 });
 
