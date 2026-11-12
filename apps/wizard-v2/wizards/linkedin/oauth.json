@@ -22,7 +22,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the LinkedIn Developer Portal, create a new app. Under the Auth tab, add the redirect URL below. Request access to the 'Sign In with LinkedIn using OpenID Connect' product."
+          "content": "In the LinkedIn Developer Portal, create a new app. On the **Auth** tab, add the redirect URL below. Request access to the **Sign In with LinkedIn using OpenID Connect** product."
         },
         {
           "type": "copy",
@@ -39,7 +39,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Copy the Client ID and Client Secret from the Auth tab of your LinkedIn app and paste them below."
+          "content": "Copy the **Client ID** and **Client Secret** from the **Auth** tab of your LinkedIn app and paste them below."
         },
         {
           "type": "formGroup",
@@ -59,7 +59,7 @@
         {
           "type": "confirm",
           "title": "Create LinkedIn Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create LinkedIn Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create LinkedIn Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSocial}}",

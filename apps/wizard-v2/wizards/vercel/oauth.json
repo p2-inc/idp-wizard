@@ -23,7 +23,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In your Vercel Dashboard sidebar, open Integrations."
+          "content": "In your Vercel Dashboard sidebar, open **Integrations**."
         },
         {
           "type": "image",
@@ -31,7 +31,7 @@
         },
         {
           "type": "text",
-          "content": "Switch to the \"Integrations Console\" tab (top right)."
+          "content": "Switch to the **Integrations Console** tab (top right)."
         },
         {
           "type": "image",
@@ -39,7 +39,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Create Integration\"."
+          "content": "Select **Create Integration**."
         },
         {
           "type": "image",
@@ -47,7 +47,7 @@
         },
         {
           "type": "text",
-          "content": "In the integration form, paste the redirect URL below into the Redirect URL field."
+          "content": "In the integration form, paste the redirect URL below into **Redirect URL**."
         },
         {
           "type": "copy",
@@ -88,7 +88,7 @@
         {
           "type": "confirm",
           "title": "Create Vercel Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create Vercel Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create Vercel Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

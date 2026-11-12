@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Sign in to the OneLogin Administration portal and navigate to Applications → Applications."
+          "content": "Sign in to the OneLogin Administration portal and navigate to **Applications** > **Applications**."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Add App\" and search for \"SAML Custom Connector (Advanced)\". Pick the result from OneLogin, Inc."
+          "content": "Select **Add App** and search for **SAML Custom Connector (Advanced)**. Choose the result from OneLogin, Inc."
         },
         {
           "type": "image",
@@ -47,7 +47,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Enter a Display name, then click \"Save\". Switch to the \"Configuration\" tab."
+          "content": "Enter a **Display name**, then select **Save**. Switch to the **Configuration** tab."
         },
         {
           "type": "image",
@@ -55,7 +55,7 @@
         },
         {
           "type": "text",
-          "content": "Enter the following service provider values into the Configuration fields."
+          "content": "Enter the following service provider values on the **Configuration** tab."
         },
         {
           "type": "copy",
@@ -77,7 +77,7 @@
         },
         {
           "type": "text",
-          "content": "Note: the ACS URL Validator field shows a \"*Required\" hint, but it can be left empty — OneLogin will still save the configuration without it."
+          "content": "Note: **ACS URL Validator** is marked as required, but it can be left empty — OneLogin will still save the configuration without it."
         },
         {
           "type": "image",
@@ -96,7 +96,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the application's \"SSO\" tab, copy the Issuer URL (this is the OneLogin SAML metadata URL)."
+          "content": "On the application's **SSO** tab, copy the **Issuer URL** (this is the OneLogin SAML metadata URL)."
         },
         {
           "type": "image",
@@ -122,7 +122,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the \"Parameters\" tab and click the \"+\" icon to add each of the following SAML attribute parameters."
+          "content": "Open the **Parameters** tab and select the **+** icon to add each of the following SAML attribute parameters."
         },
         {
           "type": "image",
@@ -130,7 +130,7 @@
         },
         {
           "type": "text",
-          "content": "For each parameter, enable \"Include in SAML assertion\" and map it to the corresponding user attribute."
+          "content": "For each parameter, enable **Include in SAML assertion** and map it to the corresponding user attribute."
         },
         {
           "type": "attributeTable",
@@ -169,7 +169,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Switch to the \"Access\" tab and choose the Roles that should have access to this application, then click \"Save\"."
+          "content": "Switch to the **Access** tab and choose the roles that should have access to this application, then select **Save**."
         },
         {
           "type": "image",
@@ -185,7 +185,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

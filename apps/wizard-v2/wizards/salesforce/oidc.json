@@ -23,7 +23,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In Salesforce Setup, navigate to App Manager and create a new Connected App. Enable OAuth Settings and note the Consumer Key and Consumer Secret."
+          "content": "In Salesforce Setup, navigate to **App Manager** and create a new connected app. Enable **OAuth Settings** and note the **Consumer Key** and **Consumer Secret**."
         },
         {
           "type": "image",
@@ -45,7 +45,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In your Connected App's OAuth settings, add the following redirect URI to the Callback URLs."
+          "content": "In your connected app's OAuth settings, add the following redirect URI to **Callback URLs**."
         },
         {
           "type": "copy",
@@ -102,7 +102,7 @@
         {
           "type": "confirm",
           "title": "Create Salesforce Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create OIDC Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create OIDC Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

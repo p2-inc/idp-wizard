@@ -72,7 +72,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In PingFederate, configure the Attribute Contract to send the following SAML attributes in the assertion."
+          "content": "In PingFederate, configure the **Attribute Contract** to send the following SAML attributes in the assertion."
         },
         {
           "type": "attributeTable",
@@ -119,7 +119,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

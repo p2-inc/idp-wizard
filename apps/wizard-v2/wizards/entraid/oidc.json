@@ -23,7 +23,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Microsoft Entra admin center, go to App registrations and click \"+ New registration\"."
+          "content": "In the Microsoft Entra admin center, go to **App registrations** and select **+ New registration**."
         },
         {
           "type": "image",
@@ -31,7 +31,7 @@
         },
         {
           "type": "text",
-          "content": "Enter a Name and choose the Supported account types (single tenant is fine for most setups). Click Register."
+          "content": "Enter a **Name** and choose the **Supported account types** (single tenant is fine for most setups). Select **Register**."
         },
         {
           "type": "image",
@@ -39,7 +39,7 @@
         },
         {
           "type": "text",
-          "content": "On the app's Overview page, note the Application (client) ID and Directory (tenant) ID — you'll enter these in the next step."
+          "content": "On the app's **Overview** page, note the **Application (client) ID** and **Directory (tenant) ID** — you'll enter these in the next step."
         },
         {
           "type": "image",
@@ -47,7 +47,7 @@
         },
         {
           "type": "text",
-          "content": "In the left navigation, open Certificates & secrets and click \"+ New client secret\"."
+          "content": "In the left navigation, open **Certificates & secrets** and select **+ New client secret**."
         },
         {
           "type": "image",
@@ -55,7 +55,7 @@
         },
         {
           "type": "text",
-          "content": "After creating the secret, copy its Value immediately — Entra only shows it once. This is your Client Secret for the next step."
+          "content": "After creating the secret, copy its **Value** immediately — Entra only shows it once. This is your Client Secret for the next step."
         },
         {
           "type": "image",
@@ -88,7 +88,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In your Entra app registration, open Authentication → \"+ Add a platform\" → Web. Add the following URL as the Redirect URI, then click Configure."
+          "content": "In your Entra app registration, open **Authentication** > **+ Add a platform** > **Web**. Add the following URL as the **Redirect URI**, then select **Configure**."
         },
         {
           "type": "copy",
@@ -110,7 +110,7 @@
         {
           "type": "confirm",
           "title": "Create Entra ID Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create OIDC Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create OIDC Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

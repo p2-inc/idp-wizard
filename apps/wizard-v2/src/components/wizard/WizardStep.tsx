@@ -138,31 +138,42 @@ function BlockRenderer({ block, ctx, forms, actions, onAction }: BlockProps) {
 // ---------------------------------------------------------------------------
 
 /**
- * Renders the text block content. Any `https://` or `http://` URL in the
- * content is auto-wrapped in an anchor that opens in a new tab. Wizard
- * authors can drop URLs directly into prose and they become clickable.
+ * Renders inline formatting in wizard prose:
+ * - `**label**` is rendered bold. Wizard copy uses this for UI element names
+ *   and user-entered values instead of quotation marks.
+ * - Any `https://` or `http://` URL is auto-wrapped in an anchor that opens in
+ *   a new tab, so wizard authors can drop URLs directly into prose.
  */
-function TextBlockRenderer({ content }: { content: string }) {
-  const parts = content.split(/(https?:\/\/[^\s)]+)/g);
-  return (
-    <p className="text-base leading-relaxed">
-      {parts.map((part, i) =>
-        /^https?:\/\//.test(part) ? (
-          <a
-            key={i}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline underline-offset-2 hover:text-primary/80"
-          >
-            {part}
-          </a>
-        ) : (
-          part
-        ),
-      )}
-    </p>
+function renderInline(content: string) {
+  return content.split(/(\*\*[^*]+\*\*)/g).map((segment, i) => {
+    if (/^\*\*[^*]+\*\*$/.test(segment)) {
+      return <strong key={i}>{linkify(segment.slice(2, -2))}</strong>;
+    }
+    return <span key={i}>{linkify(segment)}</span>;
+  });
+}
+
+function linkify(text: string) {
+  const parts = text.split(/(https?:\/\/[^\s)*]+)/g);
+  return parts.map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary underline underline-offset-2 hover:text-primary/80"
+      >
+        {part}
+      </a>
+    ) : (
+      part
+    ),
   );
+}
+
+function TextBlockRenderer({ content }: { content: string }) {
+  return <p className="text-base leading-relaxed">{renderInline(content)}</p>;
 }
 
 /**
@@ -611,7 +622,7 @@ function ConfirmBlockRenderer({
       <div>
         <p className="font-medium">{block.title}</p>
         <p className="text-muted-foreground mt-1 text-base">
-          {block.description}
+          {renderInline(block.description)}
         </p>
       </div>
 

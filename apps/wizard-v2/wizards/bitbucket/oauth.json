@@ -22,7 +22,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In Bitbucket, open your Workspace settings."
+          "content": "In Bitbucket, open your **Workspace settings**."
         },
         {
           "type": "image",
@@ -30,7 +30,7 @@
         },
         {
           "type": "text",
-          "content": "Under \"Apps and features\", select OAuth clients."
+          "content": "Under **Apps and features**, select **OAuth clients**."
         },
         {
           "type": "image",
@@ -38,7 +38,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Create OAuth client\"."
+          "content": "Select **Create OAuth client**."
         },
         {
           "type": "image",
@@ -46,7 +46,7 @@
         },
         {
           "type": "text",
-          "content": "Select the scopes \"Email\" and \"Account\" (these provide the user's email and basic profile)."
+          "content": "Select the **Email** and **Account** scopes (these provide the user's email and basic profile)."
         },
         {
           "type": "image",
@@ -54,7 +54,7 @@
         },
         {
           "type": "text",
-          "content": "Under \"Authorization\", paste the callback URL below into the Callback URL field."
+          "content": "Under **Authorization**, paste the callback URL below into **Callback URL**."
         },
         {
           "type": "copy",
@@ -68,7 +68,7 @@
         },
         {
           "type": "text",
-          "content": "Enter a descriptive name for your app and click Save."
+          "content": "Enter a descriptive name for your app and select **Save**."
         },
         {
           "type": "image",
@@ -83,7 +83,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "After saving the OAuth client, copy the Key and Secret and paste them below."
+          "content": "After saving the OAuth client, copy the **Key** and **Secret** and paste them below."
         },
         {
           "type": "image",
@@ -107,7 +107,7 @@
         {
           "type": "confirm",
           "title": "Create Bitbucket Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create Bitbucket Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create Bitbucket Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSocial}}",

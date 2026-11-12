@@ -22,7 +22,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In GitHub, go to Settings → Developer settings → OAuth Apps and click 'New OAuth App'. Give it a name and set the Homepage URL. Then use the redirect URI below as the Authorization callback URL."
+          "content": "In GitHub, go to **Settings** > **Developer settings** > **OAuth Apps** and select **New OAuth App**. Give it a name and set the **Homepage URL**. Then use the redirect URI below as the **Authorization callback URL**."
         },
         {
           "type": "copy",
@@ -39,7 +39,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "After creating the OAuth App, copy the Client ID and generate a new Client Secret. Paste both values below."
+          "content": "After creating the OAuth App, copy the **Client ID** and generate a new client secret. Paste both values below."
         },
         {
           "type": "formGroup",
@@ -59,7 +59,7 @@
         {
           "type": "confirm",
           "title": "Create GitHub Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create GitHub Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create GitHub Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSocial}}",

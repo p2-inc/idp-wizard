@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Sign in to the LastPass Admin Console and open Applications → SSO apps."
+          "content": "Sign in to the LastPass Admin Console and open **Applications** > **SSO apps**."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "If you haven't already, enable Single Sign-On for your account from the Settings → SSO menu. When searching the catalog, look for \"Custom Service\"."
+          "content": "If you haven't already, enable single sign-on for your account from **Settings** > **SSO**. When searching the catalog, look for **Custom Service**."
         },
         {
           "type": "image",
@@ -47,7 +47,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "From the Custom service view, click \"Add new domain\"."
+          "content": "From the **Custom Service** view, select **Add new domain**."
         },
         {
           "type": "image",
@@ -88,7 +88,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Under the \"Configuration\" title, locate the \"Export SAML IdP Metadata\" link."
+          "content": "Under the **Configuration** title, locate **Export SAML IdP Metadata**."
         },
         {
           "type": "image",
@@ -96,7 +96,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Export SAML IdP Metadata\" link then \"Download\" to save the IdP metadata XML file."
+          "content": "Select **Export SAML IdP Metadata**, then select **Download** to save the IdP metadata XML file."
         },
         {
           "type": "image",
@@ -120,7 +120,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Back in the LastPass app settings, scroll to the Attributes section."
+          "content": "Back in the LastPass app settings, scroll to the **Attributes** section."
         },
         {
           "type": "image",
@@ -157,7 +157,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Save\" to update the application configuration with the new configuration and attribute mappings."
+          "content": "Select **Save** to update the application configuration with the new configuration and attribute mappings."
         },
         {
           "type": "image",
@@ -171,7 +171,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the application's \"Assigned Users\" tab and add the users or groups who should have access. The recommendation is to start with \"All Users\"."
+          "content": "Open the application's **Assigned Users** tab and add the users or groups who should have access. The recommendation is to start with **All Users**."
         },
         {
           "type": "image",
@@ -187,7 +187,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

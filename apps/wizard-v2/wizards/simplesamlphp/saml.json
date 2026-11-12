@@ -62,7 +62,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the SimpleSAMLphp admin UI, open the Federation tab. Under \"SAML 2.0 IdP Metadata\", note the Entity ID and click \"Show metadata\"."
+          "content": "In the SimpleSAMLphp admin UI, open the **Federation** tab. Under **SAML 2.0 IdP Metadata**, note the entity ID and select **Show metadata**."
         },
         {
           "type": "image",
@@ -88,7 +88,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Configure the SimpleSAMLphp authentication source and attribute release to include the following attributes. You can verify what the IdP releases by using the \"Test configured authentication sources\" page under the Authentication tab."
+          "content": "Configure the SimpleSAMLphp authentication source and attribute release to include the following attributes. You can verify what the IdP releases by using the **Test configured authentication sources** page on the **Authentication** tab."
         },
         {
           "type": "image",
@@ -139,7 +139,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

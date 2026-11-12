@@ -22,7 +22,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Google Cloud Console, go to APIs & Services → Credentials and create a new OAuth 2.0 Client ID. Select Web application as the application type. Add the following URL to the Authorized redirect URIs."
+          "content": "In the Google Cloud Console, go to **APIs & Services** > **Credentials** and create a new OAuth 2.0 Client ID. Select **Web application** as the application type. Add the following URL to **Authorized redirect URIs**."
         },
         {
           "type": "copy",
@@ -59,7 +59,7 @@
         {
           "type": "confirm",
           "title": "Create Google Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create Google Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create Google Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSocial}}",

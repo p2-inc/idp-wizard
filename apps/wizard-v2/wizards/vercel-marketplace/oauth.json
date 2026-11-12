@@ -23,11 +23,11 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Vercel Marketplace integrations use the same creation flow as a regular Vercel integration — there is no separate Marketplace page. The only difference is the Visibility setting, which controls whether the integration is publicly listed."
+          "content": "Vercel Marketplace integrations use the same creation flow as a regular Vercel integration — there is no separate Marketplace page. The only difference is the **Visibility** setting, which controls whether the integration is publicly listed."
         },
         {
           "type": "text",
-          "content": "In your Vercel Dashboard sidebar, open Integrations."
+          "content": "In your Vercel Dashboard sidebar, open **Integrations**."
         },
         {
           "type": "image",
@@ -35,7 +35,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Create Integration\"."
+          "content": "Select **Create Integration**."
         },
         {
           "type": "image",
@@ -43,7 +43,7 @@
         },
         {
           "type": "text",
-          "content": "In the integration form, set Visibility to \"Public\" — this is what makes it a Marketplace integration (discoverable by all Vercel users)."
+          "content": "In the integration form, set **Visibility** to **Public** — this is what makes it a Marketplace integration (discoverable by all Vercel users)."
         },
         {
           "type": "image",
@@ -51,7 +51,7 @@
         },
         {
           "type": "text",
-          "content": "Paste the redirect URL below into the Redirect URL field."
+          "content": "Paste the redirect URL below into **Redirect URL**."
         },
         {
           "type": "copy",
@@ -92,7 +92,7 @@
         {
           "type": "confirm",
           "title": "Create Vercel Marketplace Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create Vercel Marketplace Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create Vercel Marketplace Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

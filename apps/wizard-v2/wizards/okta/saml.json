@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Sign in to the Okta Admin Console and navigate to Applications → Applications."
+          "content": "Sign in to the Okta Admin Console and navigate to **Applications** > **Applications**."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Create App Integration\" to start adding a new application."
+          "content": "Select **Create App Integration** to start adding a new application."
         },
         {
           "type": "image",
@@ -41,7 +41,7 @@
         },
         {
           "type": "text",
-          "content": "Select \"SAML 2.0\" as the Sign-in method and click \"Next\"."
+          "content": "Select **SAML 2.0** as the **Sign-in method** and select **Next**."
         },
         {
           "type": "image",
@@ -55,7 +55,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the \"General Settings\" step, enter an App name and click \"Next\". Then, on the \"Configure SAML\" step, enter the following service provider values."
+          "content": "On the **General Settings** step, enter an **App name** and select **Next**. Then, on the **Configure SAML** step, enter the following service provider values."
         },
         {
           "type": "copy",
@@ -81,7 +81,7 @@
         },
         {
           "type": "text",
-          "content": "Leave the remaining defaults and scroll to the Attribute Statements section in the next step."
+          "content": "Leave the remaining defaults and scroll to the **Attribute Statements** section in the next step."
         },
         {
           "type": "image",
@@ -95,7 +95,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the \"Attribute Statements\" section, add the following entries so Okta sends user attributes in the SAML assertion."
+          "content": "In the **Attribute Statements** section, add the following entries so Okta sends user attributes in the SAML assertion."
         },
         {
           "type": "attributeTable",
@@ -128,7 +128,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Next\", choose \"I'm an Okta customer adding an internal app\" on the Feedback step, then click \"Finish\"."
+          "content": "Select **Next**, choose **I'm an Okta customer adding an internal app** on the **Feedback** step, then select **Finish**."
         }
       ]
     },
@@ -139,7 +139,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "After saving the application, open the \"Sign On\" tab."
+          "content": "After saving the application, open the **Sign On** tab."
         },
         {
           "type": "image",
@@ -147,7 +147,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"View SAML setup instructions\" or right-click \"Identity Provider metadata\" and copy/save the metadata XML."
+          "content": "Select **View SAML setup instructions** or right-click **Identity Provider metadata** and copy/save the metadata XML."
         },
         {
           "type": "image",
@@ -173,7 +173,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Switch to the \"Assignments\" tab and click \"Assign\" → \"Assign to People\" or \"Assign to Groups\"."
+          "content": "Switch to the **Assignments** tab and select **Assign** > **Assign to People** or **Assign to Groups**."
         },
         {
           "type": "image",
@@ -181,7 +181,7 @@
         },
         {
           "type": "text",
-          "content": "Select the users or groups who should have access, then click \"Done\"."
+          "content": "Select the users or groups who should have access, then select **Done**."
         },
         {
           "type": "image",
@@ -197,7 +197,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

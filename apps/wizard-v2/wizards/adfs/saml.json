@@ -32,7 +32,7 @@
         },
         {
           "type": "text",
-          "content": "On your AD FS server, open the AD FS Management console from Server Manager → Tools → AD FS Management."
+          "content": "On your AD FS server, open the AD FS Management console from **Server Manager** > **Tools** > **AD FS Management**."
         },
         {
           "type": "image",
@@ -40,7 +40,7 @@
         },
         {
           "type": "text",
-          "content": "In the left sidebar, expand \"Relying Party Trusts\", then click \"Add Relying Party Trust...\" in the Actions panel on the right."
+          "content": "In the left sidebar, expand **Relying Party Trusts**, then select **Add Relying Party Trust...** in the **Actions** panel on the right."
         },
         {
           "type": "image",
@@ -77,7 +77,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Back in AD FS Management, in the Add Relying Party Trust wizard, choose \"Claims aware\" and click \"Start\"."
+          "content": "Back in AD FS Management, in the Add Relying Party Trust wizard, choose **Claims aware** and select **Start**."
         },
         {
           "type": "image",
@@ -85,7 +85,7 @@
         },
         {
           "type": "text",
-          "content": "On the \"Select Data Source\" step, choose \"Enter data about the relying party manually\" and click \"Next\". Use the following values when prompted by the wizard."
+          "content": "On the **Select Data Source** step, choose **Enter data about the relying party manually** and select **Next**. Use the following values when prompted by the wizard."
         },
         {
           "type": "copy",
@@ -111,7 +111,7 @@
         },
         {
           "type": "text",
-          "content": "Specify a display name for the relying party, then click \"Next\"."
+          "content": "Specify a display name for the relying party, then select **Next**."
         },
         {
           "type": "image",
@@ -119,7 +119,7 @@
         },
         {
           "type": "text",
-          "content": "On the \"Configure URL\" step, check \"Enable support for the SAML 2.0 WebSSO protocol\" and paste the ACS URL above as the Relying party SAML 2.0 SSO service URL."
+          "content": "On the **Configure URL** step, check **Enable support for the SAML 2.0 WebSSO protocol** and paste the ACS URL above into **Relying party SAML 2.0 SSO service URL**."
         },
         {
           "type": "image",
@@ -127,7 +127,7 @@
         },
         {
           "type": "text",
-          "content": "On the \"Configure Identifiers\" step, paste the Entity ID above into the Relying party trust identifier field, click \"Add\", then \"Next\" to continue. Complete the rest of the wizard, accepting the defaults."
+          "content": "On the **Configure Identifiers** step, paste the Entity ID above into **Relying party trust identifier**, select **Add**, then select **Next** to continue. Complete the rest of the wizard, accepting the defaults."
         },
         {
           "type": "image",
@@ -141,7 +141,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "After finishing the wizard, right-click the new Relying Party Trust and select \"Edit Claim Issuance Policy...\"."
+          "content": "After finishing the wizard, right-click the new Relying Party Trust and select **Edit Claim Issuance Policy...**."
         },
         {
           "type": "image",
@@ -149,7 +149,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Add Rule...\" to launch the Add Transform Claim Rule Wizard."
+          "content": "Select **Add Rule...** to launch the Add Transform Claim Rule Wizard."
         },
         {
           "type": "image",
@@ -157,7 +157,7 @@
         },
         {
           "type": "text",
-          "content": "From the \"Claim rule template\" dropdown, select \"Send LDAP Attributes as Claims\" and click \"Next\"."
+          "content": "From the **Claim rule template** list, select **Send LDAP Attributes as Claims**, then select **Next**."
         },
         {
           "type": "image",
@@ -165,7 +165,7 @@
         },
         {
           "type": "text",
-          "content": "Enter a claim rule name (for example, \"Send User Attributes\") and choose \"Active Directory\" as the Attribute store. Map the following LDAP attributes to the corresponding Outgoing Claim Type URIs:"
+          "content": "Enter a claim rule name (for example, **Send User Attributes**) and choose **Active Directory** as the **Attribute store**. Map the following LDAP attributes to the corresponding **Outgoing Claim Type** URIs:"
         },
         {
           "type": "attributeTable",
@@ -198,7 +198,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Finish\" to save the claim rule."
+          "content": "Select **Finish** to save the claim rule."
         },
         {
           "type": "image",
@@ -206,7 +206,7 @@
         },
         {
           "type": "text",
-          "content": "Verify the rule appears in the \"Issuance Transform Rules\" list, then click \"OK\"."
+          "content": "Verify the rule appears in the **Issuance Transform Rules** list, then select **OK**."
         },
         {
           "type": "image",
@@ -222,7 +222,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

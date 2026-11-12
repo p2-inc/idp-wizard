@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Duo Admin Panel, open the Applications submenu in the left navigation."
+          "content": "In the Duo Admin Panel, open **Applications** in the left navigation."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Open the Application Catalog, search for \"Generic SAML Service Provider\", and click Add."
+          "content": "Open the **Application Catalog**, search for **Generic SAML Service Provider**, and select **Add**."
         },
         {
           "type": "image",
@@ -74,7 +74,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Save your Duo SAML application. Duo will display a Metadata URL — copy it and paste it below to import Duo's IdP configuration into Keycloak."
+          "content": "Save your Duo SAML application. Duo will display a **Metadata URL** — copy it and paste it below to import Duo's IdP configuration into Keycloak."
         },
         {
           "type": "image",
@@ -155,7 +155,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

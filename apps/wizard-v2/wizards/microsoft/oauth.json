@@ -22,7 +22,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Microsoft Entra admin center, go to App registrations and create a new registration. Select 'Accounts in any organizational directory and personal Microsoft accounts' for broad access. Add the redirect URI below under Authentication → Platform configurations → Web."
+          "content": "In the Microsoft Entra admin center, go to **App registrations** and create a new registration. Select **Accounts in any organizational directory and personal Microsoft accounts** for broad access. Add the redirect URI below under **Authentication** > **Platform configurations** > **Web**."
         },
         {
           "type": "copy",
@@ -39,7 +39,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Note the Application (client) ID from the Overview page. Then go to Certificates & secrets, create a new client secret, and paste both values below."
+          "content": "Note the **Application (client) ID** from the **Overview** page. Then go to **Certificates & secrets**, create a new client secret, and paste both values below."
         },
         {
           "type": "formGroup",
@@ -59,7 +59,7 @@
         {
           "type": "confirm",
           "title": "Create Microsoft Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create Microsoft Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create Microsoft Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSocial}}",

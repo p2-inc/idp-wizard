@@ -31,7 +31,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"New app\" and enter a name. Select \"Web app\" as the integration type."
+          "content": "Select **New app** and enter a name. Select **Web app** as the integration type."
         },
         {
           "type": "image",
@@ -39,7 +39,7 @@
         },
         {
           "type": "text",
-          "content": "Add the redirect URI below into the app's Redirect URI field."
+          "content": "Add the redirect URI below into the app's **Redirect URI** field."
         },
         {
           "type": "copy",
@@ -60,11 +60,11 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the Configuration page of your Xero app. Copy the Client ID."
+          "content": "Open the **Configuration** page of your Xero app. Copy the **Client ID**."
         },
         {
           "type": "text",
-          "content": "Click \"Generate a secret\" to create the Client Secret. Xero only shows the secret once — copy it before navigating away."
+          "content": "Select **Generate a secret** to create the Client Secret. Xero only shows the secret once — copy it before navigating away."
         },
         {
           "type": "image",
@@ -96,7 +96,7 @@
         {
           "type": "confirm",
           "title": "Create Xero Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create Xero Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create Xero Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

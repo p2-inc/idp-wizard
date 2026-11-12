@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Navigate to Settings → Authentication."
+          "content": "Navigate to **Settings** > **Authentication**."
         },
         {
           "type": "image",
@@ -47,7 +47,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Under \"Login methods\", click \"Add new\" and select \"SAML\" as the identity provider type."
+          "content": "Under **Login methods**, select **Add new**, then choose **SAML** as the identity provider type."
         },
         {
           "type": "image",
@@ -153,7 +153,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In Zero Trust, open Access → Applications and create or edit an application that uses this login method."
+          "content": "In Zero Trust, open **Access** > **Applications** and create or edit an application that uses this login method."
         },
         {
           "type": "image",
@@ -185,7 +185,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",
