@@ -3,17 +3,16 @@
 #  
 # Use this way
 # $ ./portal-link.sh
-# Host (format http://foo.com ): https://app.phasetwo.io
-# Username: gpatil@phasetwo.io
+# Host (format http://foo.com ): https://keycloak.example.com
+# Username: <your-username>
 # Password:
-# orgId: fa33fe50-789e-44cd-9faf-75aad08613b7
+# orgId: <org-id>
 # baseUri (e.g. http://localhost:9000/auth ): http://localhost:9000/auth
 # 
-# the baseUri value is a hack because we don’t assume that the wizard will be served from a different base
+# baseUri is passed explicitly because the wizard may be served from a different base path
 # 
-# fa33fe50-789e-44cd-9faf-75aad08613b7 is the orgId of a test org for wizard realm
-# 5aeb9aeb-97a3-4deb-af9f-516615b59a2d is the orgId of a test org for cloud realm
-# the Username and Password are the normal ones you use to log into the wizard
+# orgId is the ID of an organization in the realm (this script targets the realm named "cloud")
+# the Username and Password are the ones you use to log into the wizard
 # the result of that script will return a json object with a link field that will contain the link to automagically log you in and redirect you to the wizard
 
 

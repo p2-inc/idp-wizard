@@ -1,10 +1,10 @@
 #!/bin/bash
-# host = https://app.phasetwo.io
-# realm = cloud
-# username = jpatzer@gmail.com
-# password = password
-# orgId = 5e2288c5-1867-4e13-9b35-824be46fa5cc
-# baseUri = http://localhost:9000/auth
+# Prompts for:
+#   host     e.g. https://keycloak.example.com
+#   realm    e.g. <your-realm>
+#   username / password of a user who can create portal links for the org
+#   orgId    the organization ID
+#   baseUri  e.g. http://localhost:9000/auth
 
 read -p 'Host (format http://foo.com ): ' host
 read -p 'Realm: ' realm

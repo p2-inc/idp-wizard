@@ -133,8 +133,8 @@ VITE_WIZARD_DISABLE_LEAVE_GUARD=false
 
 These `VITE_OIDC_*` values are a `vite dev` fallback only. In production, `src/runtime-config.ts` reads the server URL, auth realm, and client ID from the `keycloak.json` the extension serves, and the target realm from the page URL. `parseIssuerUri()` in the same file handles both `/auth/realms/` and `/realms/` Keycloak paths.
 
-- Dev Keycloak: `cd docker && docker compose up` (or `pnpm docker:up`), served at `http://localhost:8080/auth`; admin console `admin` / `admin`.
-- Test user: `wizard` / `password` with the `realm-admin` role. `org-admin` and `org-member` (same password) exist for org tests.
+- Dev Keycloak: `cd docker && docker compose up` (or `pnpm docker:up`), served at `http://localhost:8080/auth`; admin console `admin` / `admin` (local-only).
+- Test user (local Docker realm only): `wizard` / `password` with the `realm-admin` role. `org-admin` and `org-member` (same password) exist for org tests.
 
 ---
 

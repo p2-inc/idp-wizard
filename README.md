@@ -239,7 +239,7 @@ docker compose -f apps/wizard-v2/docker/docker-compose.yml up -d
 pnpm --filter wizard-v2 dev
 ```
 
-Open `http://localhost:5173` and log in as `wizard` / `password`. See [apps/wizard-v2/README.md](apps/wizard-v2/README.md) for full setup instructions, and its [Testing](apps/wizard-v2/README.md#testing) section for the Playwright suites.
+Open `http://localhost:5173` and log in as `wizard` / `password` (a test user that exists only in the local Docker realm). See [apps/wizard-v2/README.md](apps/wizard-v2/README.md) for full setup instructions, and its [Testing](apps/wizard-v2/README.md#testing) section for the Playwright suites.
 
 #### wizard-v1 (legacy)
 
@@ -254,7 +254,7 @@ pnpm start:dev
 
 #### Full extension in a container
 
-To build the JAR (both frontends) and run it in a local Phase Two Keycloak container on `http://localhost:8080/auth` (admin console login `admin` / `admin`):
+To build the JAR (both frontends) and run it in a local Phase Two Keycloak container on `http://localhost:8080/auth` (local-only admin console login `admin` / `admin`):
 
 ```bash
 mvn clean package

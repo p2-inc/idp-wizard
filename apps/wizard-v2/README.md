@@ -200,7 +200,7 @@ cd docker
 docker compose up
 ```
 
-Keycloak listens on `http://localhost:8080/auth` (relative path `/auth`); the admin console login is `admin` / `admin`. The `package.json` scripts wrap the same compose file: `pnpm docker:up` (starts it detached, waits for the realm, and opens the admin console on macOS), `pnpm docker:logs`, `pnpm docker:down`, and `pnpm docker:reset` (also deletes the data volume). They can be run from the repo root as well.
+Keycloak listens on `http://localhost:8080/auth` (relative path `/auth`); the admin console login is `admin` / `admin` (local dev container only). The `package.json` scripts wrap the same compose file: `pnpm docker:up` (starts it detached, waits for the realm, and opens the admin console on macOS), `pnpm docker:logs`, `pnpm docker:down`, and `pnpm docker:reset` (also deletes the data volume). They can be run from the repo root as well.
 
 On first run, Keycloak auto-imports `realm-export.json` which creates:
 
@@ -217,6 +217,8 @@ Keycloak data persists in a named Docker volume between restarts.
 > ```
 
 #### Dev test users
+
+These accounts exist only in the local Docker realm imported from `docker/realm-export.json`; they are not used anywhere else.
 
 | Username     | Password   | Email                    | Roles         |
 | ------------ | ---------- | ------------------------ | ------------- |
@@ -236,7 +238,7 @@ To try the SCIM wizards, enable SCIM for the realm's organizations in the admin 
 pnpm dev
 ```
 
-The app runs at `http://localhost:5173`. Log in with `wizard` / `password`.
+The app runs at `http://localhost:5173`. Log in with the local test user `wizard` / `password`.
 
 To test organization (cloud) mode, append `?org_id=<your-org-id>` to the URL. The debug strip in dev mode shows the resolved `apiMode`, `orgId`, `realm`, alias, and endpoint URLs.
 
