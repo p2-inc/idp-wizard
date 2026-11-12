@@ -510,7 +510,7 @@ export async function executeAction(
 
     const successMsg = httpAction.messages?.success;
     return { ok: true, message: successMsg };
-  } catch (err) {
+  } catch {
     const errorMsg =
       httpAction.messages?.error ?? "An unexpected error occurred.";
     localDispatch({ type: "SUBMIT_ERROR", error: errorMsg });

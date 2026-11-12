@@ -38,30 +38,27 @@ export function ThemeProvider({
     return (localStorage.getItem(storageKey) as Theme) ?? defaultTheme;
   });
 
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
-    theme === "system" ? getSystemTheme() : theme,
-  );
+  // Tracks the OS preference; only consulted while theme === "system".
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme);
+  const resolvedTheme: ResolvedTheme =
+    theme === "system" ? systemTheme : theme;
 
   useEffect(() => {
-    const next = theme === "system" ? getSystemTheme() : theme;
-    setResolvedTheme(next);
-    applyTheme(next);
-  }, [theme]);
+    applyTheme(resolvedTheme);
+  }, [resolvedTheme]);
 
   useEffect(() => {
     if (theme !== "system") return;
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      const next = getSystemTheme();
-      setResolvedTheme(next);
-      applyTheme(next);
-    };
+    const handler = () => setSystemTheme(getSystemTheme());
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, [theme]);
 
   const setTheme = (next: Theme) => {
     localStorage.setItem(storageKey, next);
+    // The OS preference may have changed while another theme was selected.
+    if (next === "system") setSystemTheme(getSystemTheme());
     setThemeState(next);
   };
 

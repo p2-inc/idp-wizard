@@ -43,6 +43,10 @@ interface Props {
 }
 
 
+// Lazy loaders for every wizard definition, keyed by path. Built once at module
+// scope; Vite resolves the glob at build time.
+const wizardModules = import.meta.glob("../../../wizards/**/*.json");
+
 export function WizardRunner({ providerId, protocol, provider }: Props) {
   const ctx = useWizardContext();
   const {
@@ -58,7 +62,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
   const { config } = useWizardConfig();
 
   const [definition, setDefinition] = useState<WizardDefinition | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const { src: sidebarLogo, fallback: fallbackLogo } = useAppLogo();
   const providerLogo = useProviderLogo(provider.logo);
 
@@ -72,22 +76,18 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
   // ---------------------------------------------------------------------------
   // Load the wizard JSON definition
   // ---------------------------------------------------------------------------
+  const loader =
+    wizardModules[`../../../wizards/${providerId}/${protocol}.json`];
+  const loadError = !loader || loadFailed ? "not-found" : null;
+
   useEffect(() => {
-    const modules = import.meta.glob("../../../wizards/**/*.json");
-    const providerKey = `../../../wizards/${providerId}/${protocol}.json`;
-    const loader = modules[providerKey];
-
-    if (!loader) {
-      setLoadError("not-found");
-      return;
-    }
-
+    if (!loader) return;
     loader()
       .then((mod) =>
         setDefinition((mod as { default: WizardDefinition }).default),
       )
-      .catch(() => setLoadError("not-found"));
-  }, [providerId, protocol]);
+      .catch(() => setLoadFailed(true));
+  }, [loader]);
 
   // ---------------------------------------------------------------------------
   // Action handler

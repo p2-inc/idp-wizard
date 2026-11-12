@@ -42,6 +42,27 @@ function WizardPage() {
     return <ScimRequiresOrgGate />;
   }
 
+  return (
+    <WizardSession
+      providerId={providerId}
+      protocol={protocol}
+      orgId={orgId}
+      provider={provider}
+    />
+  );
+}
+
+function WizardSession({
+  providerId,
+  protocol,
+  orgId,
+  provider,
+}: {
+  providerId: string;
+  protocol: string;
+  orgId: string | null;
+  provider: (typeof allProviders)[number];
+}) {
   const sessionKey = `p2_${providerId}_${protocol}`;
   const alias = getOrCreateAlias(sessionKey, `${providerId}-${protocol}`);
 
