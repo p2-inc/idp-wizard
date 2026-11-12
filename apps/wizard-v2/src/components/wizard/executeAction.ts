@@ -31,6 +31,7 @@ import { resolveIdpTestLink } from "@/lib/idp-test-link";
 import { fetchWithAuth } from "@/oidc";
 import {
   describeHttpError,
+  idpConflictMessage,
   NETWORK_ERROR_MESSAGE,
   type ErrorScope,
 } from "@/lib/http-error";
@@ -467,14 +468,19 @@ export async function executeAction(
       );
 
       if (!result.ok) {
+        const scope = errorScopeFor(url, params.orgId);
         const errorMsg = describeHttpError({
           status: result.status,
           data: result.data,
           fallback: httpAction.messages?.error,
-          scope: errorScopeFor(url, params.orgId),
+          scope,
           requiredRole: IDP_ENDPOINTS.has(httpAction.endpoint)
             ? "manage-identity-providers"
             : undefined,
+          conflictMessage:
+            httpAction.endpoint === "createIdp"
+              ? idpConflictMessage(scope)
+              : undefined,
         });
         localDispatch({ type: "SUBMIT_ERROR", error: errorMsg });
         return { ok: false, message: errorMsg };

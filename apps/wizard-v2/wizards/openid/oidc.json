@@ -252,7 +252,7 @@
         "then": ["clearAlias"]
       },
       "messages": {
-        "error": "Error creating Identity Provider. One may already be configured for this realm."
+        "error": "Error creating Identity Provider. Please try again."
       }
     },
 
