@@ -272,6 +272,8 @@ AVIFs was replaced with full-resolution PNGs.
 | ----------------------- | ----------------------------------------------------- |
 | `{{api.entityId}}`      | `{serverUrl}/realms/{realm}`                          |
 | `{{api.ssoUrl}}`        | `{serverUrl}/realms/{realm}/broker/{alias}/endpoint`  |
+| `{{api.idpInitiatedAcsUrl}}` | `{serverUrl}/realms/{realm}/broker/{alias}/endpoint/clients/idp-initiated-{alias}` — where the upstream IdP posts IdP-initiated logins |
+| `{{idpInitiatedClientId}}` | `idp-initiated-{alias}` — clientId and IdP-initiated SSO URL name of the paired SAML client |
 | `{{api.samlMetadata}}`  | `{serverUrl}/realms/{realm}/protocol/saml/descriptor` |
 | `{{api.adminLinkSaml}}` | Keycloak admin console link for the SAML IDP          |
 | `{{api.adminLinkOidc}}` | Keycloak admin console link for the OIDC IDP          |
@@ -318,6 +320,9 @@ Named endpoint slots (`endpoint` key):
 - `importConfig` — validates metadata; returns raw IDP config object
 - `createIdp` — creates the identity provider
 - `addMappers` — adds attribute mapper to an existing IDP
+- `createClient` — creates the SAML client paired with an IdP-initiated identity provider (realm-wide: `POST /admin/realms/{realm}/clients`; organization: `POST /realms/{realm}/orgs/{orgId}/idps/clients`). IdP-initiated wizards run it before `createIdp`, then add mappers.
+
+An HTTP action may set `"allowStatuses": [409]` to treat those statuses as success. `createClient` uses it so a retry with the same alias reuses the client created by an earlier attempt.
 
 Special action types (no `endpoint`):
 

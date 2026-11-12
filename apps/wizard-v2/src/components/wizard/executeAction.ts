@@ -138,6 +138,8 @@ function resolveEndpoint(
       return endpoints.createIdp;
     case "addMappers":
       return endpoints.addMappers(state.alias);
+    case "createClient":
+      return endpoints.createClient;
     case "testLdapConnection":
       return endpoints.testLdapConnection;
     case "createComponent":
@@ -161,6 +163,20 @@ const IDP_ENDPOINTS: ReadonlySet<EndpointSlot> = new Set([
   "createIdp",
   "addMappers",
 ]);
+
+/** Role named in the permission error when an action is forbidden. */
+function requiredRoleFor(
+  endpoint: EndpointSlot,
+  scope: ErrorScope,
+): string | undefined {
+  if (IDP_ENDPOINTS.has(endpoint)) return "manage-identity-providers";
+  // Organization setup creates the client through the orgs API, which checks
+  // the same role as identity provider creation; realm-wide uses the admin API.
+  if (endpoint === "createClient") {
+    return scope === "organization" ? "manage-identity-providers" : "manage-clients";
+  }
+  return undefined;
+}
 
 /** Whether a request URL targets the org-scoped (Phase Two orgs) API. */
 function errorScopeFor(url: string, orgId: string | null): ErrorScope {
@@ -444,15 +460,15 @@ export async function executeAction(
         resolvedBody,
       );
 
-      if (!result.ok) {
+      const allowed = httpAction.allowStatuses?.includes(result.status) ?? false;
+      if (!result.ok && !allowed) {
+        const scope = errorScopeFor(url, params.orgId);
         const errorMsg = describeHttpError({
           status: result.status,
           data: result.data,
           fallback: httpAction.messages?.error,
-          scope: errorScopeFor(url, params.orgId),
-          requiredRole: IDP_ENDPOINTS.has(httpAction.endpoint)
-            ? "manage-identity-providers"
-            : undefined,
+          scope,
+          requiredRole: requiredRoleFor(httpAction.endpoint, scope),
         });
         localDispatch({ type: "SUBMIT_ERROR", error: errorMsg });
         return { ok: false, message: errorMsg };

@@ -11,6 +11,8 @@ export interface WizardEndpoints {
   getIdp: (alias: string) => string;
   /** POST — adds attribute mappers to an existing IDP */
   addMappers: (alias: string) => string;
+  /** POST — creates the SAML client paired with an IdP-initiated identity provider */
+  createClient: string;
   /** POST — tests an LDAP connection or authentication */
   testLdapConnection: string;
   /** POST — creates a Keycloak component (e.g. user storage provider) */

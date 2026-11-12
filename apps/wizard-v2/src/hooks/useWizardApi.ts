@@ -71,6 +71,7 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
                 `${serverUrl}/realms/${realm}/orgs/${orgId}/idps/${alias}`,
               addMappers: (alias: string) =>
                 `${serverUrl}/realms/${realm}/orgs/${orgId}/idps/${alias}/mappers`,
+              createClient: `${serverUrl}/realms/${realm}/orgs/${orgId}/idps/clients`,
               // LDAP user federation always uses the admin API regardless of apiMode
               testLdapConnection: `${adminBase}/realms/${realm}/testLDAPConnection`,
               createComponent: `${adminBase}/realms/${realm}/components`,
@@ -87,6 +88,7 @@ export function useWizardApi(orgId: string | null): WizardApiContext {
                 `${adminBase}/realms/${realm}/identity-provider/instances/${alias}`,
               addMappers: (alias: string) =>
                 `${adminBase}/realms/${realm}/identity-provider/instances/${alias}/mappers`,
+              createClient: `${adminBase}/realms/${realm}/clients`,
               testLdapConnection: `${adminBase}/realms/${realm}/testLDAPConnection`,
               createComponent: `${adminBase}/realms/${realm}/components`,
               triggerSync: (componentId: string) =>
