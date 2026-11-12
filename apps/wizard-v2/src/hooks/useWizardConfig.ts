@@ -28,7 +28,9 @@ const DEFAULT_CONFIG: WizardConfig = {
   emailAsUsername: false,
   usernameMapperImport: true,
   enableDashboard: false,
-  enableLdap: false,
+  // Mirrors the server default (WizardConfig.java). The server always sends this
+  // field, so the fallback only applies when config.json is unavailable.
+  enableLdap: true,
   enableGroupMapping: false,
   trustEmail: false,
 };

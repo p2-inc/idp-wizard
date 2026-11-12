@@ -84,11 +84,13 @@ export default defineConfig({
   ],
 
   webServer: {
-    // Always pass ISSUER_URI so wizard runner resolves API URLs correctly,
-    // even in mock mode where the API calls are intercepted by page.route().
+    // Always pass ISSUER_URI and CLIENT_ID so the runtime config resolves a server
+    // URL and realm (runtime-config.ts ignores the issuer without a client id). That
+    // lets the wizard runner build API URLs and fetch wizard/config.json even in mock
+    // mode, where those requests are intercepted by page.route().
     command: isIntegration
       ? `VITE_OIDC_ISSUER_URI=${ISSUER_URI} VITE_OIDC_CLIENT_ID=wizard-v2-dev pnpm dev --port ${PORT} --strictPort`
-      : `VITE_OIDC_USE_MOCK=true VITE_OIDC_ISSUER_URI=${ISSUER_URI} pnpm dev --port ${PORT} --strictPort`,
+      : `VITE_OIDC_USE_MOCK=true VITE_OIDC_ISSUER_URI=${ISSUER_URI} VITE_OIDC_CLIENT_ID=wizard-v2-dev pnpm dev --port ${PORT} --strictPort`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 30_000,
