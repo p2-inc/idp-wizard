@@ -19,9 +19,9 @@
 > ```
 <!-- phasetwo:banner:end -->
 
-Phase Two SSO and Directory Sync setup wizards for on-prem onboarding and enterprise SaaS self-management. This application uses the [Keycloak Admin API](https://www.keycloak.org/docs-api/24.0.1/rest-api/index.html) and the [Phase Two Organizations API](https://phasetwo.io/api/phase-two-admin-rest-api) to provide wizards for onboarding customer Identity Providers. The goal of these wizards is to solve the complex and error-prone process of connecting a vendor identity system a bit easier, and to avoid exposing customers to the Keycloak UI.
+Phase Two SSO and Directory Sync setup wizards for on-prem onboarding and enterprise SaaS self-management. This application uses the [Keycloak Admin API](https://www.keycloak.org/docs-api/latest/rest-api/index.html) and the [Phase Two Organizations API](https://phasetwo.io/api/phase-two-admin-rest-api) to provide wizards for onboarding customer Identity Providers. The goal of these wizards is to make the complex and error-prone process of connecting a vendor identity system easier, without exposing customers to the Keycloak UI.
 
-In addition to providing support for Identity Providers using OIDC and SAML, the wizards also supports Directory Synchronization protocols (aka "User Federation" in Keycloak) such as LDAP.
+In addition to providing support for Identity Providers using OIDC and SAML, the wizards also support Directory Synchronization protocols (aka "User Federation" in Keycloak) such as LDAP.
 
 ![youtube-video-gif](https://github.com/p2-inc/idp-wizard/assets/244253/e9b421c0-b487-4c07-9eed-87ea89fc574b)
 
@@ -64,10 +64,10 @@ There are some reasonable defaults used for the configuration, but the behavior 
 | `_providerConfig.wizard.apiMode`                | `onprem`    | `onprem` or `cloud`. `onprem` uses the Keycloak Admin APIs to set up an Identity Provider, so the user must have the correct `realm-management` roles. `cloud` uses the Phase Two Organizations API, so the user must have membership in an organization with the correct organization roles. A "picker" will be shown to the user if they have both and/or roles in more than one organization. |
 | `_providerConfig.wizard.auth-realm-override`    | realm name  | Override the realm used in the generated `keycloak.json`. If unset, the wizard uses the current realm name.                                                                                                                                                                                                                                                                                      |
 | `_providerConfig.wizard.emailAsUsername`        | `false`     | When building Identity Provider mappers, should the IdP email address be mapped to the Keycloak `username` field.                                                                                                                                                                                                                                                                                |
-| `_providerConfig.wizard.enableDashboard`        | `true`      | Show a minimal dashboard showing the state of the setup.                                                                                                                                                                                                                                                                                                                                         |
-| `_providerConfig.wizard.enableDirectorySync`    | `true`      | Show Directory Sync section.                                                                                                                                                                                                                                                                                                                                                                     |
+| `_providerConfig.wizard.enableDashboard`        | `true`      | wizard-v1 only: show a minimal dashboard with the state of the setup.                                                                                                                                                                                                                                                                                                                            |
+| `_providerConfig.wizard.enableDirectorySync`    | `true`      | Not currently used.                                                                                                                                                                                                                                                                                                                                                                              |
 | `_providerConfig.wizard.enableGroupMapping`     | `true`      | Currently does nothing.                                                                                                                                                                                                                                                                                                                                                                          |
-| `_providerConfig.wizard.enableIdentityProvider` | `true`      | Show Identity Provider section.                                                                                                                                                                                                                                                                                                                                                                  |
+| `_providerConfig.wizard.enableIdentityProvider` | `true`      | Not currently used.                                                                                                                                                                                                                                                                                                                                                                              |
 | `_providerConfig.wizard.enableLdap`             | `true`      | Allow LDAP config.                                                                                                                                                                                                                                                                                                                                                                               |
 | `_providerConfig.wizard.enableScim`             | `true`      | Allow SCIM config. (not currently used)                                                                                                                                                                                                                                                                                                                                                          |
 | `_providerConfig.wizard.trustEmail`             | `false`     | Toggle _trust email_ in the IdP config.                                                                                                                                                                                                                                                                                                                                                          |
@@ -78,10 +78,7 @@ There are some reasonable defaults used for the configuration, but the behavior 
 
 ## Choosing a wizard version
 
-Both frontends are built into the same JAR, under `theme/wizard/login/resources/v1` and
-`.../v2`, and the extension decides which to serve per request. Nothing about the route,
-the `idp-wizard` client, or its redirect URIs changes between them, so upgrading the
-extension needs no client or GitOps changes.
+Both frontends are built into the same JAR, under `theme/wizard/login/resources/v1` and `.../v2`, and the extension decides which to serve per request. Nothing about the route, the `idp-wizard` client, or its redirect URIs changes between them, so upgrading the extension needs no client or GitOps changes.
 
 Resolution is most specific first:
 
@@ -89,34 +86,29 @@ Resolution is most specific first:
 2. the server default, `--spi-realm-restapi-extension-wizard-default-version=v1|v2`;
 3. the built-in default (`v2`).
 
-An unrecognised value logs a warning and falls back rather than failing the request, so a
-typo degrades to a working wizard.
+An unrecognized value logs a warning and falls back rather than failing the request, so a typo degrades to a working wizard.
 
-To move one realm back to the old wizard:
+To move one realm back to the old wizard, set the attribute through the admin REST API. A `PUT` that includes `attributes` replaces the realm's whole attributes map, so fetch the realm, merge the attribute, and put it back:
 
 ```sh
 # where {realm} is the realm being configured
-curl -X PUT "$KC_URL/admin/realms/{realm}" \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"attributes": {"_providerConfig.wizard.version": "v1"}}'
+curl -s -H "Authorization: Bearer $TOKEN" "$KC_URL/admin/realms/{realm}" \
+  | jq '.attributes["_providerConfig.wizard.version"] = "v1"' \
+  | curl -s -X PUT -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+      -d @- "$KC_URL/admin/realms/{realm}"
 ```
 
-Unset the attribute to return the realm to the server default.
+Delete the attribute the same way to return the realm to the server default. [docs/testing-wizard-v2.md](docs/testing-wizard-v2.md) has a full walkthrough and a manual test plan for both versions.
 
 ## Building and installing
 
-This uses the `frontend-maven-plugin` to build **both** frontend apps and packages them as
-a single JAR that can be installed as a Keycloak extension. Run `mvn package` from the repo
-root, which produces a JAR in `target/`. Place it in the `providers/` directory of your
-Keycloak distribution.
+This uses the `frontend-maven-plugin` to build **both** frontend apps and package them as a single JAR that can be installed as a Keycloak extension. Run `mvn package` from the repo root, which produces a JAR in `target/`. Place it in the `providers/` directory of your Keycloak distribution.
 
-Both apps are built on every `mvn package` and land under `theme/wizard/login/resources/v1`
-and `.../v2` in the JAR. Which one a realm gets is decided at request time — see
-[Choosing a wizard version](#choosing-a-wizard-version).
+Both apps are built on every `mvn package` and land under `theme/wizard/login/resources/v1` and `.../v2` in the JAR. Which one a realm gets is decided at request time — see [Choosing a wizard version](#choosing-a-wizard-version).
 
 ### Dependencies
 
-This extension depends on 2 other extensions. You must install all of the jars of the other extensions for this to function properly. Please see the documentation in those repos for installation instructions.
+This extension depends on the following extensions. Install their JARs alongside this one; see each repo for installation instructions.
 
 - [keycloak-orgs](https://github.com/p2-inc/keycloak-orgs)
 - [keycloak-scim](https://github.com/p2-inc/keycloak-scim) (not currently used or required)
@@ -129,7 +121,7 @@ Although it has been developed and working since Keycloak 14.0.0, the extensions
 
 ## Vendors
 
-Wizards are currently available for the following vendors.
+The legacy wizard-v1 frontend supports the following vendors. wizard-v2, the default, covers all of them and more; see [Wizard implementation status](#wizard-implementation-status-wizard-v2) below.
 
 | Vendor     | SAML               | OIDC               | LDAP               | SCIM | Other |
 | ---------- | ------------------ | ------------------ | ------------------ | ---- | ----- |
@@ -152,7 +144,7 @@ Wizards are currently available for the following vendors.
 
 ## Wizard implementation status (wizard-v2)
 
-The table below tracks the review state of each wizard in the in-development [wizard-v2](apps/wizard-v2/) app. Each wizard is a declarative JSON definition rendered by the generic runtime engine, so "implemented" means a `wizards/{provider}/{protocol}.json` file exists and renders end-to-end.
+The table below tracks the review state of each wizard in the [wizard-v2](apps/wizard-v2/) app. Each wizard is a declarative JSON definition rendered by the generic runtime engine, so "implemented" means a `wizards/{provider}/{protocol}.json` file exists and renders end-to-end.
 
 **Status legend**
 
@@ -162,8 +154,6 @@ The table below tracks the review state of each wizard in the in-development [wi
 | :hammer_and_wrench: In progress | Wizard actively being built.                                                                      |
 | :warning: Experimental          | Implemented but not yet validated — no test account available (invite-only, paid, or region-locked). |
 | :white_circle: Not started      | Wizard not yet built.                                                                             |
-
-_Listed roughly in the order they appear in the testing report._
 
 | Provider             | Protocol | Status                          |
 | -------------------- | -------- | ------------------------------- |
@@ -231,38 +221,47 @@ Note: By submitting any code, documentation, or other materials submitted to thi
 
 ### Working with the code
 
-#### wizard-v1 (current)
+#### Prerequisites
 
-Run the Phase Two Keycloak distribution, create a realm, and in the `idp-wizard` client configuration update the redirect URI to `http://localhost:9090/*` and add `http://localhost:9090` to Web Origins. Download the client's `keycloak.json` and place it in `apps/wizard-v1/src/keycloak.json`.
-
-Using the wizard at a different relative path than `/auth`? Update the following:
-
-- `RELATIVE_PATH` within [routes.tsx](./apps/wizard-v1/src/app/routes.tsx)
-- `wizard.ftl` ([login](./ext/main/resources/theme/wizard/login/wizard.ftl), [templates](./ext/main/resources/theme-resources/templates/wizard.ftl)) `<base href...`
-- [keycloak.json](./apps/wizard-v1/src/keycloak.json) key of `auth-server-url`
+Install the workspace dependencies once from the repo root (the pinned pnpm version is set by `packageManager` in `package.json`; enable it with `corepack enable`):
 
 ```bash
 pnpm install
+```
+
+#### wizard-v2 (default)
+
+Start the dev Keycloak (Phase Two image on `http://localhost:8080/auth`, with a pre-configured `wizard` realm) and the Vite dev server:
+
+```bash
+cp apps/wizard-v2/.env.local.sample apps/wizard-v2/.env.local
+docker compose -f apps/wizard-v2/docker/docker-compose.yml up -d
+pnpm --filter wizard-v2 dev
+```
+
+Open `http://localhost:5173` and log in as `wizard` / `password`. See [apps/wizard-v2/README.md](apps/wizard-v2/README.md) for full setup instructions, and its [Testing](apps/wizard-v2/README.md#testing) section for the Playwright suites.
+
+#### wizard-v1 (legacy)
+
+Run the Phase Two Keycloak distribution, create a realm, and in the `idp-wizard` client configuration update the redirect URI to `http://localhost:9090/*` and add `http://localhost:9090` to Web Origins. Download the client's `keycloak.json` and place it in `apps/wizard-v1/src/keycloak.json`.
+
+The router base path is detected at runtime from the URL (`getBasePath()` in [routes.tsx](./apps/wizard-v1/src/app/routes.tsx)) and falls back to `/auth/realms/:realm/wizard`. If your Keycloak does not use the `/auth` relative path, also update `auth-server-url` in [keycloak.json](./apps/wizard-v1/src/keycloak.json).
+
+```bash
 cd apps/wizard-v1
 pnpm start:dev
 ```
 
-To build and test the full JAR-packaged extension in a local container:
+#### Full extension in a container
+
+To build the JAR (both frontends) and run it in a local Phase Two Keycloak container on `http://localhost:8080/auth` (admin console login `admin` / `admin`):
 
 ```bash
 mvn clean package
 docker compose up --build
 ```
 
-#### wizard-v2 (in development)
-
-See [apps/wizard-v2/README.md](apps/wizard-v2/README.md) for full setup instructions.
-
-```bash
-cp apps/wizard-v2/.env.local.sample apps/wizard-v2/.env.local
-cd apps/wizard-v2/docker && docker compose up
-cd apps/wizard-v2 && pnpm dev
-```
+The root `Dockerfile` replaces the idp-wizard JAR bundled in the Phase Two image with the one from `target/`.
 
 ### Code formatting
 
