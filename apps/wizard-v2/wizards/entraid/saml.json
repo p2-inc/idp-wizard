@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Select \"Enterprise applications\" from your Entra Id dashboard."
+          "content": "Select **Enterprise applications** from your Entra ID dashboard."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"New application\" and continue."
+          "content": "Select **New application** and continue."
         },
         {
           "type": "image",
@@ -41,7 +41,7 @@
         },
         {
           "type": "text",
-          "content": "Select \"Create your own application\", which will open a dialog that will allow you to enter a name."
+          "content": "Select **Create your own application**, which will open a dialog that will allow you to enter a name."
         },
         {
           "type": "image",
@@ -49,7 +49,7 @@
         },
         {
           "type": "text",
-          "content": "Enter an App name that describes this application. Under \"What are you looking to do with your application?\", select \"Integrate any other application you dont find in the gallery (Non-gallery)\", then select \"Create\"."
+          "content": "Enter an app name that describes this application. Under **What are you looking to do with your application?**, select **Integrate any other application you don't find in the gallery (Non-gallery)**, then select **Create**."
         },
         {
           "type": "image",
@@ -57,7 +57,7 @@
         },
         {
           "type": "text",
-          "content": "Next, select \"Single Sign On\" from the \"Manage\" section in the left sidebar navigation menu, and then \"SAML\"."
+          "content": "Next, select **Single Sign On** from the **Manage** section in the left sidebar navigation menu, and then **SAML**."
         },
         {
           "type": "image",
@@ -72,7 +72,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Click the Edit icon in the top right of the first step."
+          "content": "Select the **Edit** icon in the top right of the first section."
         },
         {
           "type": "image",
@@ -80,7 +80,7 @@
         },
         {
           "type": "text",
-          "content": "Click the \"Add identifier\" and \"Add reply URL\" links to open the fields for editing."
+          "content": "Select **Add identifier** and **Add reply URL** to open the fields for editing."
         },
         {
           "type": "image",
@@ -100,7 +100,7 @@
         },
         {
           "type": "text",
-          "content": "Submit the identifier and the Reply URL in the Basic SAML Configuration. Click the \"Save\" button when you have pasted both values."
+          "content": "Paste the identifier and the reply URL into **Basic SAML Configuration**. Select **Save** when you have pasted both values."
         },
         {
           "type": "image",
@@ -108,7 +108,7 @@
         },
         {
           "type": "text",
-          "content": "Copy the App Federation Metadata URL from the SAML Signing Certificate section of your Entra application."
+          "content": "Copy the **App Federation Metadata URL** from the **SAML Signing Certificate** section of your Entra application."
         },
         {
           "type": "image",
@@ -128,7 +128,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "To configure your identity provider to send the following SAML attributes, click the \"Edit\" icon in the top right of the second section."
+          "content": "To configure your identity provider to send the following SAML attributes, select the **Edit** icon in the top right of the second section."
         },
         {
           "type": "image",
@@ -136,7 +136,7 @@
         },
         {
           "type": "text",
-          "content": "If the claims are as shown in the image, you can accept these default and move on to the next step. If not, click each Claim name in the Additional claims section to open an edit page."
+          "content": "If the claims are as shown in the image, you can accept these defaults and move on to the next step. If not, select each claim name in the **Additional claims** section to open an edit page."
         },
         {
           "type": "image",
@@ -144,7 +144,7 @@
         },
         {
           "type": "text",
-          "content": "In the edit page for each claim, paste the following values in the Name, Namespace and Source Attribute."
+          "content": "In the edit page for each claim, paste the following values into **Name**, **Namespace**, and **Source attribute**."
         },
         {
           "type": "image",
@@ -152,7 +152,7 @@
         },
         {
           "type": "text",
-          "content": "Copy the following Name, Namespace and Source Attribute values for each item. Paste and save each to a claim in your Entra ID application."
+          "content": "Copy the following name, namespace, and source attribute values for each item. Paste and save each to a claim in your Entra ID application."
         },
         {
           "type": "attributeTable",
@@ -192,7 +192,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In order for your users and groups of users to be synced to your application, you will need to assign them to your Azure AD SAML Application. Select \"Users and groups\" from the \"Manage\" section of the navigation menu."
+          "content": "In order for your users and groups of users to be synced to your application, you will need to assign them to your Entra ID SAML application. Select **Users and groups** from the **Manage** section of the navigation menu."
         },
         {
           "type": "image",
@@ -200,7 +200,7 @@
         },
         {
           "type": "text",
-          "content": "Select \"Add user/group\" from the top menu."
+          "content": "Select **Add user/group** from the top menu."
         },
         {
           "type": "image",
@@ -208,7 +208,7 @@
         },
         {
           "type": "text",
-          "content": "Select \"None selected\" under the \"Users and Groups\". In the menu, select the users and groups of users that you want to add to the SAML application, and click \"Select\"."
+          "content": "Select **None selected** under **Users and Groups**. In the menu, select the users and groups of users that you want to add to the SAML application, then choose **Select**."
         },
         {
           "type": "image",
@@ -216,7 +216,7 @@
         },
         {
           "type": "text",
-          "content": "Select \"Assign\" to add the selected users and groups of users to your SAML application."
+          "content": "Select **Assign** to add the selected users and groups of users to your SAML application."
         },
         {
           "type": "image",
@@ -232,7 +232,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

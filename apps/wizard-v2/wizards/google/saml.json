@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Sign in to the Google Admin Console and navigate to Apps → Web and mobile apps."
+          "content": "Sign in to the Google Admin Console and navigate to **Apps** > **Web and mobile apps**."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Click the \"Add app\" dropdown and select \"Add custom SAML app\"."
+          "content": "Open the **Add app** menu and select **Add custom SAML app**."
         },
         {
           "type": "image",
@@ -41,7 +41,7 @@
         },
         {
           "type": "text",
-          "content": "Enter an App name (and optional description and logo), then click \"Continue\"."
+          "content": "Enter an **App name** (and optional description and logo), then select **Continue**."
         },
         {
           "type": "image",
@@ -56,7 +56,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the \"Google Identity Provider details\" step, click \"DOWNLOAD METADATA\" to save the IdP metadata XML file."
+          "content": "On the **Google Identity Provider details** step, select **DOWNLOAD METADATA** to save the IdP metadata XML file."
         },
         {
           "type": "image",
@@ -64,7 +64,7 @@
         },
         {
           "type": "text",
-          "content": "Upload the downloaded file below to import the Google IdP configuration into Keycloak, then click \"Continue\" in Google."
+          "content": "Upload the downloaded file below to import the Google IdP configuration into Keycloak, then select **Continue** in Google."
         },
         {
           "type": "formGroup",
@@ -82,7 +82,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the \"Service provider details\" step, enter the following values from Keycloak."
+          "content": "On the **Service provider details** step, enter the following values from Keycloak."
         },
         {
           "type": "copy",
@@ -108,7 +108,7 @@
         },
         {
           "type": "text",
-          "content": "Leave the Name ID format set to UNSPECIFIED and Name ID set to \"Basic Information > Primary email\". Click \"Continue\"."
+          "content": "Leave **Name ID format** set to **UNSPECIFIED** and **Name ID** set to **Basic Information > Primary email**. Select **Continue**."
         }
       ]
     },
@@ -118,7 +118,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the \"Attribute mapping\" step, click \"Add mapping\" for each of the following entries."
+          "content": "On the **Attribute mapping** step, select **Add mapping** for each of the following entries."
         },
         {
           "type": "attributeTable",
@@ -151,7 +151,7 @@
         },
         {
           "type": "text",
-          "content": "Map each Google Directory attribute (Primary email, First name, Last name) to its corresponding App attribute, then click \"Finish\"."
+          "content": "Map each Google Directory attribute (**Primary email**, **First name**, **Last name**) to its corresponding app attribute, then select **Finish**."
         }
       ]
     },
@@ -161,7 +161,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the new app's page, click the \"User access\" panel."
+          "content": "On the new app's page, select the **User access** panel."
         },
         {
           "type": "image",
@@ -169,7 +169,7 @@
         },
         {
           "type": "text",
-          "content": "Choose \"ON for everyone\" or scope access to specific organizational units, then click \"Save\"."
+          "content": "Choose **ON for everyone** or scope access to specific organizational units, then select **Save**."
         },
         {
           "type": "image",
@@ -185,7 +185,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

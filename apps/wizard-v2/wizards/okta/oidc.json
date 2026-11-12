@@ -23,7 +23,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In Okta, create a new Web Application with the OpenID Connect sign-in method. Note the Okta domain, Client ID, and Client Secret from the application settings."
+          "content": "In Okta, create a new **Web Application** with the **OpenID Connect** sign-in method. Note the Okta domain, Client ID, and Client Secret from the application settings."
         }
       ]
     },
@@ -52,7 +52,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In your Okta application settings, add the following URL to the Sign-in redirect URIs."
+          "content": "In your Okta application settings, add the following URL to **Sign-in redirect URIs**."
         },
         {
           "type": "copy",
@@ -70,7 +70,7 @@
         {
           "type": "confirm",
           "title": "Create Okta Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create OIDC Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create OIDC Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

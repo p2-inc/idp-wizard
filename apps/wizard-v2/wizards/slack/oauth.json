@@ -23,11 +23,11 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the Slack apps dashboard: https://api.slack.com/apps and click \"Create New App\" → \"From scratch\"."
+          "content": "Open the Slack apps dashboard: https://api.slack.com/apps and select **Create New App** > **From scratch**."
         },
         {
           "type": "text",
-          "content": "Under \"OAuth & Permissions\", add the redirect URL below to the Redirect URLs list. Request the 'openid', 'profile', and 'email' user scopes."
+          "content": "Under **OAuth & Permissions**, add the redirect URL below to the **Redirect URLs** list. Request the **openid**, **profile**, and **email** user scopes."
         },
         {
           "type": "copy",
@@ -37,7 +37,7 @@
         },
         {
           "type": "text",
-          "content": "Important: do NOT click \"Install OAuth App\" or \"Install to Workspace\" in Slack's authorization section. That creates a one-workspace-specific install and breaks the OIDC flow. Save the redirect URLs and copy the credentials only — installation happens at login time, per user."
+          "content": "Important: do NOT select **Install OAuth App** or **Install to Workspace** in Slack's authorization section. That creates a one-workspace-specific install and breaks the OIDC flow. Save the redirect URLs and copy the credentials only — installation happens at login time, per user."
         },
         {
           "type": "image",
@@ -52,7 +52,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "From the Basic Information page of your Slack app, copy the Client ID and Client Secret and paste them below."
+          "content": "From the **Basic Information** page of your Slack app, copy the **Client ID** and **Client Secret** and paste them below."
         },
         {
           "type": "formGroup",
@@ -72,7 +72,7 @@
         {
           "type": "confirm",
           "title": "Create Slack Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create Slack Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create Slack Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

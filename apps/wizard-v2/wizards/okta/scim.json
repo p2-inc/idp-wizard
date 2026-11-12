@@ -20,7 +20,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Inbound SCIM provisioning is a realm-level feature. Click the button below to confirm your realm administrator has enabled it. If not, ask the admin to enable SCIM in the organizations configuration."
+          "content": "Inbound SCIM provisioning is a realm-level feature. Select **Verify SCIM is enabled** to confirm your realm administrator has enabled it. If not, ask the admin to enable SCIM in the organizations configuration."
         },
         {
           "type": "formGroup",
@@ -40,7 +40,7 @@
         },
         {
           "type": "text",
-          "content": "In the left navigation, expand the Applications section and select the Applications tab. Click Browse App Catalog."
+          "content": "In the left navigation, expand the **Applications** section and select **Applications**. Select **Browse App Catalog**."
         },
         {
           "type": "image",
@@ -49,7 +49,7 @@
         },
         {
           "type": "text",
-          "content": "Search for SCIM 2.0 Test App (OAuth Bearer Token) and select the matching result."
+          "content": "Search for **SCIM 2.0 Test App (OAuth Bearer Token)** and select the matching result."
         },
         {
           "type": "image",
@@ -58,7 +58,7 @@
         },
         {
           "type": "text",
-          "content": "On the page that opens, click Add Integration."
+          "content": "On the page that opens, select **Add Integration**."
         },
         {
           "type": "image",
@@ -67,7 +67,7 @@
         },
         {
           "type": "text",
-          "content": "Give the application a descriptive name (for example, the name of the realm being provisioned). Click Next."
+          "content": "Give the application a descriptive name (for example, the name of the realm being provisioned). Select **Next**."
         },
         {
           "type": "image",
@@ -76,7 +76,7 @@
         },
         {
           "type": "text",
-          "content": "You can leave the Sign-On Options at their defaults. Click Done."
+          "content": "You can leave **Sign-On Options** at their defaults. Select **Done**."
         },
         {
           "type": "image",
@@ -92,7 +92,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Click the button below. The wizard generates a high-entropy OAuth Bearer Token and writes the SCIM configuration to this organization. The token is shown on the next step — copy it before leaving."
+          "content": "Select **Generate token and configure**. The wizard generates a high-entropy OAuth Bearer Token and writes the SCIM configuration to this organization. The token is shown on the next step — copy it before leaving."
         },
         {
           "type": "formGroup",
@@ -108,7 +108,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In your Okta SCIM application, go to the Provisioning tab and click Configure API Integration."
+          "content": "In your Okta SCIM application, go to the **Provisioning** tab and select **Configure API Integration**."
         },
         {
           "type": "image",
@@ -117,7 +117,7 @@
         },
         {
           "type": "text",
-          "content": "Check Enable API Integration. Paste the values below into the SCIM 2.0 Base URL and OAuth Bearer Token fields."
+          "content": "Check **Enable API Integration**. Paste the values below into **SCIM 2.0 Base URL** and **OAuth Bearer Token**."
         },
         {
           "type": "image",
@@ -139,7 +139,7 @@
         },
         {
           "type": "text",
-          "content": "Click Test API Credentials in Okta to verify the connection, then click Save."
+          "content": "Select **Test API Credentials** in Okta to verify the connection, then select **Save**."
         }
       ]
     },
@@ -149,7 +149,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the Provisioning tab, click To App in the left navigation. You will see Create Users, Update User Attributes, and Deactivate Users are disabled by default."
+          "content": "On the **Provisioning** tab, select **To App** in the left navigation. You will see **Create Users**, **Update User Attributes**, and **Deactivate Users** are disabled by default."
         },
         {
           "type": "image",
@@ -158,7 +158,7 @@
         },
         {
           "type": "text",
-          "content": "Click Edit, check Enable next to Create Users, Update User Attributes, and Deactivate Users, then click Save."
+          "content": "Select **Edit**, check **Enable** next to **Create Users**, **Update User Attributes**, and **Deactivate Users**, then select **Save**."
         },
         {
           "type": "image",
@@ -167,7 +167,7 @@
         },
         {
           "type": "text",
-          "content": "Optional: review the attribute mappings under Test SCIM App Attribute Mappings. The defaults work for most realms; you can return here later to add custom mappings."
+          "content": "Optional: review the attribute mappings under **Test SCIM App Attribute Mappings**. The defaults work for most realms; you can return here later to add custom mappings."
         },
         {
           "type": "image",
@@ -182,7 +182,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Okta application, go to the Assignments tab. Click Assign and select Assign to People."
+          "content": "In the Okta application, go to the **Assignments** tab. Select **Assign** > **Assign to People**."
         },
         {
           "type": "image",
@@ -191,7 +191,7 @@
         },
         {
           "type": "text",
-          "content": "In the dialog that opens, search for and assign each user who should be provisioned, then click Done."
+          "content": "In the dialog that opens, search for and assign each user who should be provisioned, then select **Done**."
         },
         {
           "type": "image",
@@ -200,7 +200,7 @@
         },
         {
           "type": "text",
-          "content": "For each user, review the profile fields that will be sent over SCIM. Most fields can be left blank — Okta will sync the default profile attributes. Click Save and Go Back."
+          "content": "For each user, review the profile fields that will be sent over SCIM. Most fields can be left blank — Okta will sync the default profile attributes. Select **Save and Go Back**."
         },
         {
           "type": "image",
@@ -209,7 +209,7 @@
         },
         {
           "type": "text",
-          "content": "Now go to the Push Groups tab. Click Push Groups and select Find groups by name. Locate the appropriate group, enable Push group memberships immediately, and click Save. Okta will start pushing users and groups within a few minutes."
+          "content": "Now go to the **Push Groups** tab. Select **Push Groups** > **Find groups by name**. Locate the appropriate group, enable **Push group memberships immediately**, and select **Save**. Okta will start pushing users and groups within a few minutes."
         },
         {
           "type": "image",

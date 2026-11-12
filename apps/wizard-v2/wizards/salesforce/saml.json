@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In Salesforce Setup, navigate to Identity → Identity Provider and click \"Enable Identity Provider\". Accept the default certificate."
+          "content": "In Salesforce Setup, navigate to **Identity** > **Identity Provider** and select **Enable Identity Provider**. Accept the default certificate."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Go to Setup → Apps → App Manager and click \"New Connected App\"."
+          "content": "Go to **Setup** > **Apps** > **App Manager** and select **New Connected App**."
         },
         {
           "type": "image",
@@ -41,7 +41,7 @@
         },
         {
           "type": "text",
-          "content": "Enter a Connected App Name, API Name, and Contact Email in the Basic Information section."
+          "content": "Enter a **Connected App Name**, **API Name**, and **Contact Email** in the **Basic Information** section."
         },
         {
           "type": "image",
@@ -49,7 +49,7 @@
         },
         {
           "type": "text",
-          "content": "Scroll to the Web App Settings section to begin configuring SAML."
+          "content": "Scroll to the **Web App Settings** section to begin configuring SAML."
         },
         {
           "type": "image",
@@ -63,7 +63,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Check \"Enable SAML\" in the Web App Settings section and enter the following service provider values."
+          "content": "Check **Enable SAML** in the **Web App Settings** section and enter the following service provider values."
         },
         {
           "type": "copy",
@@ -89,7 +89,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Save\" to create the Connected App. Salesforce may take a few minutes to provision it."
+          "content": "Select **Save** to create the Connected App. Salesforce may take a few minutes to provision it."
         }
       ]
     },
@@ -100,7 +100,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Return to Setup → Identity → Identity Provider and click \"Download Metadata\". Alternatively, copy the metadata URL directly."
+          "content": "Return to **Setup** > **Identity** > **Identity Provider** and select **Download Metadata**. Alternatively, copy the metadata URL directly."
         },
         {
           "type": "image",
@@ -130,7 +130,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Back in the Connected App, scroll to the Custom Attributes section and click \"New\" to add the following SAML attributes."
+          "content": "Back in the connected app, scroll to the **Custom Attributes** section and select **New** to add the following SAML attributes."
         },
         {
           "type": "attributeTable",
@@ -163,7 +163,7 @@
         },
         {
           "type": "text",
-          "content": "Map each attribute to the corresponding User field (User.Username, User.Email, etc.) and click \"Save\"."
+          "content": "Map each attribute to the corresponding User field (User.Username, User.Email, etc.) and select **Save**."
         },
         {
           "type": "image",
@@ -177,7 +177,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Click \"Manage Profiles\" or \"Manage Permission Sets\" on the Connected App and assign the users who should have access."
+          "content": "Select **Manage Profiles** or **Manage Permission Sets** on the Connected App and assign the users who should have access."
         },
         {
           "type": "image",
@@ -201,7 +201,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

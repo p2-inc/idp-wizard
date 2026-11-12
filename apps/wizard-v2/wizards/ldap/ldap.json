@@ -98,7 +98,7 @@
         {
           "type": "confirm",
           "title": "Create LDAP User Federation",
-          "description": "Configuration is complete. Click the button below to create the LDAP user federation provider in Keycloak and trigger an initial user sync.",
+          "description": "Configuration is complete. Select **Create LDAP User Federation** to create the LDAP user federation provider in Keycloak and trigger an initial user sync.",
           "buttonText": "Create LDAP User Federation",
           "action": "createComponent",
           "adminLink": "",

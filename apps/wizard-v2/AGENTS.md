@@ -256,7 +256,7 @@ Each step has:
 
 Block types:
 
-- `text` — `{ type: "text", content: "..." }`
+- `text` — `{ type: "text", content: "..." }`. Supports `**bold**` and auto-links `http(s)://` URLs (the `confirm` block's `description` does too). Follow the [Microsoft style guide](https://learn.microsoft.com/en-us/style-guide/procedures-instructions/formatting-text-in-instructions) for instructions: bold UI element names instead of quoting them (`Select **Save**`, not `Click the "Save" button`), leave out the element type ("button", "link") unless it's needed for clarity (e.g. an icon-only **+** button), use "select" rather than "click", and write menu paths as `**Settings** > **Authentication**`. Keep labels exactly as the vendor UI shows them.
 - `copy` — copyable value: `{ type: "copy", label: "ACS URL", value: "{{api.ssoUrl}}", hint: "..." }`
 - `formGroup` — renders a tabbed/exclusive set of forms: `{ type: "formGroup", id: "metadataInput", exclusive: true, forms: ["metadataUrl", "metadataFile", "metadataManual"] }`
 - `attributeTable` — two-column mapping display

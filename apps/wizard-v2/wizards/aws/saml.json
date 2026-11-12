@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the AWS SSO Console, select \"Applications\" from the menu. On this page, select the \"Add application\" button."
+          "content": "In the AWS SSO Console, select **Applications** from the menu. On this page, select **Add application**."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Under the \"Setup preference\" section, select \"I have an application I want to set up\"."
+          "content": "Under the **Setup preference** section, select **I have an application I want to set up**."
         },
         {
           "type": "image",
@@ -41,7 +41,7 @@
         },
         {
           "type": "text",
-          "content": "Under the \"Application type\", select \"Saml 2.0\"."
+          "content": "Under **Application type**, select **SAML 2.0**."
         },
         {
           "type": "image",
@@ -49,7 +49,7 @@
         },
         {
           "type": "text",
-          "content": "Click the \"Next\" button to continue to the next step."
+          "content": "Select **Next** to continue to the next step."
         }
       ]
     },
@@ -60,7 +60,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Enter a \"Display Name\" and an optional \"Description\". Click the copy \"Box\" icon next to the \"IAM Identity Center SAML metadata file\" URL, and paste it into the field below. Click \"Validate URL\". This will load the AWS SSO configuration."
+          "content": "Enter a **Display name** and an optional **Description**. Select the copy icon next to the **IAM Identity Center SAML metadata file** URL, and paste the URL into the field below. Select **Validate URL** to load the AWS SSO configuration."
         },
         {
           "type": "image",
@@ -81,7 +81,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Enter the following values into \"Application metadata\"."
+          "content": "Enter the following values into **Application metadata**."
         },
         {
           "type": "copy",
@@ -101,7 +101,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Submit\" to create the application in AWS SSO. You will be sent to the application details page in AWS SSO where you will continue the configuration."
+          "content": "Select **Submit** to create the application in AWS SSO. You will be sent to the application details page in AWS SSO where you will continue the configuration."
         }
       ]
     },
@@ -112,7 +112,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Navigate to the attribute mapping section by opening the \"Actions\" dropdown in the \"Details\" section. Select \"Edit attribute mappings\"."
+          "content": "Navigate to the attribute mapping section by opening the **Actions** menu in the **Details** section. Select **Edit attribute mappings**."
         },
         {
           "type": "image",
@@ -120,7 +120,7 @@
         },
         {
           "type": "text",
-          "content": "In the \"Attribute mappings\" section, provide the following attribute mappings and select \"Save\". Note you may need to click \"+ Add new attribute mapping\" to configure each of the mappings. Format should be set to \"unspecified\" for each of the mappings. When you are finished, click \"Save changes\" before proceeding."
+          "content": "In the **Attribute mappings** section, provide the following attribute mappings. You may need to select **+ Add new attribute mapping** to configure each of the mappings. Set **Format** to **unspecified** for each of the mappings. When you are finished, select **Save changes** before proceeding."
         },
         {
           "type": "attributeTable",
@@ -159,7 +159,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In order for your users to be able to access the application, you must assign users and/or groups. Start by opening the \"Assigned users\" page by selecting \"Assign users\" button."
+          "content": "In order for your users to be able to access the application, you must assign users and/or groups. Start by opening the **Assigned users** page by selecting **Assign users**."
         },
         {
           "type": "image",
@@ -167,7 +167,7 @@
         },
         {
           "type": "text",
-          "content": "You can search for individual users or groups. Select the ones you want"
+          "content": "You can search for individual users or groups. Select the ones you want."
         },
         {
           "type": "image",
@@ -179,7 +179,7 @@
         },
         {
           "type": "text",
-          "content": "Groups are the preferred way to manage user access. Click the \"Done\" button when you have finished adding the desired users or groups."
+          "content": "Groups are the preferred way to manage user access. Select **Done** when you have finished adding the desired users or groups."
         },
         {
           "type": "image",
@@ -195,7 +195,7 @@
         {
           "type": "confirm",
           "title": "",
-          "description": "Configuration is complete. Click the button below to create the identity provider.",
+          "description": "Configuration is complete. Select **Create** to create the identity provider.",
           "buttonText": "Create",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

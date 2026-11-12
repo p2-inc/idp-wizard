@@ -70,7 +70,7 @@
         {
           "type": "confirm",
           "title": "Create Login.gov Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create OIDC Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create OIDC Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

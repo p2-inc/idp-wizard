@@ -77,6 +77,22 @@ async function goToSamlConfirmation(
   await wizard.waitForStep(/Confirmation/i);
 }
 
+test.describe("Instruction text formatting", () => {
+  test("renders **bold** UI labels as <strong> without literal asterisks", async ({
+    page,
+    wizard,
+  }) => {
+    await page.goto("/wizard/auth0/saml");
+    await wizard.waitForStep(/Create a SAML Application/i);
+
+    // "In the Auth0 Dashboard, go to **Applications** and select **Create Application**."
+    await expect(
+      page.locator("strong", { hasText: /^Create Application$/ }),
+    ).toBeVisible();
+    await expect(page.getByText("**", { exact: false })).toHaveCount(0);
+  });
+});
+
 test.describe("SAML wizard — Auth0", () => {
   test.beforeEach(async ({ page }) => {
     // Intercept Keycloak admin API calls

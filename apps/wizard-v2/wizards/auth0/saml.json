@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Auth0 Dashboard, go to Applications and click Create Application."
+          "content": "In the Auth0 Dashboard, go to **Applications** and select **Create Application**."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Give your application a name and pick \"Regular Web Application\" as the type."
+          "content": "Give your application a name and pick **Regular Web Application** as the type."
         },
         {
           "type": "image",
@@ -41,7 +41,7 @@
         },
         {
           "type": "text",
-          "content": "On the application's Addons tab, enable the SAML2 Web App addon."
+          "content": "On the application's **Addons** tab, enable the **SAML2 Web App** addon."
         },
         {
           "type": "image",
@@ -49,7 +49,7 @@
         },
         {
           "type": "text",
-          "content": "In the SAML2 Web App settings, enter the ACS URL below as the Application Callback URL."
+          "content": "In the **SAML2 Web App** settings, enter the ACS URL below as the **Application Callback URL**."
         },
         {
           "type": "copy",
@@ -112,7 +112,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the SAML2 Web App Settings tab in your Auth0 application's Addons page."
+          "content": "Open the **Settings** tab of the **SAML2 Web App** addon in your Auth0 application."
         },
         {
           "type": "image",
@@ -120,7 +120,7 @@
         },
         {
           "type": "text",
-          "content": "Scroll to the Settings section and locate the mappings JSON field."
+          "content": "Scroll to the **Settings** section and locate the mappings JSON field."
         },
         {
           "type": "image",
@@ -179,7 +179,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

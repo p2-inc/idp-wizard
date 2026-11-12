@@ -23,7 +23,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Auth0 Dashboard, create a new Regular Web Application. Note the Domain, Client ID, and Client Secret from the application settings."
+          "content": "In the Auth0 Dashboard, create a new **Regular Web Application**. Note the **Domain**, **Client ID**, and **Client Secret** from the application settings."
         },
         {
           "type": "image",
@@ -64,7 +64,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In your Auth0 application settings, add the following URL to the Allowed Callback URLs."
+          "content": "In your Auth0 application settings, add the following URL to **Allowed Callback URLs**."
         },
         {
           "type": "copy",
@@ -86,7 +86,7 @@
         {
           "type": "confirm",
           "title": "Create Auth0 Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create OIDC Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create OIDC Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the miniOrange admin console, open \"Apps\", click \"Add Application\"."
+          "content": "In the miniOrange admin console, open **Apps** and select **Add Application**."
         },
         {
           "type": "image",
@@ -34,7 +34,7 @@
 
         {
           "type": "text",
-          "content": "Search for SAML and check the \"Show custom apps only\" box. Click the \"Custom SAML App\" tile."
+          "content": "Search for **SAML** and check **Show custom apps only**. Select the **Custom SAML App** tile."
         },
         {
           "type": "image",
@@ -76,7 +76,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the app's \"Metadata\" tab in miniOrange and copy its IdP metadata URL (it may be labeled \"Metadata URL\" or \"IDP Metadata\")."
+          "content": "Open the app's **Metadata** tab in miniOrange and copy its IdP metadata URL (it may be labeled **Metadata URL** or **IDP Metadata**)."
         },
         {
           "type": "image",
@@ -100,7 +100,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the app's \"Attributes\" tab in miniOrange, configure it to send the following SAML attributes."
+          "content": "On the app's **Attributes** tab in miniOrange, configure it to send the following SAML attributes."
         },
         {
           "type": "image",
@@ -141,7 +141,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

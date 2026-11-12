@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In Rippling, navigate to the App Shop and create a custom SAML application. Enter the following service provider details in the SAML settings."
+          "content": "In Rippling, navigate to the **App Shop** and create a custom SAML application. Enter the following service provider details in the SAML settings."
         },
         {
           "type": "copy",
@@ -115,7 +115,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

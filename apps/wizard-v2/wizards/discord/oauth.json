@@ -23,7 +23,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In the Discord Developer Portal, create a new application. Go to OAuth2 → General and add the redirect URL below under Redirects."
+          "content": "In the Discord Developer Portal, create a new application. Go to **OAuth2** > **General** and add the redirect URL below under **Redirects**."
         },
         {
           "type": "copy",
@@ -40,7 +40,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Copy the Client ID from the General Information page and reset/copy the Client Secret from OAuth2 → General. Paste both values below."
+          "content": "Copy the **Client ID** from the **General Information** page and reset/copy the **Client Secret** from **OAuth2** > **General**. Paste both values below."
         },
         {
           "type": "formGroup",
@@ -60,7 +60,7 @@
         {
           "type": "confirm",
           "title": "Create Discord Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create Discord Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create Discord Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkOidc}}",

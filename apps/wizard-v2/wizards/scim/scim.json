@@ -20,7 +20,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Inbound SCIM provisioning is a realm-level feature. Click the button below to check whether your realm administrator has enabled it. If it has not, ask the realm administrator to enable SCIM in the organizations configuration before continuing."
+          "content": "Inbound SCIM provisioning is a realm-level feature. Select **Verify SCIM is enabled** to check whether your realm administrator has enabled it. If it has not, ask the realm administrator to enable SCIM in the organizations configuration before continuing."
         },
         {
           "type": "formGroup",
@@ -37,7 +37,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Pick the authentication scheme the upstream identity provider will use when it pushes SCIM requests to this organization. Most enterprise IdPs (Entra ID, Okta) expect a Bearer token, which corresponds to External Secret below."
+          "content": "Choose the authentication scheme the upstream identity provider will use when it pushes SCIM requests to this organization. Most enterprise IdPs (Entra ID, Okta) expect a Bearer token, which corresponds to **External Secret** below."
         },
         {
           "type": "formGroup",

@@ -35,7 +35,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In Okta, navigate to Directory → Directory Integrations and enable the LDAP Interface. Then enter your Okta LDAP connection details below. Your host will be in the format: your-org.ldap.okta.com"
+          "content": "In Okta, navigate to **Directory** > **Directory Integrations** and enable the LDAP Interface. Then enter your Okta LDAP connection details below. Your host will be in the format: your-org.ldap.okta.com"
         },
         {
           "type": "image",
@@ -82,7 +82,7 @@
         {
           "type": "confirm",
           "title": "Create Okta LDAP User Federation",
-          "description": "Configuration is complete. Click the button below to create the LDAP user federation and trigger an initial user sync.",
+          "description": "Configuration is complete. Select **Create LDAP User Federation** to create the LDAP user federation and trigger an initial user sync.",
           "buttonText": "Create LDAP User Federation",
           "action": "createComponent",
           "adminLink": "",

@@ -22,11 +22,11 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open your GitLab OAuth applications page: https://gitlab.com/oauth/applications (for self-hosted instances, use Admin Area → Applications instead)."
+          "content": "Open your GitLab OAuth applications page: https://gitlab.com/oauth/applications (for self-hosted instances, use **Admin Area** > **Applications** instead)."
         },
         {
           "type": "text",
-          "content": "Create a new application with the 'openid', 'profile', and 'email' scopes. Use the redirect URI below."
+          "content": "Create a new application with the **openid**, **profile**, and **email** scopes. Use the redirect URI below."
         },
         {
           "type": "copy",
@@ -43,7 +43,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "After saving the application, copy the Application ID and Secret and paste them below."
+          "content": "After saving the application, copy the **Application ID** and **Secret** and paste them below."
         },
         {
           "type": "formGroup",
@@ -63,7 +63,7 @@
         {
           "type": "confirm",
           "title": "Create GitLab Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create GitLab Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create GitLab Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSocial}}",

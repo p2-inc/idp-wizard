@@ -25,7 +25,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Sign in to the JumpCloud admin console and navigate to Access → SSO Applications in the left sidebar."
+          "content": "Sign in to the JumpCloud admin console and navigate to **Access** > **SSO Applications** in the left sidebar."
         },
         {
           "type": "image",
@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "Click the \"+ Add New Application\" button at the top of the page."
+          "content": "Select **+ Add New Application** at the top of the page."
         },
         {
           "type": "image",
@@ -41,7 +41,7 @@
         },
         {
           "type": "text",
-          "content": "Pick \"Custom Application\", then on the \"Select the features you would like to enable\" screen, check \"Manage Single Sign-On (SSO)\" and choose \"Configure SSO with SAML\"."
+          "content": "Choose **Custom Application**, then on the **Select the features you would like to enable** screen, check **Manage Single Sign-On (SSO)** and choose **Configure SSO with SAML**."
         },
         {
           "type": "image",
@@ -55,7 +55,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the \"SSO\" tab and enter the following service provider values."
+          "content": "Open the **SSO** tab and enter the following service provider values."
         },
         {
           "type": "copy",
@@ -81,7 +81,7 @@
         },
         {
           "type": "text",
-          "content": "Under the \"Sign\" section, expand it and check the \"Assertion\" sub-option to sign the SAML assertion."
+          "content": "Under the **Sign** section, expand it and check the **Assertion** sub-option to sign the SAML assertion."
         },
         {
           "type": "image",
@@ -89,7 +89,7 @@
         },
         {
           "type": "text",
-          "content": "Scroll down and click \"Activate\" to save the application."
+          "content": "Scroll down and select **Activate** to save the application."
         },
         {
           "type": "image",
@@ -104,7 +104,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the application in JumpCloud, switch to the \"SSO\" tab, and click \"Export Metadata\" to download the JumpCloud IdP metadata XML."
+          "content": "Open the application in JumpCloud, switch to the **SSO** tab, and select **Export Metadata** to download the JumpCloud IdP metadata XML."
         },
         {
           "type": "image",
@@ -130,7 +130,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Back in the JumpCloud application, scroll to the \"Attributes\" section in the SSO tab and click \"add attribute\" for each mapping."
+          "content": "Back in the JumpCloud application, scroll to the **Attributes** section on the **SSO** tab and select **add attribute** for each mapping."
         },
         {
           "type": "image",
@@ -177,7 +177,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Switch to the \"User Groups\" tab and select the groups that should have access to this application."
+          "content": "Switch to the **User Groups** tab and select the groups that should have access to this application."
         },
         {
           "type": "image",
@@ -185,7 +185,7 @@
         },
         {
           "type": "text",
-          "content": "Alternatively, open the \"Users\" tab and assign individual users."
+          "content": "Alternatively, open the **Users** tab and assign individual users."
         },
         {
           "type": "image",
@@ -193,7 +193,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Save\" to confirm the assignments."
+          "content": "Select **Save** to confirm the assignments."
         },
         {
           "type": "image",
@@ -209,7 +209,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",

@@ -20,7 +20,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Inbound SCIM provisioning is a realm-level feature. Click the button below to confirm your realm administrator has enabled it. If not, ask the admin to enable SCIM in the organizations configuration."
+          "content": "Inbound SCIM provisioning is a realm-level feature. Select **Verify SCIM is enabled** to confirm your realm administrator has enabled it. If not, ask the admin to enable SCIM in the organizations configuration."
         },
         {
           "type": "formGroup",
@@ -40,7 +40,7 @@
         },
         {
           "type": "text",
-          "content": "In the left navigation menu, expand the Entra ID section and select the Enterprise applications tab. Click New application."
+          "content": "In the left navigation menu, expand the **Entra ID** section and select **Enterprise applications**. Select **New application**."
         },
         {
           "type": "image",
@@ -49,7 +49,7 @@
         },
         {
           "type": "text",
-          "content": "On the Browse Microsoft Entra App Gallery page, click Create your own application. Enter a descriptive app name (for example, the name of the realm being provisioned). Select Integrate any other application you don't find in the gallery (Non-gallery) and click Create."
+          "content": "On the **Browse Microsoft Entra App Gallery** page, select **Create your own application**. Enter a descriptive app name (for example, the name of the realm being provisioned). Select **Integrate any other application you don't find in the gallery (Non-gallery)** and select **Create**."
         },
         {
           "type": "image",
@@ -58,7 +58,7 @@
         },
         {
           "type": "text",
-          "content": "Your new application now appears in the Enterprise applications list."
+          "content": "Your new application now appears in the **Enterprise applications** list."
         },
         {
           "type": "image",
@@ -74,7 +74,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Click the button below. The wizard generates a high-entropy Bearer token and writes the SCIM configuration to this organization. The token is shown on the next step — copy it before leaving."
+          "content": "Select **Generate token and configure**. The wizard generates a high-entropy Bearer token and writes the SCIM configuration to this organization. The token is shown on the next step — copy it before leaving."
         },
         {
           "type": "formGroup",
@@ -90,7 +90,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open your application in the Entra admin center. In the left navigation under Manage, select Provisioning."
+          "content": "Open your application in the Entra admin center. In the left navigation under **Manage**, select **Provisioning**."
         },
         {
           "type": "image",
@@ -99,7 +99,7 @@
         },
         {
           "type": "text",
-          "content": "On the Get started page, click Connect your application."
+          "content": "On the **Get started** page, select **Connect your application**."
         },
         {
           "type": "image",
@@ -108,7 +108,7 @@
         },
         {
           "type": "text",
-          "content": "Under Admin credentials, ensure the authentication method is set to Bearer authentication. Paste the values below into the Tenant URL and Secret token fields, then click Test connection."
+          "content": "Under **Admin credentials**, ensure the authentication method is set to **Bearer authentication**. Paste the values below into **Tenant URL** and **Secret token**, then select **Test connection**."
         },
         {
           "type": "copy",
@@ -130,7 +130,7 @@
         },
         {
           "type": "text",
-          "content": "Once the connection test succeeds, click Create to save the configuration."
+          "content": "Once the connection test succeeds, select **Create** to save the configuration."
         }
       ]
     },
@@ -140,7 +140,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "On the Provisioning tab, expand the Mappings section. You'll see two mappings: Provision Microsoft Entra ID Groups and Provision Microsoft Entra ID Users."
+          "content": "On the **Provisioning** tab, expand the **Mappings** section. You'll see two mappings: **Provision Microsoft Entra ID Groups** and **Provision Microsoft Entra ID Users**."
         },
         {
           "type": "image",
@@ -149,7 +149,7 @@
         },
         {
           "type": "text",
-          "content": "Click Provision Microsoft Entra ID Users to open the Attribute Mapping editor."
+          "content": "Select **Provision Microsoft Entra ID Users** to open the attribute mapping editor."
         },
         {
           "type": "image",
@@ -158,7 +158,7 @@
         },
         {
           "type": "text",
-          "content": "Confirm Enabled is Yes, and that Target Object Actions has Create, Update, and Delete all checked."
+          "content": "Confirm **Enabled** is **Yes**, and that **Target Object Actions** has **Create**, **Update**, and **Delete** all checked."
         },
         {
           "type": "image",
@@ -167,7 +167,7 @@
         },
         {
           "type": "text",
-          "content": "Scroll down to the externalId mapping. If it is not already mapped to objectId, click Edit, then select objectId from the Source attribute dropdown and click Ok."
+          "content": "Scroll down to the **externalId** mapping. If it is not already mapped to **objectId**, select **Edit**, choose **objectId** from the **Source attribute** list, and then select **Ok**."
         },
         {
           "type": "image",
@@ -176,7 +176,7 @@
         },
         {
           "type": "text",
-          "content": "Click Save at the top, then Yes in the Save changes dialog to confirm."
+          "content": "Select **Save** at the top, then **Yes** in the **Save changes** dialog to confirm."
         },
         {
           "type": "image",
@@ -214,7 +214,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "In your Entra application, go to Users and groups and click Add user/group."
+          "content": "In your Entra application, go to **Users and groups** and select **Add user/group**."
         },
         {
           "type": "image",
@@ -223,7 +223,7 @@
         },
         {
           "type": "text",
-          "content": "On the Add Assignment screen, click None Selected under Users."
+          "content": "On the **Add Assignment** screen, select **None Selected** under **Users**."
         },
         {
           "type": "image",
@@ -232,7 +232,7 @@
         },
         {
           "type": "text",
-          "content": "Search for and select each user who should be provisioned. Click Select."
+          "content": "Search for and select each user who should be provisioned, then choose **Select**."
         },
         {
           "type": "image",
@@ -241,7 +241,7 @@
         },
         {
           "type": "text",
-          "content": "When finished, click Assign."
+          "content": "When finished, select **Assign**."
         },
         {
           "type": "image",
@@ -250,7 +250,7 @@
         },
         {
           "type": "text",
-          "content": "Return to the Provisioning tab. Under Settings, set Scope to Sync only assigned users and groups, then toggle Provisioning Status to On. Entra will start pushing users within a few minutes."
+          "content": "Return to the **Provisioning** tab. Under **Settings**, set **Scope** to **Sync only assigned users and groups**, then set **Provisioning Status** to **On**. Entra will start pushing users within a few minutes."
         },
         {
           "type": "image",

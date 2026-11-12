@@ -33,7 +33,7 @@
         },
         {
           "type": "text",
-          "content": "In the navigation menu, select \"Applications\"."
+          "content": "In the navigation menu, select **Applications**."
         },
         {
           "type": "image",
@@ -41,7 +41,7 @@
         },
         {
           "type": "text",
-          "content": "Click \"Add\" to open the application catalog."
+          "content": "Select **Add** to open the application catalog."
         },
         {
           "type": "image",
@@ -49,7 +49,7 @@
         },
         {
           "type": "text",
-          "content": "Select \"SAML Application\" as the application type."
+          "content": "Select **SAML Application** as the application type."
         },
         {
           "type": "image",
@@ -64,7 +64,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Enter a name and description for the application on the Details tab, then save and activate it."
+          "content": "Enter a name and description for the application on the **Details** tab, then save and activate it."
         },
         {
           "type": "image",
@@ -72,7 +72,7 @@
         },
         {
           "type": "text",
-          "content": "From the application page, click \"Download Identity Provider Metadata\" to save the IdP metadata XML file."
+          "content": "From the application page, select **Download Identity Provider Metadata** to save the IdP metadata XML file."
         },
         {
           "type": "image",
@@ -98,7 +98,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Back in the Oracle IdCS application, open the \"SSO Configuration\" tab and expand the \"Service Provider Configuration\" section."
+          "content": "Back in the Oracle IdCS application, open the **SSO Configuration** tab and expand the **Service Provider Configuration** section."
         },
         {
           "type": "image",
@@ -106,7 +106,7 @@
         },
         {
           "type": "text",
-          "content": "Enter the following values into the Service Provider fields."
+          "content": "Enter the following values into the **Service Provider Configuration** fields."
         },
         {
           "type": "copy",
@@ -138,7 +138,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Still on the SSO Configuration page, expand the \"Attribute Configuration\" section."
+          "content": "Still on the **SSO Configuration** tab, expand the **Attribute Configuration** section."
         },
         {
           "type": "image",
@@ -146,7 +146,7 @@
         },
         {
           "type": "text",
-          "content": "Add the following attribute mappings so Oracle IdCS sends user attributes in the SAML assertion. Click \"Save\" when done."
+          "content": "Add the following attribute mappings so Oracle IdCS sends user attributes in the SAML assertion. Select **Save** when done."
         },
         {
           "type": "attributeTable",
@@ -185,7 +185,7 @@
       "blocks": [
         {
           "type": "text",
-          "content": "Open the \"Application Roles\" tab and grant access to the users or groups who should be able to sign in."
+          "content": "Open the **Application Roles** tab and grant access to the users or groups who should be able to sign in."
         },
         {
           "type": "image",
@@ -209,7 +209,7 @@
         {
           "type": "confirm",
           "title": "Create SAML Identity Provider",
-          "description": "Configuration is complete. Click the button below to create the identity provider in Keycloak.",
+          "description": "Configuration is complete. Select **Create SAML Identity Provider** to create the identity provider in Keycloak.",
           "buttonText": "Create SAML Identity Provider",
           "action": "createIdp",
           "adminLink": "{{api.adminLinkSaml}}",
