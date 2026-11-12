@@ -459,7 +459,10 @@ test.describe("Generic SAML wizard", () => {
     // The generic SAML row is named "SAML" under the "Generic" heading; anchor
     // the match so provider rows that merely carry a "saml" badge don't match.
     await providerSelector.selectProvider(/^SAML\b/);
-    await expect(page).toHaveURL(/\/wizard\/saml\/saml/);
+    // Generic SAML offers SP- and IdP-initiated setup, so the picker shows first.
+    await expect(page).toHaveURL(/\/wizard\/saml(\?|$)/);
+    await wizard.selectProtocol(/^SAML Security Assertion/i);
+    await expect(page).toHaveURL(/\/wizard\/saml\/saml(\?|$)/);
     await wizard.waitForStep(/.+/); // any step title = wizard rendered
   });
 });
@@ -553,6 +556,7 @@ test.describe("all providers load their wizards", () => {
     { id: "oracle", protocol: "saml" },
     { id: "pingone", protocol: "saml" },
     { id: "saml", protocol: "saml" },
+    { id: "saml", protocol: "saml-idp-initiated" },
     { id: "openid", protocol: "oidc" },
     { id: "ldap", protocol: "ldap" },
   ];

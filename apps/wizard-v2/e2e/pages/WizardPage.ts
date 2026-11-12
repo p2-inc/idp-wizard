@@ -36,8 +36,9 @@ export class WizardPage {
   // ── Protocol picker ─────────────────────────────────────────────────────
 
   /** Select a protocol from the protocol picker page. */
-  async selectProtocol(protocol: "saml" | "oidc" | "ldap") {
-    await this.page.getByRole("button", { name: new RegExp(protocol, "i") }).click();
+  async selectProtocol(protocol: "saml" | "oidc" | "ldap" | RegExp) {
+    const name = protocol instanceof RegExp ? protocol : new RegExp(protocol, "i");
+    await this.page.getByRole("button", { name }).click();
   }
 
   // ── Step navigation ──────────────────────────────────────────────────────

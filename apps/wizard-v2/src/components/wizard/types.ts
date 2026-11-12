@@ -193,6 +193,12 @@ export interface SaveFormAction {
   type: "saveForm";
   dispatch?: string[];
   fields: string[];
+  /**
+   * Extra values written to state.formValues, resolved as templates against
+   * the submitted form (`{{form.fieldId}}`). Lets each form of an exclusive
+   * group write the same keys, so switching forms replaces earlier values.
+   */
+  set?: Record<string, string>;
 }
 
 /**

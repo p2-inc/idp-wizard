@@ -25,7 +25,7 @@ import type {
 import { wizardReducer } from "@/context/WizardContext";
 import type { OrgsClient, AdminClient } from "@/api/clients";
 import type { WizardConfig } from "@/hooks/useWizardConfig";
-import { resolveValue, buildTemplateContext } from "./resolveTemplate";
+import { resolveValue, resolveTemplate, buildTemplateContext } from "./resolveTemplate";
 import { clearAlias } from "@/lib/alias";
 import { resolveIdpTestLink } from "@/lib/idp-test-link";
 import { fetchWithAuth } from "@/oidc";
@@ -364,6 +364,21 @@ export async function executeAction(
   // --- saveForm ----------------------------------------------------------
   if ("type" in action && action.type === "saveForm") {
     const saveAction = action as SaveFormAction;
+
+    if (saveAction.set) {
+      const ctx = buildTemplateContext({
+        alias: currentState.alias,
+        api: params.api,
+        idpProviderId: params.idpProviderId,
+        state: currentState,
+        formValues: currentState.formValues,
+      });
+      const values: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(saveAction.set)) {
+        values[k] = resolveTemplate(v, ctx);
+      }
+      localDispatch({ type: "SAVE_FORM_VALUES", values });
+    }
 
     if (saveAction.dispatch) {
       for (const d of saveAction.dispatch) {
