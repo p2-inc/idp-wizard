@@ -26,7 +26,13 @@ export function buildTestLoginUrl(params: {
   redirectUri: string;
 }): string {
   const { serverUrl, realm, alias, redirectUri } = params;
-  const url = new URL(`${serverUrl}/realms/${realm}/protocol/openid-connect/auth`);
+  // Resolve against the page so an empty serverUrl (mock mode) yields a
+  // same-origin URL, matching how the API endpoints resolve, instead of
+  // throwing "Invalid URL".
+  const url = new URL(
+    `${serverUrl}/realms/${realm}/protocol/openid-connect/auth`,
+    window.location.href,
+  );
   url.searchParams.set("client_id", TESTER_CLIENT_ID);
   url.searchParams.set("redirect_uri", redirectUri);
   url.searchParams.set("response_type", "code");
@@ -42,16 +48,21 @@ export function isValidationPending(idp: unknown): boolean {
   return String(config?.[VALIDATION_PENDING_KEY]) === "true";
 }
 
+/**
+ * Returns the test-login link when the new IdP is pending validation.
+ * Best effort: any failure (including building the link) yields undefined,
+ * so it can never turn a successful IdP creation into an error.
+ */
 export async function resolveIdpTestLink(params: {
   getIdpUrl: string;
-  testLoginUrl: string;
+  testLoginUrl: () => string;
 }): Promise<string | undefined> {
   try {
     const res = await fetchWithAuth(params.getIdpUrl, {
       headers: { Accept: "application/json" },
     });
     if (!res.ok) return undefined;
-    return isValidationPending(await res.json()) ? params.testLoginUrl : undefined;
+    return isValidationPending(await res.json()) ? params.testLoginUrl() : undefined;
   } catch {
     return undefined;
   }

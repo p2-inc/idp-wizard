@@ -122,6 +122,33 @@ test.describe("SAML wizard — Auth0", () => {
     await wizard.waitForSuccess(/SAML Identity Provider created successfully/i);
   });
 
+  test("offers a test-login link when the new IdP is pending validation", async ({
+    page,
+    wizard,
+  }) => {
+    // GET of the created IdP reports it as awaiting validation
+    await page.route(/\/identity-provider\/instances\/[^/]+$/, (route) =>
+      route.request().method() === "GET"
+        ? route.fulfill({
+            json: {
+              alias: "test-alias",
+              config: { "home.idp.discovery.validationPending": "true" },
+            },
+          })
+        : route.fallback(),
+    );
+    await goToSamlConfirmation(page, wizard);
+    await wizard.confirm(/Create SAML Identity Provider/i);
+    await wizard.waitForSuccess(/SAML Identity Provider created successfully/i);
+
+    const link = page.getByRole("link", { name: /Test your login/i });
+    await expect(link).toBeVisible();
+    const href = new URL((await link.getAttribute("href"))!);
+    expect(href.pathname).toMatch(/\/protocol\/openid-connect\/auth$/);
+    expect(href.searchParams.get("client_id")).toBe("idp-tester");
+    expect(href.searchParams.get("kc_idp_hint")).toMatch(/^auth0-saml-/);
+  });
+
   test("defaults the IdP display name to the wizard title", async ({
     page,
     wizard,
