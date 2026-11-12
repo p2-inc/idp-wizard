@@ -110,7 +110,7 @@
       "contentType": "json",
       "body": {
         "alias": "{{alias}}",
-        "displayName": "{{alias}}",
+        "displayName": "{{displayName}}",
         "providerId": "gitlab",
         "hideOnLogin": true,
         "config": {

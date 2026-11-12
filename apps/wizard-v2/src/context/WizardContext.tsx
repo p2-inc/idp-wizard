@@ -64,6 +64,12 @@ export interface WizardContextValue {
 export interface WizardState {
   [key: string]: unknown;
   alias: string;
+  /**
+   * Human-readable name for the identity provider, sent as `displayName` on
+   * creation via the `{{displayName}}` template. Seeded from the wizard
+   * definition's `title` and editable on the confirmation step.
+   */
+  displayName: string;
   currentStep: number;
   stepIdReached: number;
   /** Raw IDP config returned from the import-config endpoint */
@@ -90,6 +96,7 @@ export interface WizardState {
 export type WizardAction =
   | { type: "ADVANCE_STEP"; toStep: number }
   | { type: "SET_METADATA"; metadata: Record<string, unknown> }
+  | { type: "SET_DISPLAY_NAME"; displayName: string }
   | { type: "METADATA_VALIDATED" }
   | { type: "CREDENTIALS_PROVIDED" }
   | { type: "CONNECTION_TESTED" }
@@ -114,6 +121,8 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       };
     case "SET_METADATA":
       return { ...state, metadata: action.metadata };
+    case "SET_DISPLAY_NAME":
+      return { ...state, displayName: action.displayName };
     case "METADATA_VALIDATED":
       return { ...state, metadataValidated: true };
     case "CREDENTIALS_PROVIDED":
@@ -171,6 +180,7 @@ export function isWizardDirty(state: WizardState): boolean {
 export function makeInitialWizardState(alias: string): WizardState {
   return {
     alias,
+    displayName: "",
     currentStep: 1,
     stepIdReached: 1,
     metadata: null,

@@ -107,7 +107,7 @@ Each wizard JSON has four top-level keys:
 | `actions` | Named action definitions (HTTP calls, alias cleanup) invoked on form submit or confirm                                 |
 | `alias`   | Alias configuration — `sessionKey` for sessionStorage, `prefix` for generated alias strings                            |
 
-Template tokens in JSON values (`{{api.entityId}}`, `{{form.fieldId}}`, `{{state.metadata}}`, `{{alias}}`, `{{item.*}}`) are resolved at runtime from the wizard context.
+Template tokens in JSON values (`{{api.entityId}}`, `{{form.fieldId}}`, `{{state.metadata}}`, `{{alias}}`, `{{displayName}}`, `{{item.*}}`) are resolved at runtime from the wizard context.
 
 ## API clients
 
@@ -302,6 +302,14 @@ pnpm test:integration
 pnpm test:external
 ```
 
+#### Running several checkouts at once
+
+Mock mode doesn't use the default Vite port 5173. It derives a stable port (20000–29999) from the checkout path, so several worktrees can run `pnpm test:e2e` at the same time without colliding, and each one reuses only its own dev server. Set `E2E_PORT` to choose a port explicitly. Integration mode stays on 5173, because the Keycloak realm's redirect URI and CORS origin are pinned to it, so only one checkout at a time can run integration tests.
+
+#### Browsers and Ubuntu 26.04
+
+Install the browser once with `pnpm exec playwright install chromium --only-shell`. Playwright 1.65 is the first release that supports Ubuntu 26.04 natively, and 1.63+ installs cleanly under Node 26. With Playwright ≤ 1.59, the install hangs while extracting under Node 26 and is refused outright on Ubuntu 26.04. Older checkouts needed two workarounds: `PLAYWRIGHT_HOST_PLATFORM_OVERRIDE=ubuntu24.04-x64` and running the install with Node 22. Once every checkout and branch on a machine is on 1.65+, drop both workarounds and any installer wrappers that apply them.
+
 ### Test modes
 
 #### Mock mode (default)
@@ -426,7 +434,7 @@ In CI (`CI=true`), the web server is always started fresh, tests are retried up 
 pnpm build
 ```
 
-Output goes to `dist/`. When wizard-v2 is ready for production, the root `pom.xml` `workingDirectory` will be updated to `apps/wizard-v2` and `mvn package` will bundle it into the Keycloak JAR.
+Output goes to `dist/`. The root `mvn package` runs this build and bundles the output into the Keycloak JAR alongside wizard-v1 (see below).
 
 ## Choosing between wizard-v1 and wizard-v2
 
@@ -439,7 +447,7 @@ Selection is most specific first:
 
 1. `_providerConfig.wizard.version` realm attribute (`v1` or `v2`);
 2. `--spi-realm-restapi-extension-wizard-default-version`;
-3. the built-in default, `v1`.
+3. the built-in default, `v2`.
 
 Because the route (`/realms/{realm}/wizard`), the `idp-wizard` client, and its redirect
 URIs are identical for both, moving a realm between versions is an attribute change — no
@@ -447,11 +455,10 @@ redeploy, no client edits, and rollback is unsetting the attribute.
 
 ### Staging the default
 
-`DEFAULT_VERSION` in `WizardResourceProviderFactory` is a single constant, currently
-`VERSION_V1`: the whole mechanism ships as a behavioural no-op, so the plumbing can be
-proven by opt-in realms (or a server-wide SPI override) before it changes what everyone
-else gets. Flipping it to `VERSION_V2` is then the only change in the release that makes
-v2 the default.
+`DEFAULT_VERSION` in `WizardResourceProviderFactory` is a single constant. It shipped as
+`VERSION_V1` while v2 was proven on opt-in realms, and is now `VERSION_V2`. Realms that
+need the old wizard set `_providerConfig.wizard.version` to `v1`; a whole server can be
+kept on v1 with `--spi-realm-restapi-extension-wizard-default-version=v1`.
 
 ### What differs between the two
 

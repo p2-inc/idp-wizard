@@ -1,6 +1,8 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures/test";
+import type { WizardPage } from "./pages/WizardPage";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -55,6 +57,26 @@ const MOCK_LDAP_CONNECTION_OK = { result: "Success" };
 
 // ── SAML wizard ─────────────────────────────────────────────────────────────
 
+/** Walks the Auth0 SAML wizard up to (but not through) the confirmation step. */
+async function goToSamlConfirmation(
+  page: import("@playwright/test").Page,
+  wizard: import("./pages/WizardPage").WizardPage,
+) {
+  await page.goto("/wizard/auth0/saml");
+  await wizard.waitForStep(/Create a SAML Application/i);
+  await wizard.clickNext();
+  await wizard.waitForStep(/Upload Identity Provider Metadata/i);
+  await wizard.uploadFile(/Metadata File/i, SAML_METADATA_FILE);
+  await wizard.submitForm(/Validate File/i);
+  await expect(wizard.nextButton).toBeEnabled({ timeout: 5_000 });
+  await wizard.clickNext();
+  await wizard.waitForStep(/Configure Attribute Mapping/i);
+  await wizard.clickNext();
+  await wizard.waitForStep(/Configure User Access/i);
+  await wizard.clickNext();
+  await wizard.waitForStep(/Confirmation/i);
+}
+
 test.describe("SAML wizard — Auth0", () => {
   test.beforeEach(async ({ page }) => {
     // Intercept Keycloak admin API calls
@@ -100,6 +122,58 @@ test.describe("SAML wizard — Auth0", () => {
     await wizard.waitForSuccess(/SAML Identity Provider created successfully/i);
   });
 
+  test("defaults the IdP display name to the wizard title", async ({
+    page,
+    wizard,
+  }) => {
+    await goToSamlConfirmation(page, wizard);
+
+    const displayName = page.getByLabel("Display name");
+    await expect(displayName).toHaveValue("Auth0 SAML");
+
+    const createRequest = page.waitForRequest(
+      (req) =>
+        req.method() === "POST" &&
+        /\/identity-provider\/instances$/.test(new URL(req.url()).pathname),
+    );
+    await wizard.confirm(/Create SAML Identity Provider/i);
+    const body = (await createRequest).postDataJSON();
+    expect(body.displayName).toBe("Auth0 SAML");
+    expect(body.alias).toMatch(/^auth0-saml-/);
+    await wizard.waitForSuccess(/SAML Identity Provider created successfully/i);
+    await expect(displayName).toBeDisabled();
+  });
+
+  test("sends an edited display name, falling back to the alias when blank", async ({
+    page,
+    wizard,
+  }) => {
+    await goToSamlConfirmation(page, wizard);
+
+    const displayName = page.getByLabel("Display name");
+    await displayName.fill("  Acme Okta SSO  ");
+    let createRequest = page.waitForRequest((req) =>
+      /\/identity-provider\/instances$/.test(new URL(req.url()).pathname),
+    );
+    await page.route("**/identity-provider/instances", (route) =>
+      route.fulfill({ status: 409, json: {} }),
+    );
+    await wizard.confirm(/Create SAML Identity Provider/i);
+    expect((await createRequest).postDataJSON().displayName).toBe(
+      "Acme Okta SSO",
+    );
+
+    // Creation failed, so the field is still editable; a blank value must not
+    // produce an IdP with an empty name.
+    await displayName.fill("");
+    createRequest = page.waitForRequest((req) =>
+      /\/identity-provider\/instances$/.test(new URL(req.url()).pathname),
+    );
+    await wizard.confirm(/Create SAML Identity Provider/i);
+    const body = (await createRequest).postDataJSON();
+    expect(body.displayName).toBe(body.alias);
+  });
+
   test("back navigation returns to previous step", async ({ page, wizard }) => {
     await page.goto("/wizard/auth0/saml");
     await wizard.waitForStep(/Create a SAML Application/i);
@@ -118,6 +192,77 @@ test.describe("SAML wizard — Auth0", () => {
     await wizard.waitForStep(/Upload Identity Provider Metadata/i);
     // Next should be disabled or absent before validation
     await expect(wizard.nextButton).toBeDisabled();
+  });
+});
+
+// ── Metadata validation errors ──────────────────────────────────────────────
+
+test.describe("SAML metadata validation errors — Auth0", () => {
+  async function validateWith(
+    page: Page,
+    wizard: WizardPage,
+  ) {
+    await page.goto("/wizard/auth0/saml");
+    await wizard.waitForStep(/Create a SAML Application/i);
+    await wizard.clickNext();
+    await wizard.waitForStep(/Upload Identity Provider Metadata/i);
+    await wizard.uploadFile(/Metadata File/i, SAML_METADATA_FILE);
+    await wizard.submitForm(/Validate File/i);
+  }
+
+  test("403 shows a permission error instead of the file hint", async ({
+    page,
+    wizard,
+  }) => {
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.fulfill({ status: 403, json: { error: "unknown_error" } })
+    );
+    await validateWith(page, wizard);
+    await expect(
+      page.getByText(
+        /don't have permission to manage identity providers for this realm/i
+      )
+    ).toBeVisible();
+    await expect(page.getByText(/manage-identity-providers/)).toBeVisible();
+    await expect(page.getByText(/Check the file/i)).toHaveCount(0);
+    await expect(wizard.nextButton).toBeDisabled();
+  });
+
+  test("4xx with a server message shows that message", async ({
+    page,
+    wizard,
+  }) => {
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.fulfill({
+        status: 400,
+        json: { errorMessage: "Invalid SAML metadata: missing IDPSSODescriptor" },
+      })
+    );
+    await validateWith(page, wizard);
+    await expect(
+      page.getByText("Invalid SAML metadata: missing IDPSSODescriptor")
+    ).toBeVisible();
+  });
+
+  test("5xx falls back to the wizard's error message", async ({
+    page,
+    wizard,
+  }) => {
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.fulfill({ status: 500, body: "<html>Internal error</html>" })
+    );
+    await validateWith(page, wizard);
+    await expect(
+      page.getByText("Validation failed. Check the file and try again.")
+    ).toBeVisible();
+  });
+
+  test("network failure shows a retry message", async ({ page, wizard }) => {
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.abort("connectionrefused")
+    );
+    await validateWith(page, wizard);
+    await expect(page.getByText(/Could not reach the server/i)).toBeVisible();
   });
 });
 
