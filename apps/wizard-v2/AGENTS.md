@@ -152,6 +152,13 @@ The `apiMode` can also be set via the realm config (`config.apiMode` from `useWi
 
 Both endpoint sets are fully typed via the generated OpenAPI clients.
 
+**Org picker** (provider selector, `src/lib/org-access.ts`):
+
+- Lists orgs from the token's `organizations` claim where the user holds all of `REQUIRED_ORG_ROLES`.
+- Offers **Global (realm-wide)** only when the user holds `view-identity-providers` and `manage-identity-providers` on `realm-management` (or `{targetRealm}-realm` for master-realm users), read from `resource_access` in the access or ID token (`useRealmIdpAccess`).
+- Without those roles: a single eligible org is selected by default (`?org_id=` is set), and with several, picking a provider before an org opens the picker.
+- In mock-OIDC mode, e2e tests set token claims through `window.__WIZARD_MOCK_ID_TOKEN__` (see `e2e/org-picker.spec.ts`).
+
 ---
 
 ## API clients

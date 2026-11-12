@@ -30,6 +30,9 @@ export function initOidc(config: RuntimeConfig): Promise<void> {
             preferred_username: "wizard",
             email: "wizard@example.com",
             organizations: {} as Record<string, unknown>,
+            // E2E tests set this (via page.addInitScript) to mock org / role claims.
+            ...(window as { __WIZARD_MOCK_ID_TOKEN__?: Record<string, unknown> })
+              .__WIZARD_MOCK_ID_TOKEN__,
           },
         }
       : {
