@@ -22,6 +22,11 @@ export interface DescribeHttpErrorParams {
    * message so the admin knows what to ask for.
    */
   requiredRole?: string;
+  /**
+   * Message for a 409 Conflict, when the action has a more helpful one than
+   * the server's text (e.g. creating an IdP whose alias is already taken).
+   */
+  conflictMessage?: string;
 }
 
 export const NETWORK_ERROR_MESSAGE =
@@ -59,6 +64,7 @@ export function describeHttpError({
   fallback,
   scope,
   requiredRole,
+  conflictMessage,
 }: DescribeHttpErrorParams): string {
   if (status === 401 || status === 403) {
     const base =
@@ -70,10 +76,21 @@ export function describeHttpError({
       : base;
   }
 
+  if (status === 409 && conflictMessage) return conflictMessage;
+
   if (status >= 400 && status < 500) {
     const serverMessage = extractServerMessage(data);
     if (serverMessage) return serverMessage;
   }
 
   return fallback ?? `Action failed (HTTP ${status})`;
+}
+
+/** Shown when creating an IdP returns 409 (its alias is already taken). */
+export function idpConflictMessage(scope: ErrorScope): string {
+  return (
+    `An identity provider with this alias already exists in this ${scope}. ` +
+    "It may have been created by an earlier attempt. Check the identity " +
+    "providers list before trying again."
+  );
 }

@@ -266,6 +266,68 @@ test.describe("SAML metadata validation errors — Auth0", () => {
   });
 });
 
+// ── IdP creation errors ─────────────────────────────────────────────────────
+
+test.describe("SAML IdP creation errors — Auth0", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/identity-provider/import-config", (route) =>
+      route.fulfill({ json: MOCK_SAML_IMPORT_CONFIG })
+    );
+  });
+
+  test("409 says the identity provider already exists", async ({
+    page,
+    wizard,
+  }) => {
+    await page.route("**/identity-provider/instances", (route) =>
+      route.fulfill({
+        status: 409,
+        json: { errorMessage: "Identity Provider auth0-saml-x already exists" },
+      })
+    );
+    await goToSamlConfirmation(page, wizard);
+    await wizard.confirm(/Create SAML Identity Provider/i);
+    await expect(
+      page.getByText(
+        /identity provider with this alias already exists in this realm/i
+      )
+    ).toBeVisible();
+    await expect(page.getByText(/permission/i)).toHaveCount(0);
+  });
+
+  test("403 shows a permission error, not an already-exists error", async ({
+    page,
+    wizard,
+  }) => {
+    await page.route("**/identity-provider/instances", (route) =>
+      route.fulfill({ status: 403, json: { error: "HTTP 403 Forbidden" } })
+    );
+    await goToSamlConfirmation(page, wizard);
+    await wizard.confirm(/Create SAML Identity Provider/i);
+    await expect(
+      page.getByText(
+        /don't have permission to manage identity providers for this realm/i
+      )
+    ).toBeVisible();
+    await expect(page.getByText(/already/i)).toHaveCount(0);
+  });
+
+  test("5xx falls back to the wizard's error message", async ({
+    page,
+    wizard,
+  }) => {
+    await page.route("**/identity-provider/instances", (route) =>
+      route.fulfill({ status: 500, body: "<html>Internal error</html>" })
+    );
+    await goToSamlConfirmation(page, wizard);
+    await wizard.confirm(/Create SAML Identity Provider/i);
+    await expect(
+      page.getByText("Error creating Identity Provider. Please try again.")
+    ).toBeVisible();
+    await expect(page.getByText(/already/i)).toHaveCount(0);
+  });
+});
+
 // ── OIDC wizard ─────────────────────────────────────────────────────────────
 
 test.describe("OIDC wizard — Auth0", () => {
