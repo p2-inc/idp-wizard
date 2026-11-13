@@ -46,7 +46,7 @@ export const popularProviders: Provider[] = [
     id: "entraid",
     name: "Entra ID (Azure AD)",
     logo: "azure.svg",
-    protocols: ["saml", "oidc", "scim"],
+    protocols: ["saml", "saml-idp-initiated", "oidc", "scim"],
   },
   {
     id: "okta",

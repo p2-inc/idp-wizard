@@ -1,0 +1,603 @@
+{
+  "schemaVersion": "1.0",
+  "id": "entraid-saml-idp-initiated",
+  "providerId": "entraid",
+  "protocol": "saml-idp-initiated",
+  "title": "Entra ID SAML (IdP-initiated)",
+  "alias": {
+    "prefix": "entraid-saml-idp-initiated",
+    "sessionKey": "p2_entraid_saml-idp-initiated"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create an Enterprise Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the Microsoft Entra admin center, go to \"Enterprise applications\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-1.png"
+        },
+        {
+          "type": "text",
+          "content": "Click \"New application\" and continue."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-2.png"
+        },
+        {
+          "type": "text",
+          "content": "Select \"Create your own application\", which opens a dialog where you can enter a name."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-3a.png"
+        },
+        {
+          "type": "text",
+          "content": "Enter a name for the application. This is the name users see on their My Apps page. Under \"What are you looking to do with your application?\", select \"Integrate any other application you don’t find in the gallery (Non-gallery)\", then select \"Create\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-3.png"
+        },
+        {
+          "type": "text",
+          "content": "Next, select \"Single sign-on\" from the \"Manage\" section in the left sidebar, and then \"SAML\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-4.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure Basic SAML Settings",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Click the \"Edit\" icon in the top right of the \"Basic SAML Configuration\" section."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-5.png"
+        },
+        {
+          "type": "text",
+          "content": "Click the \"Add identifier\" and \"Add reply URL\" links to open the fields for editing."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-5a.png"
+        },
+        {
+          "type": "copy",
+          "label": "Identifier (Entity ID)",
+          "value": "{{api.entityId}}",
+          "hint": "Paste into Identifier (Entity ID)"
+        },
+        {
+          "type": "copy",
+          "label": "Reply URL",
+          "value": "{{api.idpInitiatedAcsUrl}}",
+          "hint": "Paste into Reply URL (Assertion Consumer Service URL). It is specific to this connection and differs from the one used for sign-in started at Keycloak."
+        },
+        {
+          "type": "text",
+          "content": "Leave \"Sign on URL\" empty. When it is set, Entra ID sends users who launch the application from My Apps to that URL to start sign-in there, instead of posting the SAML response to the Reply URL. Leave \"Relay State\" and \"Logout Url\" empty as well; where users land is set in a later step."
+        },
+        {
+          "type": "text",
+          "content": "Paste the Identifier and the Reply URL, then click \"Save\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-6.png"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Configure Identity Provider Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the \"SAML Certificates\" section of the Entra ID application, copy the \"App Federation Metadata Url\" and paste it below. If you can’t use the URL, download the \"Federation Metadata XML\" file instead and upload it on the \"Metadata File\" tab."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-1a.png"
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": true,
+          "forms": [
+            "metadataUrl",
+            "metadataFile",
+            "metadataManual"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Choose the Target Application",
+      "enableNextWhen": "state.targetAppConfigured",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Choose the application users land in after they launch it from their identity provider, and save where to send them."
+        },
+        {
+          "type": "formGroup",
+          "id": "targetApp",
+          "exclusive": true,
+          "forms": [
+            "targetOidc",
+            "targetSamlRedirect",
+            "targetSamlPost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Configure Attribute Mapping",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Entra ID sends these claims by default. Click the \"Edit\" icon in the top right of the \"Attributes & Claims\" section to check them."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-7.png"
+        },
+        {
+          "type": "text",
+          "content": "If the claims match the table below, continue to the next step. If not, click each claim name in the \"Additional claims\" section to open its edit page."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-8.png"
+        },
+        {
+          "type": "text",
+          "content": "On the edit page for each claim, enter the Name, Namespace, and Source attribute from the table below, and save."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/entraid-1.png"
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "name": "Name",
+            "namespace": "Namespace",
+            "value": "Source Attribute"
+          },
+          "rows": [
+            {
+              "name": "emailaddress",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims",
+              "value": "user.mail"
+            },
+            {
+              "name": "givenname",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims",
+              "value": "user.givenname"
+            },
+            {
+              "name": "name",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims",
+              "value": "user.userprincipalname"
+            },
+            {
+              "name": "surname",
+              "namespace": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims",
+              "value": "user.surname"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "content": "The Keycloak username comes from the \"name\" claim (the user principal name), and the email from the \"emailaddress\" claim. Users without a \"mail\" value in Entra ID still sign in, but without an email address."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Assign Users and Groups",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Only assigned users see the application on their My Apps page (myapps.microsoft.com). Select \"Users and groups\" from the \"Manage\" section of the left sidebar."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-9.png"
+        },
+        {
+          "type": "text",
+          "content": "Select \"Add user/group\" from the top menu."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-10.png"
+        },
+        {
+          "type": "text",
+          "content": "Select \"None selected\" under \"Users and groups\". Select the users and groups who should be able to launch the application, and click \"Select\"."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-11.png"
+        },
+        {
+          "type": "text",
+          "content": "Select \"Assign\" to add them to the application."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/msft_entra_id/saml/azure-12.png"
+        },
+        {
+          "type": "text",
+          "content": "Under \"Properties\" in the \"Manage\" section, check that \"Visible to users?\" is set to \"Yes\" so the application appears in My Apps. It is \"Yes\" by default."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Set Up IdP-Initiated SAML Login",
+          "description": "Configuration is complete. This creates the login client, the identity provider, and its attribute mappers in Keycloak. Afterwards, assigned users can launch the application from My Apps.",
+          "buttonText": "Create IdP-Initiated Login",
+          "action": "createClient",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the App Federation Metadata Url from your Entra ID application.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://login.microsoftonline.com/your-tenant-id/federationmetadata/2007-06/federationmetadata.xml",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    },
+    "metadataFile": {
+      "title": "Metadata File",
+      "description": "Upload the Federation Metadata XML file downloaded from your Entra ID application.",
+      "fields": [
+        {
+          "id": "file",
+          "type": "file",
+          "label": "Metadata File",
+          "accept": "text/xml,application/xml,.xml",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate File",
+        "action": "validateMetadataFile"
+      }
+    },
+    "metadataManual": {
+      "title": "Manual Configuration",
+      "description": "Enter the SSO URL, Entity ID, and signing certificate directly.",
+      "fields": [
+        {
+          "id": "ssoUrl",
+          "type": "url",
+          "label": "SSO URL",
+          "placeholder": "https://login.microsoftonline.com/your-tenant-id/saml2",
+          "required": true
+        },
+        {
+          "id": "entityId",
+          "type": "text",
+          "label": "Entity ID",
+          "placeholder": "https://sts.windows.net/your-tenant-id/",
+          "required": true
+        },
+        {
+          "id": "certificate",
+          "type": "file",
+          "label": "Signing Certificate",
+          "accept": ".pem,.cer,.crt,.cert",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate Configuration",
+        "action": "validateMetadataManual"
+      }
+    },
+    "targetOidc": {
+      "title": "OIDC application",
+      "description": "Most applications. After login, users are sent to the application's home page, where the application signs them in with OpenID Connect using the Keycloak session they now have.",
+      "fields": [
+        {
+          "id": "appHomeUrl",
+          "type": "url",
+          "label": "Application home page",
+          "placeholder": "https://app.example.com/",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save",
+        "action": "saveTargetOidc"
+      }
+    },
+    "targetSamlRedirect": {
+      "title": "SAML application (Redirect)",
+      "description": "For a SAML application that receives assertions with the HTTP-Redirect binding. Enter the application's Assertion Consumer Service URL.",
+      "fields": [
+        {
+          "id": "appAcsRedirectUrl",
+          "type": "url",
+          "label": "Application ACS URL",
+          "placeholder": "https://app.example.com/saml/acs",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save",
+        "action": "saveTargetSamlRedirect"
+      }
+    },
+    "targetSamlPost": {
+      "title": "SAML application (POST)",
+      "description": "For a SAML application that receives assertions with the HTTP-POST binding. Enter the application's Assertion Consumer Service URL.",
+      "fields": [
+        {
+          "id": "appAcsPostUrl",
+          "type": "url",
+          "label": "Application ACS URL",
+          "placeholder": "https://app.example.com/saml/acs",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save",
+        "action": "saveTargetSamlPost"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
+    "validateMetadataFile": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "multipart",
+      "body": {
+        "providerId": "saml",
+        "file": "{{form.file}}"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata file validated. Continue to the next step.",
+        "error": "Validation failed. Check the file and try again."
+      }
+    },
+    "validateMetadataManual": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "multipart",
+      "body": {
+        "providerId": "saml",
+        "file": "{{form.certificate}}",
+        "ssoUrl": "{{form.ssoUrl}}",
+        "entityId": "{{form.entityId}}"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Configuration validated. Continue to the next step.",
+        "error": "Validation failed. Check the values and try again."
+      }
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+          "friendlyName": "",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+          "friendlyName": "",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname",
+          "friendlyName": "",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname",
+          "friendlyName": "",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    },
+    "saveTargetOidc": {
+      "type": "saveForm",
+      "dispatch": [
+        "TARGET_APP_CONFIGURED"
+      ],
+      "fields": [
+        "appHomeUrl"
+      ],
+      "set": {
+        "targetRedirectUrl": "{{form.appHomeUrl}}",
+        "targetPostUrl": "",
+        "targetForcePost": "false"
+      }
+    },
+    "saveTargetSamlRedirect": {
+      "type": "saveForm",
+      "dispatch": [
+        "TARGET_APP_CONFIGURED"
+      ],
+      "fields": [
+        "appAcsRedirectUrl"
+      ],
+      "set": {
+        "targetRedirectUrl": "{{form.appAcsRedirectUrl}}",
+        "targetPostUrl": "",
+        "targetForcePost": "false"
+      }
+    },
+    "saveTargetSamlPost": {
+      "type": "saveForm",
+      "dispatch": [
+        "TARGET_APP_CONFIGURED"
+      ],
+      "fields": [
+        "appAcsPostUrl"
+      ],
+      "set": {
+        "targetRedirectUrl": "",
+        "targetPostUrl": "{{form.appAcsPostUrl}}",
+        "targetForcePost": "true"
+      }
+    },
+    "createClient": {
+      "endpoint": "createClient",
+      "method": "POST",
+      "contentType": "json",
+      "allowStatuses": [
+        409
+      ],
+      "body": {
+        "protocol": "saml",
+        "clientId": "{{idpInitiatedClientId}}",
+        "name": "",
+        "description": "Generated by the IdP wizard for identity provider {{alias}}",
+        "attributes": {
+          "saml_idp_initiated_sso_url_name": "{{idpInitiatedClientId}}",
+          "saml_idp_initiated_sso_relay_state": "",
+          "saml.force.post.binding": "{{state.formValues.targetForcePost}}",
+          "saml_assertion_consumer_url_redirect": "{{state.formValues.targetRedirectUrl}}",
+          "saml_assertion_consumer_url_post": "{{state.formValues.targetPostUrl}}",
+          "phasetwo.idp-initiated.alias": "{{alias}}"
+        }
+      },
+      "onSuccess": {
+        "then": [
+          "createIdp"
+        ]
+      },
+      "messages": {
+        "error": "Error creating the IdP-initiated login client."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{displayName}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "IdP-initiated SAML login is configured. Assigned users can now launch the application from My Apps."
+          }
+        ],
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    }
+  }
+}
