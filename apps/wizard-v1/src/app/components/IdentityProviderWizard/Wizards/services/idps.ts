@@ -20,6 +20,11 @@ export const CreateIdp = async ({
   featureFlags,
 }: CreateIdpProps) => {
   payload.trustEmail = featureFlags?.trustEmail;
+  // Org-scoped IdPs (created through the orgs API) show in the account console
+  // only for users linked to them, instead of Keycloak's default of ALWAYS.
+  if (createIdPUrl.includes("/orgs/")) {
+    payload.config = { showInAccountConsole: "WHEN_LINKED", ...payload.config };
+  }
   return Axios.post(createIdPUrl, payload);
 };
 

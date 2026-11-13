@@ -8,6 +8,7 @@
  * Feature-flag middleware is applied automatically:
  *   - trustEmail    → injects trustEmail:true into createIdp body
  *   - hideOnLogin   → set on createIdp body from scope (org-scoped vs realm-wide)
+ *   - showInAccountConsole → defaults to WHEN_LINKED on org-scoped createIdp config
  *   - emailAsUsername → adds idpUsername mapper, remaps username to email attr
  *   - usernameMapperImport → sets username mapper syncMode to IMPORT
  */
@@ -211,6 +212,29 @@ function applyHideOnLogin(
   orgScoped: boolean,
 ): Record<string, unknown> {
   return { ...body, hideOnLogin: orgScoped };
+}
+
+/**
+ * Defaults config.showInAccountConsole to WHEN_LINKED for org-scoped IdPs.
+ *
+ * Keycloak's default is ALWAYS, which lists every organization's IdP in the
+ * account console (and the Phase Two admin portal) for every user. An org's
+ * IdP is only relevant to users already linked to it. A value the wizard JSON
+ * sets explicitly is kept, and realm-wide IdPs keep Keycloak's default.
+ */
+function applyShowInAccountConsole(
+  body: Record<string, unknown>,
+  orgScoped: boolean,
+): Record<string, unknown> {
+  if (!orgScoped) return body;
+  const config =
+    body.config && typeof body.config === "object" && !Array.isArray(body.config)
+      ? (body.config as Record<string, unknown>)
+      : {};
+  return {
+    ...body,
+    config: { showInAccountConsole: "WHEN_LINKED", ...config },
+  };
 }
 
 /**
@@ -480,10 +504,9 @@ export async function executeAction(
         resolvedBody = applyTrustEmail(resolvedBody, config);
         // Mirrors the endpoint selection in useWizardApi: the Orgs API is used
         // only when in cloud mode with an org_id; otherwise the IdP is realm-wide.
-        resolvedBody = applyHideOnLogin(
-          resolvedBody,
-          params.apiMode === "cloud" && !!params.orgId,
-        );
+        const orgScoped = params.apiMode === "cloud" && !!params.orgId;
+        resolvedBody = applyHideOnLogin(resolvedBody, orgScoped);
+        resolvedBody = applyShowInAccountConsole(resolvedBody, orgScoped);
       }
 
       // Feature flag: usernameMapperImport on mapper creation

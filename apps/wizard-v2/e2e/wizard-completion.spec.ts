@@ -483,9 +483,9 @@ test.describe("Generic SAML wizard", () => {
   });
 });
 
-// ── hideOnLogin depends on IdP scope (#290) ──────────────────────────────────
+// ── hideOnLogin (#290) and showInAccountConsole (#326) depend on IdP scope ───
 
-test.describe("hideOnLogin follows IdP scope", () => {
+test.describe("hideOnLogin and showInAccountConsole follow IdP scope", () => {
   // Drives the Auth0 SAML wizard to the confirm step and submits it.
   async function completeAuth0Saml(
     page: Page,
@@ -509,7 +509,7 @@ test.describe("hideOnLogin follows IdP scope", () => {
     await wizard.waitForSuccess(/SAML Identity Provider created successfully/i);
   }
 
-  test("realm-wide IdP is created with hideOnLogin=false", async ({
+  test("realm-wide IdP is created with hideOnLogin=false and no showInAccountConsole", async ({
     page,
     wizard,
   }) => {
@@ -529,9 +529,11 @@ test.describe("hideOnLogin follows IdP scope", () => {
 
     expect(createBody).not.toBeNull();
     expect(createBody!.hideOnLogin).toBe(false);
+    // Realm-wide IdPs keep Keycloak's default (ALWAYS).
+    expect(createBody!.config).not.toHaveProperty("showInAccountConsole");
   });
 
-  test("org-scoped IdP is created with hideOnLogin=true", async ({
+  test("org-scoped IdP is created with hideOnLogin=true and showInAccountConsole=WHEN_LINKED", async ({
     page,
     wizard,
   }) => {
@@ -552,6 +554,11 @@ test.describe("hideOnLogin follows IdP scope", () => {
 
     expect(createBody).not.toBeNull();
     expect(createBody!.hideOnLogin).toBe(true);
+    // Only users linked to the org's IdP see it in the account console.
+    expect(createBody!.config).toMatchObject({
+      ...MOCK_SAML_IMPORT_CONFIG,
+      showInAccountConsole: "WHEN_LINKED",
+    });
   });
 });
 

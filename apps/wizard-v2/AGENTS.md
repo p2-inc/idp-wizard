@@ -342,6 +342,12 @@ regardless of what the JSON declares: `true` for org-scoped IdPs (reached via ho
 discovery) and `false` for realm-wide IdPs (no discovery domain, so they must be visible
 on the login page). See `applyHideOnLogin` in `src/components/wizard/executeAction.ts`.
 
+The executor also defaults `config.showInAccountConsole` to `WHEN_LINKED` on the
+`createIdp` body of org-scoped IdPs, so the account console and the Phase Two admin
+portal list an organization's IdP only for users linked to it. A value set in the wizard
+JSON is kept, and realm-wide IdPs keep Keycloak's default (`ALWAYS`). See
+`applyShowInAccountConsole` in the same file.
+
 Special action types (no `endpoint`):
 
 - `{ "type": "clearAlias" }` — removes alias from sessionStorage
