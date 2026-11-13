@@ -1,2 +1,9 @@
 packages:
   - 'apps/*'
+
+# Force patched versions of vulnerable transitive dependencies (Dependabot alerts).
+overrides:
+  glob@>=9 <14.0.2: ^14.0.2
+  minimatch@>=7 <11.0.1: ^11.0.1
+  serialize-javascript@<7.1.3: ^7.1.3
+  uuid@<11.1.1: ^11.1.1
