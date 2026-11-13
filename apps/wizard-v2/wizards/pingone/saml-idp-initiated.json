@@ -1,0 +1,503 @@
+{
+  "schemaVersion": "1.0",
+  "id": "pingone-saml-idp-initiated",
+  "providerId": "pingone",
+  "protocol": "saml-idp-initiated",
+  "title": "PingOne SAML (IdP-initiated)",
+  "alias": {
+    "prefix": "pingone-saml-idp-initiated",
+    "sessionKey": "p2_pingone_saml-idp-initiated"
+  },
+  "idpConfig": {
+    "providerId": "saml",
+    "hideOnLogin": true,
+    "defaults": {
+      "syncMode": "FORCE",
+      "allowCreate": "true",
+      "nameIDPolicyFormat": "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+      "principalType": "SUBJECT"
+    }
+  },
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create a SAML Application",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "In the PingOne admin console, go to Applications > Applications and click the + icon. Enter an application name, choose SAML Application, and click Configure. Under Provide Application Metadata, choose Manually Enter and enter the values below. This ACS URL is specific to IdP-initiated login and differs from the one used for sign-in started at Keycloak."
+        },
+        {
+          "type": "copy",
+          "label": "ACS URL",
+          "value": "{{api.idpInitiatedAcsUrl}}",
+          "hint": "Enter this in the ACS URLs field"
+        },
+        {
+          "type": "copy",
+          "label": "Entity ID",
+          "value": "{{api.entityId}}",
+          "hint": "Enter this in the Entity ID field"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/pingone/pingone_saml_1.png",
+          "alt": "PingOne Applications page with the add application button"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/pingone/pingone_saml_2.png",
+          "alt": "PingOne Add Application dialog with SAML Application selected"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/pingone/pingone_saml_4.png",
+          "alt": "PingOne SAML Configuration with Manually Enter, ACS URLs, and Entity ID"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Configure Identity Provider Metadata",
+      "enableNextWhen": "state.metadataValidated",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "After saving, open the application in PingOne and enable it with the toggle at the top of the details panel. On the Configuration tab, click Download Metadata and upload the file here. Leave Target Application URL empty; Keycloak sends users to the application you choose in the next step."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/pingone/pingone_saml_7.png",
+          "alt": "PingOne application Configuration tab with the enable toggle and Download Metadata button"
+        },
+        {
+          "type": "formGroup",
+          "id": "metadataInput",
+          "exclusive": true,
+          "forms": [
+            "metadataFile",
+            "metadataUrl",
+            "metadataManual"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Choose the Target Application",
+      "enableNextWhen": "state.targetAppConfigured",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "Choose the application users land in after they launch it from their identity provider, and save where to send them."
+        },
+        {
+          "type": "formGroup",
+          "id": "targetApp",
+          "exclusive": true,
+          "forms": [
+            "targetOidc",
+            "targetSamlRedirect",
+            "targetSamlPost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Configure Attribute Mapping",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the application's Attribute Mappings tab, click + Add and map these SAML attributes to PingOne user attributes: username to Username, email to Email Address, firstName to Given Name, and lastName to Family Name. Keep the required saml_subject mapping."
+        },
+        {
+          "type": "attributeTable",
+          "columns": {
+            "idpAttribute": "SAML Attribute Name",
+            "keycloakAttribute": "Keycloak User Field"
+          },
+          "rows": [
+            {
+              "idpAttribute": "username",
+              "keycloakAttribute": "username"
+            },
+            {
+              "idpAttribute": "email",
+              "keycloakAttribute": "email"
+            },
+            {
+              "idpAttribute": "firstName",
+              "keycloakAttribute": "firstName"
+            },
+            {
+              "idpAttribute": "lastName",
+              "keycloakAttribute": "lastName"
+            }
+          ]
+        },
+        {
+          "type": "image",
+          "src": "/wizards/pingone/pingone_saml_6.png",
+          "alt": "PingOne Edit Attribute Mappings with username, email, firstName, and lastName"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Configure User Access",
+      "blocks": [
+        {
+          "type": "text",
+          "content": "On the application's Access tab, click the pencil icon and add the groups whose members should be able to launch the application, then click Save. With no groups listed, all users in the environment have access. Make sure Application portal display does not hide the application, so it shows in the PingOne application portal. Confirm the application is enabled; users then launch it from the portal, or from the Initiate Single Sign-On URL on the application's Overview tab."
+        },
+        {
+          "type": "image",
+          "src": "/wizards/pingone/pingone_saml_8.png",
+          "alt": "PingOne application Access tab with the edit button"
+        },
+        {
+          "type": "image",
+          "src": "/wizards/pingone/pingone_saml_9.png",
+          "alt": "PingOne Edit Access with the group membership policy"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Confirmation",
+      "type": "confirm",
+      "blocks": [
+        {
+          "type": "confirm",
+          "title": "Set Up IdP-Initiated SAML Login",
+          "description": "Configuration is complete. This creates the login client, the identity provider, and its attribute mappers in Keycloak.",
+          "buttonText": "Create IdP-Initiated Login",
+          "action": "createClient",
+          "adminLink": "{{api.adminLinkSaml}}",
+          "adminButtonText": "Manage SAML Identity Provider"
+        }
+      ]
+    }
+  ],
+  "forms": {
+    "metadataFile": {
+      "title": "Metadata File",
+      "description": "Upload the SAML metadata XML file downloaded from the PingOne application.",
+      "fields": [
+        {
+          "id": "file",
+          "type": "file",
+          "label": "Metadata File",
+          "accept": "text/xml,application/xml,.xml",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate File",
+        "action": "validateMetadataFile"
+      }
+    },
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the SAML metadata URL provided by your identity provider.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://your-idp.example.com/metadata",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    },
+    "metadataManual": {
+      "title": "Manual Configuration",
+      "description": "Enter the SSO URL, Entity ID, and signing certificate directly.",
+      "fields": [
+        {
+          "id": "ssoUrl",
+          "type": "url",
+          "label": "SSO URL",
+          "placeholder": "https://your-idp.example.com/sso",
+          "required": true
+        },
+        {
+          "id": "entityId",
+          "type": "text",
+          "label": "Entity ID",
+          "placeholder": "https://your-idp.example.com",
+          "required": true
+        },
+        {
+          "id": "certificate",
+          "type": "file",
+          "label": "Signing Certificate",
+          "accept": ".pem,.cer,.crt,.cert",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate Configuration",
+        "action": "validateMetadataManual"
+      }
+    },
+    "targetOidc": {
+      "title": "OIDC application",
+      "description": "Most applications. After login, users are sent to the application's home page, where the application signs them in with OpenID Connect using the Keycloak session they now have.",
+      "fields": [
+        {
+          "id": "appHomeUrl",
+          "type": "url",
+          "label": "Application home page",
+          "placeholder": "https://app.example.com/",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save",
+        "action": "saveTargetOidc"
+      }
+    },
+    "targetSamlRedirect": {
+      "title": "SAML application (Redirect)",
+      "description": "For a SAML application that receives assertions with the HTTP-Redirect binding. Enter the application's Assertion Consumer Service URL.",
+      "fields": [
+        {
+          "id": "appAcsRedirectUrl",
+          "type": "url",
+          "label": "Application ACS URL",
+          "placeholder": "https://app.example.com/saml/acs",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save",
+        "action": "saveTargetSamlRedirect"
+      }
+    },
+    "targetSamlPost": {
+      "title": "SAML application (POST)",
+      "description": "For a SAML application that receives assertions with the HTTP-POST binding. Enter the application's Assertion Consumer Service URL.",
+      "fields": [
+        {
+          "id": "appAcsPostUrl",
+          "type": "url",
+          "label": "Application ACS URL",
+          "placeholder": "https://app.example.com/saml/acs",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Save",
+        "action": "saveTargetSamlPost"
+      }
+    }
+  },
+  "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
+    "validateMetadataFile": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "multipart",
+      "body": {
+        "providerId": "saml",
+        "file": "{{form.file}}"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata file validated. Continue to the next step.",
+        "error": "Validation failed. Check the file and try again."
+      }
+    },
+    "validateMetadataManual": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "multipart",
+      "body": {
+        "providerId": "saml",
+        "file": "{{form.certificate}}",
+        "ssoUrl": "{{form.ssoUrl}}",
+        "entityId": "{{form.entityId}}"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Configuration validated. Continue to the next step.",
+        "error": "Validation failed. Check the values and try again."
+      }
+    },
+    "addSamlMappers": {
+      "endpoint": "addMappers",
+      "method": "POST",
+      "contentType": "json",
+      "foreach": [
+        {
+          "attributeName": "username",
+          "friendlyName": "username",
+          "userAttribute": "username"
+        },
+        {
+          "attributeName": "email",
+          "friendlyName": "email",
+          "userAttribute": "email"
+        },
+        {
+          "attributeName": "firstName",
+          "friendlyName": "firstName",
+          "userAttribute": "firstName"
+        },
+        {
+          "attributeName": "lastName",
+          "friendlyName": "lastName",
+          "userAttribute": "lastName"
+        }
+      ],
+      "body": {
+        "identityProviderAlias": "{{alias}}",
+        "identityProviderMapper": "saml-user-attribute-idp-mapper",
+        "name": "{{item.userAttribute}}",
+        "config": {
+          "syncMode": "INHERIT",
+          "attributes": "[]",
+          "attribute.name": "{{item.attributeName}}",
+          "attribute.friendly.name": "{{item.friendlyName}}",
+          "user.attribute": "{{item.userAttribute}}"
+        }
+      }
+    },
+    "clearAlias": {
+      "type": "clearAlias"
+    },
+    "saveTargetOidc": {
+      "type": "saveForm",
+      "dispatch": [
+        "TARGET_APP_CONFIGURED"
+      ],
+      "fields": [
+        "appHomeUrl"
+      ],
+      "set": {
+        "targetRedirectUrl": "{{form.appHomeUrl}}",
+        "targetPostUrl": "",
+        "targetForcePost": "false"
+      }
+    },
+    "saveTargetSamlRedirect": {
+      "type": "saveForm",
+      "dispatch": [
+        "TARGET_APP_CONFIGURED"
+      ],
+      "fields": [
+        "appAcsRedirectUrl"
+      ],
+      "set": {
+        "targetRedirectUrl": "{{form.appAcsRedirectUrl}}",
+        "targetPostUrl": "",
+        "targetForcePost": "false"
+      }
+    },
+    "saveTargetSamlPost": {
+      "type": "saveForm",
+      "dispatch": [
+        "TARGET_APP_CONFIGURED"
+      ],
+      "fields": [
+        "appAcsPostUrl"
+      ],
+      "set": {
+        "targetRedirectUrl": "",
+        "targetPostUrl": "{{form.appAcsPostUrl}}",
+        "targetForcePost": "true"
+      }
+    },
+    "createClient": {
+      "endpoint": "createClient",
+      "method": "POST",
+      "contentType": "json",
+      "allowStatuses": [
+        409
+      ],
+      "body": {
+        "protocol": "saml",
+        "clientId": "{{idpInitiatedClientId}}",
+        "name": "",
+        "description": "Generated by the IdP wizard for identity provider {{alias}}",
+        "attributes": {
+          "saml_idp_initiated_sso_url_name": "{{idpInitiatedClientId}}",
+          "saml_idp_initiated_sso_relay_state": "",
+          "saml.force.post.binding": "{{state.formValues.targetForcePost}}",
+          "saml_assertion_consumer_url_redirect": "{{state.formValues.targetRedirectUrl}}",
+          "saml_assertion_consumer_url_post": "{{state.formValues.targetPostUrl}}",
+          "phasetwo.idp-initiated.alias": "{{alias}}"
+        }
+      },
+      "onSuccess": {
+        "then": [
+          "createIdp"
+        ]
+      },
+      "messages": {
+        "error": "Error creating the IdP-initiated login client."
+      }
+    },
+    "createIdp": {
+      "endpoint": "createIdp",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "alias": "{{alias}}",
+        "displayName": "{{displayName}}",
+        "providerId": "saml",
+        "hideOnLogin": true,
+        "config": "{{state.metadata}}"
+      },
+      "onSuccess": {
+        "dispatch": [
+          {
+            "type": "SUBMIT_SUCCESS",
+            "result": "IdP-initiated SAML login is configured. Users can now launch the application from their identity provider."
+          }
+        ],
+        "then": [
+          "addSamlMappers",
+          "clearAlias"
+        ]
+      },
+      "messages": {
+        "error": "Error creating Identity Provider. One may already be configured for this realm."
+      }
+    }
+  }
+}

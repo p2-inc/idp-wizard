@@ -229,7 +229,7 @@ export const providers: Provider[] = [
     id: "pingone",
     name: "PingOne",
     logo: "ping-identity.svg",
-    protocols: ["saml"],
+    protocols: ["saml", "saml-idp-initiated"],
   },
   {
     id: "rippling",
