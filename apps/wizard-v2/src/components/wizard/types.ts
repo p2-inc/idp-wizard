@@ -140,6 +140,12 @@ export type EndpointSlot =
   | "importConfig"
   | "createIdp"
   | "addMappers"
+  /**
+   * POST — creates the SAML client paired with an IdP-initiated identity
+   * provider. Realm-wide: Keycloak admin `/clients`; organization:
+   * Phase Two `/orgs/{orgId}/idps/clients`.
+   */
+  | "createClient"
   | "testLdapConnection"
   | "createComponent"
   | "triggerSync"
@@ -165,6 +171,12 @@ export interface HttpAction {
   body: Record<string, unknown>;
   /** When set, the action is called once per item in the array */
   foreach?: Record<string, unknown>[];
+  /**
+   * Non-2xx statuses to treat as success. Use for idempotent creates, e.g.
+   * `[409]` on `createClient` so retrying the wizard with the same alias
+   * reuses the client created by an earlier attempt.
+   */
+  allowStatuses?: number[];
   onSuccess?: ActionOnSuccess;
   messages?: {
     success?: string;
@@ -181,6 +193,12 @@ export interface SaveFormAction {
   type: "saveForm";
   dispatch?: string[];
   fields: string[];
+  /**
+   * Extra values written to state.formValues, resolved as templates against
+   * the submitted form (`{{form.fieldId}}`). Lets each form of an exclusive
+   * group write the same keys, so switching forms replaces earlier values.
+   */
+  set?: Record<string, string>;
 }
 
 /**

@@ -262,7 +262,9 @@ function FormGroupRenderer({
 
   if (block.exclusive && validForms.length > 1) {
     return (
-      <Tabs defaultValue={validForms[0]}>
+      // Keyed so consecutive form-group steps don't share one Tabs instance
+      // and carry the previous step's selected tab (which leaves no panel shown).
+      <Tabs key={block.id} defaultValue={validForms[0]}>
         <TabsList className="w-full">
           {validForms.map((formKey) => (
             <TabsTrigger key={formKey} value={formKey} className="flex-1">

@@ -25,7 +25,7 @@ import type {
 import { wizardReducer } from "@/context/WizardContext";
 import type { OrgsClient, AdminClient } from "@/api/clients";
 import type { WizardConfig } from "@/hooks/useWizardConfig";
-import { resolveValue, buildTemplateContext } from "./resolveTemplate";
+import { resolveValue, resolveTemplate, buildTemplateContext } from "./resolveTemplate";
 import { clearAlias } from "@/lib/alias";
 import { resolveIdpTestLink } from "@/lib/idp-test-link";
 import { fetchWithAuth } from "@/oidc";
@@ -140,6 +140,8 @@ function resolveEndpoint(
       return endpoints.createIdp;
     case "addMappers":
       return endpoints.addMappers(state.alias);
+    case "createClient":
+      return endpoints.createClient;
     case "testLdapConnection":
       return endpoints.testLdapConnection;
     case "createComponent":
@@ -163,6 +165,20 @@ const IDP_ENDPOINTS: ReadonlySet<EndpointSlot> = new Set([
   "createIdp",
   "addMappers",
 ]);
+
+/** Role named in the permission error when an action is forbidden. */
+function requiredRoleFor(
+  endpoint: EndpointSlot,
+  scope: ErrorScope,
+): string | undefined {
+  if (IDP_ENDPOINTS.has(endpoint)) return "manage-identity-providers";
+  // Organization setup creates the client through the orgs API, which checks
+  // the same role as identity provider creation; realm-wide uses the admin API.
+  if (endpoint === "createClient") {
+    return scope === "organization" ? "manage-identity-providers" : "manage-clients";
+  }
+  return undefined;
+}
 
 /** Whether a request URL targets the org-scoped (Phase Two orgs) API. */
 function errorScopeFor(url: string, orgId: string | null): ErrorScope {
@@ -349,6 +365,21 @@ export async function executeAction(
   if ("type" in action && action.type === "saveForm") {
     const saveAction = action as SaveFormAction;
 
+    if (saveAction.set) {
+      const ctx = buildTemplateContext({
+        alias: currentState.alias,
+        api: params.api,
+        idpProviderId: params.idpProviderId,
+        state: currentState,
+        formValues: currentState.formValues,
+      });
+      const values: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(saveAction.set)) {
+        values[k] = resolveTemplate(v, ctx);
+      }
+      localDispatch({ type: "SAVE_FORM_VALUES", values });
+    }
+
     if (saveAction.dispatch) {
       for (const d of saveAction.dispatch) {
         localDispatch({ type: d } as ReducerAction);
@@ -467,16 +498,15 @@ export async function executeAction(
         resolvedBody,
       );
 
-      if (!result.ok) {
+      const allowed = httpAction.allowStatuses?.includes(result.status) ?? false;
+      if (!result.ok && !allowed) {
         const scope = errorScopeFor(url, params.orgId);
         const errorMsg = describeHttpError({
           status: result.status,
           data: result.data,
           fallback: httpAction.messages?.error,
           scope,
-          requiredRole: IDP_ENDPOINTS.has(httpAction.endpoint)
-            ? "manage-identity-providers"
-            : undefined,
+          requiredRole: requiredRoleFor(httpAction.endpoint, scope),
           conflictMessage:
             httpAction.endpoint === "createIdp"
               ? idpConflictMessage(scope)

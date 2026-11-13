@@ -11,6 +11,8 @@ export interface WizardEndpoints {
   getIdp: (alias: string) => string;
   /** POST — adds attribute mappers to an existing IDP */
   addMappers: (alias: string) => string;
+  /** POST — creates the SAML client paired with an IdP-initiated identity provider */
+  createClient: string;
   /** POST — tests an LDAP connection or authentication */
   testLdapConnection: string;
   /** POST — creates a Keycloak component (e.g. user storage provider) */
@@ -78,6 +80,8 @@ export interface WizardState {
   credentialsProvided: boolean;
   connectionTested: boolean;
   authTested: boolean;
+  /** IdP-initiated wizards: where users land after login has been chosen */
+  targetAppConfigured: boolean;
   submitting: boolean;
   submitted: boolean;
   error: string | null;
@@ -101,6 +105,7 @@ export type WizardAction =
   | { type: "CREDENTIALS_PROVIDED" }
   | { type: "CONNECTION_TESTED" }
   | { type: "AUTH_TESTED" }
+  | { type: "TARGET_APP_CONFIGURED" }
   | { type: "SCHEMA_SAVED" }
   | { type: "SAVE_FORM_VALUES"; values: Record<string, unknown> }
   | { type: "FORM_SUCCEEDED"; formKey: string }
@@ -131,6 +136,8 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       return { ...state, connectionTested: true };
     case "AUTH_TESTED":
       return { ...state, authTested: true };
+    case "TARGET_APP_CONFIGURED":
+      return { ...state, targetAppConfigured: true };
     case "SCHEMA_SAVED":
       return state;
     case "SAVE_FORM_VALUES":
@@ -172,6 +179,7 @@ export function isWizardDirty(state: WizardState): boolean {
     state.credentialsProvided ||
     state.connectionTested ||
     state.authTested ||
+    state.targetAppConfigured ||
     Object.keys(state.formValues).length > 0 ||
     Object.keys(state.succeededForms).length > 0
   );
@@ -188,6 +196,7 @@ export function makeInitialWizardState(alias: string): WizardState {
     credentialsProvided: false,
     connectionTested: false,
     authTested: false,
+    targetAppConfigured: false,
     submitting: false,
     submitted: false,
     error: null,

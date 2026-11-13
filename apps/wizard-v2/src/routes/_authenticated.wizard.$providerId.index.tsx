@@ -18,6 +18,10 @@ const protocolLabels: Record<Protocol, { label: string; description: string }> =
     label: "SAML",
     description: "Security Assertion Markup Language — XML-based federation standard.",
   },
+  "saml-idp-initiated": {
+    label: "SAML (IdP-initiated)",
+    description: "Users start sign-in from their identity provider's app dashboard and land in your application.",
+  },
   oidc: {
     label: "OIDC",
     description: "OpenID Connect — OAuth 2.0 identity layer, JSON-based, commonly used for modern apps.",

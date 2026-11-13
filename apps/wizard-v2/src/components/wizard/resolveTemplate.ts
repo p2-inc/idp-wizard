@@ -1,3 +1,5 @@
+import { idpInitiatedAcsUrl, idpInitiatedClientId } from "@/lib/idp-initiated";
+
 /**
  * Template variable resolver for wizard JSON.
  *
@@ -121,6 +123,8 @@ export function buildTemplateContext(params: {
     displayName,
     "api.entityId": api.entityId,
     "api.ssoUrl": api.ssoUrl(alias),
+    "api.idpInitiatedAcsUrl": idpInitiatedAcsUrl(api.ssoUrl(alias), alias),
+    idpInitiatedClientId: idpInitiatedClientId(alias),
     "api.samlMetadata": api.samlMetadata,
     "api.adminLinkSaml": api.adminLinkSaml(alias),
     "api.adminLinkOidc": api.adminLinkOidc(alias),
