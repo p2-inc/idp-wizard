@@ -26,6 +26,10 @@ const protocolLabels: Record<Protocol, { label: string; description: string }> =
     label: "OIDC",
     description: "OpenID Connect — OAuth 2.0 identity layer, JSON-based, commonly used for modern apps.",
   },
+  "oidc-idp-initiated": {
+    label: "OIDC (IdP-initiated)",
+    description: "Users start sign-in from their identity provider's app dashboard; Keycloak signs them in through OpenID Connect and sends them to your application.",
+  },
   ldap: {
     label: "LDAP",
     description: "Lightweight Directory Access Protocol — directory sync and authentication.",

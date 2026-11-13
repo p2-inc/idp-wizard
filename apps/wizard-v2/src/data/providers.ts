@@ -2,6 +2,7 @@ export type Protocol =
   | "saml"
   | "saml-idp-initiated"
   | "oidc"
+  | "oidc-idp-initiated"
   | "ldap"
   | "oauth"
   | "scim";
@@ -24,7 +25,7 @@ export const genericProviders: Provider[] = [
     id: "openid",
     name: "OpenID",
     logo: "generic-oidc.svg",
-    protocols: ["oidc"],
+    protocols: ["oidc", "oidc-idp-initiated"],
   },
   {
     id: "ldap",
