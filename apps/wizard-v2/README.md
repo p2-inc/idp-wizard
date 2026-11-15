@@ -378,6 +378,14 @@ Full wizard flow tests. Runs in mock mode with API interception. Covers:
 
 Back-navigation and `enableNextWhen` gating (Next disabled until validation passes) are also tested.
 
+#### `scim-gate.spec.ts`
+
+Step 1 of the generic, Okta, and Entra ID SCIM wizards. Runs in mock mode with `/orgs/config` intercepted. Covers:
+
+- **Continue** is disabled until **Verify SCIM is enabled** succeeds, and the check is a `GET` with no body
+- A realm with SCIM turned off, and a failed request, each show an error and leave **Continue** disabled
+- Every `enableNextWhen` expression in `wizards/` is one the runner can evaluate
+
 #### `organizations.spec.ts`
 
 Integration-mode tests (requires Keycloak). Covers:

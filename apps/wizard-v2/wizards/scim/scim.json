@@ -185,11 +185,15 @@
       "method": "GET",
       "contentType": "json",
       "body": {},
+      "expectResponse": {
+        "match": { "scimEnabled": true },
+        "message": "SCIM is not enabled for this realm. Ask the realm administrator to enable SCIM in the organizations configuration, then verify again."
+      },
       "onSuccess": {
         "mergeIntoMetadata": "{{response}}"
       },
       "messages": {
-        "error": "Could not load the realm's organization configuration. Confirm the realm has SCIM enabled."
+        "error": "Could not load the realm's organization configuration. Try again, or ask the realm administrator to confirm that SCIM is available."
       }
     },
     "configureExternalSecret": {

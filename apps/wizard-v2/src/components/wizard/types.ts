@@ -96,7 +96,11 @@ export interface WizardStep {
   title: string;
   /** Omit for normal steps. "confirm" for the final creation step. */
   type?: "confirm";
-  /** Expression evaluated against WizardState; if false, Next is disabled */
+  /**
+   * Dotted path into WizardState, e.g. "state.metadataValidated" or
+   * "state.metadata.scimEnabled". Next is disabled until the value is truthy;
+   * an expression in any other form keeps it disabled.
+   */
   enableNextWhen?: string;
   blocks: WizardBlock[];
 }
@@ -167,7 +171,10 @@ export interface HttpAction {
   endpoint: EndpointSlot;
   method: "POST" | "PUT" | "GET" | "DELETE";
   contentType: ContentType;
-  /** Body template — values like "{{form.url}}" are resolved at call time */
+  /**
+   * Body template — values like "{{form.url}}" are resolved at call time.
+   * Not sent for GET requests, which cannot carry a body.
+   */
   body: Record<string, unknown>;
   /** When set, the action is called once per item in the array */
   foreach?: Record<string, unknown>[];
@@ -177,6 +184,16 @@ export interface HttpAction {
    * reuses the client created by an earlier attempt.
    */
   allowStatuses?: number[];
+  /**
+   * Fails the action when a successful response doesn't have these top-level
+   * fields with exactly these values, showing `message`. `onSuccess` does not
+   * run. Use when a 2xx alone isn't the answer, e.g. `{ "scimEnabled": true }`
+   * on `getOrgConfig`.
+   */
+  expectResponse?: {
+    match: Record<string, unknown>;
+    message: string;
+  };
   onSuccess?: ActionOnSuccess;
   messages?: {
     success?: string;
