@@ -41,6 +41,7 @@ import { executeAction } from "./executeAction";
 import type { WizardDefinition } from "./types";
 import type { Provider } from "@/data/providers";
 import { cn } from "@/lib/utils";
+import { evaluateEnableNextWhen } from "@/lib/enable-next-when";
 
 interface Props {
   providerId: string;
@@ -204,7 +205,7 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
   const isLastStep =
     state.currentStep === definition.steps[definition.steps.length - 1].id;
   const canAdvance = currentStep.enableNextWhen
-    ? evaluateExpression(currentStep.enableNextWhen, state)
+    ? evaluateEnableNextWhen(currentStep.enableNextWhen, state)
     : true;
 
 
@@ -391,25 +392,4 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
       </div>
     </div>
   );
-}
-
-// ---------------------------------------------------------------------------
-// Expression evaluator for enableNextWhen
-// ---------------------------------------------------------------------------
-function evaluateExpression(
-  expression: string,
-  state: import("@/context/WizardContext").WizardState,
-): boolean {
-  const trimmed = expression.trim();
-
-  const stateMatch = trimmed.match(/^state\.(\w+)$/);
-  if (stateMatch) {
-    const field = stateMatch[1] as keyof typeof state;
-    return Boolean(state[field]);
-  }
-
-  console.warn(
-    `WizardRunner: unknown enableNextWhen expression: "${expression}"`,
-  );
-  return true;
 }

@@ -301,6 +301,19 @@ class NetworkError extends Error {
   }
 }
 
+/** Methods that fetch() refuses to send with a body. */
+const BODILESS_METHODS: ReadonlySet<string> = new Set(["GET", "HEAD"]);
+
+/**
+ * Whether a response body has every field in `match`, compared by strict
+ * equality. Used by `expectResponse` to check values such as feature flags.
+ */
+function responseMatches(data: unknown, match: Record<string, unknown>): boolean {
+  if (data === null || typeof data !== "object") return false;
+  const record = data as Record<string, unknown>;
+  return Object.entries(match).every(([k, v]) => record[k] === v);
+}
+
 async function execHttp(
   url: string,
   method: string,
@@ -309,7 +322,10 @@ async function execHttp(
 ): Promise<{ ok: boolean; status: number; data: unknown }> {
   const options: RequestInit = { method };
 
-  if (contentType === "multipart") {
+  if (BODILESS_METHODS.has(method.toUpperCase())) {
+    // No body and no Content-Type: fetch() throws a TypeError for a GET or
+    // HEAD request that has a body, whatever the body contains.
+  } else if (contentType === "multipart") {
     const formData = new FormData();
     for (const [k, v] of Object.entries(body)) {
       if (v instanceof File) {
@@ -535,6 +551,15 @@ export async function executeAction(
               ? idpConflictMessage(scope)
               : undefined,
         });
+        localDispatch({ type: "SUBMIT_ERROR", error: errorMsg });
+        return { ok: false, message: errorMsg };
+      }
+
+      if (
+        httpAction.expectResponse &&
+        !responseMatches(result.data, httpAction.expectResponse.match)
+      ) {
+        const errorMsg = httpAction.expectResponse.message;
         localDispatch({ type: "SUBMIT_ERROR", error: errorMsg });
         return { ok: false, message: errorMsg };
       }

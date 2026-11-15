@@ -253,7 +253,7 @@ Each step has:
 - `id` (number) — 1-indexed, sequential
 - `title` (string)
 - `type` (optional) — omit for normal steps; `"confirm"` for the final step
-- `enableNextWhen` (optional) — expression string: e.g. `"state.metadataValidated"`
+- `enableNextWhen` (optional) — dotted path into the wizard state, e.g. `"state.metadataValidated"` or `"state.metadata.scimEnabled"`. Continue stays disabled until the value is truthy. Any other form of expression keeps Continue disabled and fails `e2e/scim-gate.spec.ts`.
 - `blocks` — array of UI blocks
 
 Block types:
@@ -339,6 +339,10 @@ Named endpoint slots (`endpoint` key):
 - `createClient` — creates the SAML client paired with an IdP-initiated identity provider (realm-wide: `POST /admin/realms/{realm}/clients`; organization: `POST /realms/{realm}/orgs/{orgId}/idps/clients`). IdP-initiated wizards run it before `createIdp`, then add mappers.
 
 An HTTP action may set `"allowStatuses": [409]` to treat those statuses as success. `createClient` uses it so a retry with the same alias reuses the client created by an earlier attempt.
+
+An HTTP action may set `"expectResponse": { "match": { "scimEnabled": true }, "message": "..." }` to fail when a successful response doesn't have those top-level fields with exactly those values. The form shows `message` and `onSuccess` doesn't run. The SCIM wizards' `loadOrgConfig` uses it so a realm with SCIM turned off reports an error rather than "Validated".
+
+`GET` actions are sent without a body or `Content-Type`; the `body` template is ignored.
 
 `hideOnLogin` on the `createIdp` body is set by the executor from the IdP's scope,
 regardless of what the JSON declares: `true` for org-scoped IdPs (reached via home-IdP
