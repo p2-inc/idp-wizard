@@ -258,13 +258,18 @@ function FormGroupRenderer({
     formValues?: Record<string, unknown>,
   ) => Promise<boolean>;
 }) {
+  const { state } = useWizardContext();
   const validForms = block.forms.filter((k) => forms[k]);
 
   if (block.exclusive && validForms.length > 1) {
+    // Open on the form that was already validated, so returning to the step
+    // (or resuming after a refresh) shows what the user submitted.
+    const initialForm =
+      validForms.find((k) => state.succeededForms[k]) ?? validForms[0];
     return (
       // Keyed so consecutive form-group steps don't share one Tabs instance
       // and carry the previous step's selected tab (which leaves no panel shown).
-      <Tabs key={block.id} defaultValue={validForms[0]}>
+      <Tabs key={block.id} defaultValue={initialForm}>
         <TabsList className="w-full">
           {validForms.map((formKey) => (
             <TabsTrigger key={formKey} value={formKey} className="flex-1">

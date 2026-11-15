@@ -19,6 +19,12 @@ import { useWizardContext, isWizardDirty } from "@/context/WizardContext";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { clearAlias } from "@/lib/alias";
 import {
+  buildWizardSnapshot,
+  clearWizardSnapshot,
+  loadWizardSnapshot,
+  saveWizardSnapshot,
+} from "@/lib/wizard-session";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -69,7 +75,10 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
   const dirty = isWizardDirty(state);
   const guard = useUnsavedChangesGuard(dirty);
   const handleConfirmLeave = () => {
-    if (definition) clearAlias(definition.alias.sessionKey);
+    if (definition) {
+      clearAlias(definition.alias.sessionKey);
+      clearWizardSnapshot(definition.alias.sessionKey);
+    }
     guard.confirm();
   };
 
@@ -89,9 +98,39 @@ export function WizardRunner({ providerId, protocol, provider }: Props) {
         // Seed a readable IdP display name (e.g. "Okta SAML") rather than
         // exposing the generated alias. Editable on the confirmation step.
         dispatch({ type: "SET_DISPLAY_NAME", displayName: def.title });
+        // Resume progress saved before a page refresh. Dispatched together
+        // with setDefinition so the first rendered step is the restored one.
+        const snapshot = loadWizardSnapshot(def, orgId);
+        if (snapshot) dispatch({ type: "RESTORE_STATE", snapshot });
       })
       .catch(() => setLoadFailed(true));
-  }, [loader, dispatch]);
+  }, [loader, dispatch, orgId]);
+
+  // ---------------------------------------------------------------------------
+  // Keep the saved progress in step with the wizard state
+  // ---------------------------------------------------------------------------
+  const sessionKey = definition?.alias.sessionKey;
+
+  useEffect(() => {
+    if (!definition) return;
+    if (dirty) {
+      saveWizardSnapshot(
+        definition.alias.sessionKey,
+        orgId,
+        buildWizardSnapshot(state, definition),
+      );
+    } else {
+      // Nothing to resume yet, or the wizard completed.
+      clearWizardSnapshot(definition.alias.sessionKey);
+    }
+  }, [state, definition, dirty, orgId]);
+
+  // Leaving the wizard abandons it. A page refresh does not run this cleanup,
+  // so the saved progress survives one.
+  useEffect(() => {
+    if (!sessionKey) return;
+    return () => clearWizardSnapshot(sessionKey);
+  }, [sessionKey]);
 
   // ---------------------------------------------------------------------------
   // Action handler

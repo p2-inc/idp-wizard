@@ -56,7 +56,8 @@ wizard-v2/
 │   │   ├── alias.ts            # sessionStorage alias helpers
 │   │   ├── http-error.ts       # Maps HTTP failures to user-facing messages
 │   │   ├── idp-test-link.ts    # Post-creation IdP test link (idp-tester client)
-│   │   └── utils.ts            # cn() helper (clsx + tailwind-merge)
+│   │   ├── utils.ts            # cn() helper (clsx + tailwind-merge)
+│   │   └── wizard-session.ts   # Wizard progress across a page refresh
 │   ├── routes/
 │   │   ├── __root.tsx                                        # Root — OidcInitializationGate
 │   │   ├── _authenticated.tsx                                # Layout — home button header
@@ -174,6 +175,12 @@ Each wizard session generates a unique IDP alias (e.g. `saml-saml-a1b2c3`) store
 - Used as the IDP identifier in all API calls during the wizard
 - Cleared from `sessionStorage` on successful wizard completion (via the `clearAlias` action)
 - Scoped per provider+protocol pair so multiple concurrent wizard sessions don't collide
+
+## Page refresh
+
+Refreshing the page resumes the wizard at the same step. The current step, the submitted form values, and the validation state are kept in `sessionStorage` (per tab, per provider+protocol) and removed when the wizard completes or you leave it.
+
+Secrets are never written to storage: client secrets, LDAP bind passwords, and generated SCIM tokens and passwords are left out. If the wizard had already passed the step that collects a secret, a refresh returns to that step so the secret can be entered again, with the other values still filled in. Text typed into a form that has not been submitted yet is not kept.
 
 ## Local development
 

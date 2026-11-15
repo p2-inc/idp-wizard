@@ -99,6 +99,8 @@ export interface WizardState {
 
 export type WizardAction =
   | { type: "ADVANCE_STEP"; toStep: number }
+  /** Resumes progress saved before a page refresh (see lib/wizard-session.ts) */
+  | { type: "RESTORE_STATE"; snapshot: Partial<WizardState> }
   | { type: "SET_METADATA"; metadata: Record<string, unknown> }
   | { type: "SET_DISPLAY_NAME"; displayName: string }
   | { type: "METADATA_VALIDATED" }
@@ -124,6 +126,8 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         stepIdReached: Math.max(state.stepIdReached, action.toStep),
         error: null,
       };
+    case "RESTORE_STATE":
+      return { ...state, ...action.snapshot };
     case "SET_METADATA":
       return { ...state, metadata: action.metadata };
     case "SET_DISPLAY_NAME":

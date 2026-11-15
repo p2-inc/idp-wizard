@@ -60,6 +60,7 @@ apps/wizard-v2/
 │   ├── global-setup.ts               # Integration mode: creates test orgs, assigns users
 │   ├── organizations.spec.ts         # Integration mode: org context and org-scoped API calls
 │   ├── provider-selector.spec.ts     # Smoke tests (navigation, search, help dialog)
+│   ├── wizard-refresh.spec.ts        # Progress survives a refresh; secrets are never stored
 │   └── wizard-completion.spec.ts     # Full SAML/OIDC/LDAP flows (API mocked) + wizard load smoke tests
 ├── openapi-codegen/
 │   └── gen.ts                        # Fetches both OpenAPI specs and generates src/api/types/
@@ -92,7 +93,8 @@ apps/wizard-v2/
 │   │   ├── alias.ts                  # getOrCreateAlias() + clearAlias() — sessionStorage
 │   │   ├── http-error.ts             # Maps HTTP status to specific action error messages
 │   │   ├── idp-test-link.ts          # Post-creation IdP test link via the idp-tester client
-│   │   └── utils.ts                  # cn() helper (clsx + tailwind-merge)
+│   │   ├── utils.ts                  # cn() helper (clsx + tailwind-merge)
+│   │   └── wizard-session.ts         # Saves/restores wizard progress across a refresh — sessionStorage, no secrets
 │   ├── routes/
 │   │   ├── __root.tsx                                    # Root: OidcInitializationGate + devtools
 │   │   ├── _authenticated.tsx                            # Layout: home button (hidden on index)
@@ -382,7 +384,7 @@ interface WizardState {
 }
 ```
 
-`WizardAction` covers step navigation (`ADVANCE_STEP`), validation flags (`METADATA_VALIDATED`, `CREDENTIALS_PROVIDED`, `CONNECTION_TESTED`, `AUTH_TESTED`, `SCHEMA_SAVED`), form state (`SET_METADATA`, `SET_DISPLAY_NAME`, `SAVE_FORM_VALUES`, `FORM_SUCCEEDED`), and submission (`SUBMIT_START`, `SUBMIT_SUCCESS`, `SUBMIT_ERROR`, `CLEAR_ERROR`, `RESET_SUBMITTING`). `src/context/WizardContext.tsx` is the source of truth.
+`WizardAction` covers step navigation (`ADVANCE_STEP`), resuming after a refresh (`RESTORE_STATE`), validation flags (`METADATA_VALIDATED`, `CREDENTIALS_PROVIDED`, `CONNECTION_TESTED`, `AUTH_TESTED`, `SCHEMA_SAVED`), form state (`SET_METADATA`, `SET_DISPLAY_NAME`, `SAVE_FORM_VALUES`, `FORM_SUCCEEDED`), and submission (`SUBMIT_START`, `SUBMIT_SUCCESS`, `SUBMIT_ERROR`, `CLEAR_ERROR`, `RESET_SUBMITTING`). `src/context/WizardContext.tsx` is the source of truth.
 
 ---
 
@@ -395,6 +397,20 @@ Aliases give each wizard session a unique Keycloak IDP alias (e.g. `generic-saml
 - Cleared explicitly by the `clearAlias` action after successful IDP creation
 
 Session key format: `p2_{providerId}_{protocol}` — e.g. `p2_saml_saml`, `p2_okta_saml`.
+
+---
+
+## Progress across a page refresh
+
+A refresh resumes the wizard where it was. `src/lib/wizard-session.ts` keeps a snapshot of the wizard state in `sessionStorage` under `{alias.sessionKey}:state` (e.g. `p2_okta_saml:state`), and `WizardRunner` restores it with the `RESTORE_STATE` reducer action once the definition has loaded.
+
+- **Stored:** `currentStep`, `stepIdReached`, `displayName`, `metadata`, the validation flags (`metadataValidated`, `credentialsProvided`, `connectionTested`, `authTested`, `targetAppConfigured`), `formValues`, and `succeededForms`. The snapshot also records the `org_id` and is ignored under a different one.
+- **Never stored:** values of `password` fields (`clientSecret`, `bindPassword`), values produced by a `generateSecret` action (`shared_secret`, `basic_password`), values a `saveForm` `set` template derives from either, and any form value or `metadata` key whose name contains `secret`, `password`, or `credential` (e.g. a SCIM response that echoes the secret). Uploaded `File` objects are not stored either; the metadata parsed from them is.
+- **Steps that need a secret:** a form that collected or generated a secret cannot be resumed without it. The snapshot drops that form from `succeededForms`, resets the flags its submit action dispatches, and resumes no later than its step. The user re-enters the secret; everything else is kept.
+- **Cleared:** when the wizard completes (`state.submitted`), when the user confirms leaving, and when `WizardRunner` unmounts (any in-app navigation away). A refresh does not unmount, so it keeps the snapshot. Closing the tab discards it with the rest of `sessionStorage`.
+- **Not covered:** text typed into a form that has not been submitted yet lives in the form's local state and is lost on refresh.
+
+When adding a field that holds a credential, give it `"type": "password"` so it stays out of storage.
 
 ---
 
