@@ -15,7 +15,7 @@ Okta uses `id` (not `username` or `uid`) as the username attribute:
 
 ### Metadata input
 
-Okta provides SAML metadata as a downloadable XML file from the Sign On tab of the SAML application. The wizard uses file upload.
+Okta publishes a stable metadata URL for each SAML application (`https://<org>.okta.com/app/<id>/sso/saml/metadata`), shown under **Metadata details** on the application's Sign On tab. The wizard offers the URL first, and file upload of the metadata XML as an alternative tab.
 
 ## LDAP
 

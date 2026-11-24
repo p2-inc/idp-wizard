@@ -134,34 +134,37 @@
     },
     {
       "id": 4,
-      "title": "Download Okta IdP Metadata",
+      "title": "Import Okta IdP Metadata",
       "enableNextWhen": "state.metadataValidated",
       "blocks": [
         {
           "type": "text",
-          "content": "After saving the application, open the **Sign On** tab."
+          "content": "After saving the application, open the **Sign On** tab. Under **Metadata details**, select **Copy** next to **Metadata URL**."
         },
         {
           "type": "image",
-          "src": "/wizards/okta/saml/okta_saml_8.png"
+          "src": "/wizards/okta/saml/okta_saml_8.png",
+          "alt": "Okta Sign On tab showing the Metadata URL"
         },
         {
           "type": "text",
-          "content": "Select **View SAML setup instructions** or right-click **Identity Provider metadata** and copy/save the metadata XML."
+          "content": "Paste the metadata URL below to import the Okta IdP configuration into Keycloak."
+        },
+        {
+          "type": "text",
+          "content": "To upload a file instead, select **View SAML setup instructions**, save the **IDP metadata** as an XML file, and use the **Metadata File** tab."
         },
         {
           "type": "image",
-          "src": "/wizards/okta/saml/okta_saml_9.png"
-        },
-        {
-          "type": "text",
-          "content": "Upload the metadata file below to import the Okta IdP configuration into Keycloak."
+          "src": "/wizards/okta/saml/okta_saml_9.png",
+          "alt": "Okta SAML setup instructions showing the IDP metadata"
         },
         {
           "type": "formGroup",
           "id": "metadataInput",
-          "exclusive": false,
+          "exclusive": true,
           "forms": [
+            "metadataUrl",
             "metadataFile"
           ]
         }
@@ -207,9 +210,26 @@
     }
   ],
   "forms": {
+    "metadataUrl": {
+      "title": "Metadata URL",
+      "description": "Paste the Metadata URL from the Okta application's Sign On tab.",
+      "fields": [
+        {
+          "id": "url",
+          "type": "url",
+          "label": "Metadata URL",
+          "placeholder": "https://your-org.okta.com/app/your-app-id/sso/saml/metadata",
+          "required": true
+        }
+      ],
+      "submit": {
+        "label": "Validate URL",
+        "action": "validateMetadataUrl"
+      }
+    },
     "metadataFile": {
       "title": "Metadata File",
-      "description": "Upload the SAML metadata XML file from your identity provider.",
+      "description": "Upload the SAML metadata XML file downloaded from Okta.",
       "fields": [
         {
           "id": "file",
@@ -226,6 +246,25 @@
     }
   },
   "actions": {
+    "validateMetadataUrl": {
+      "endpoint": "importConfig",
+      "method": "POST",
+      "contentType": "json",
+      "body": {
+        "fromUrl": "{{form.url}}",
+        "providerId": "saml"
+      },
+      "onSuccess": {
+        "mergeIntoMetadata": "{{response}}",
+        "dispatch": [
+          "METADATA_VALIDATED"
+        ]
+      },
+      "messages": {
+        "success": "Metadata URL validated. Continue to the next step.",
+        "error": "Validation failed. Check the URL and try again."
+      }
+    },
     "validateMetadataFile": {
       "endpoint": "importConfig",
       "method": "POST",
